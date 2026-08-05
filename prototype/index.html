@@ -1,0 +1,1481 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marketing Cloud 一期原型</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">MC</div>
+        <div>
+          <h1>Marketing Cloud</h1>
+          <p>规则引擎一期原型</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="主导航">
+        <span class="nav-group-label">客户经营</span>
+        <button class="nav-item active" data-page="dashboard">看板</button>
+        <button class="nav-item" data-page="layers">意向分层</button>
+        <button class="nav-item" data-page="companies">企业账户</button>
+        <button class="nav-item" data-page="actions">动作中心</button>
+        <span class="nav-group-label">用户中心</span>
+        <button class="nav-item" data-page="users">用户列表</button>
+        <button class="nav-item" data-page="segment">用户分组</button>
+        <button class="nav-item" data-page="profileTags">用户画像</button>
+        <span class="nav-group-label nav-group-label-settings">系统设置</span>
+        <button class="nav-item" data-page="settings">客户意向评分规则</button>
+        <button class="nav-item" data-page="settingsWeights">行为权重</button>
+        <button class="nav-item" data-page="settingsPermissions">权限</button>
+        <button class="nav-item" data-page="settingsVersions">规则版本</button>
+      </nav>
+      <div class="rule-panel">
+        <span class="eyebrow">一期口径</span>
+        <strong>识别意向，推荐动作，追踪结果。</strong>
+        <p>先用规则模型跑通闭环，再基于反馈数据升级模型。</p>
+      </div>
+    </aside>
+
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Marketing + Sales Ops</span>
+          <h2 id="pageTitle">AI 经营看板</h2>
+        </div>
+      </header>
+
+      <section class="page active" id="dashboard">
+        <div class="dashboard-timebar">
+          <div>
+            <span class="eyebrow">默认统计口径</span>
+            <strong id="dashboardDateNote">经营动作看今日，趋势转化看近7/30天，资源余额看当前状态。</strong>
+          </div>
+          <div class="time-filter" aria-label="看板时间筛选">
+            <button class="active" data-range="今日">今日</button>
+            <button data-range="昨日">昨日</button>
+            <button data-range="近7天">近7天</button>
+            <button data-range="近30天">近30天</button>
+            <button data-range="自定义">自定义</button>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric">
+            <span>新增留资客户</span>
+            <strong>342</strong>
+            <em>今日 · 官网表单占 58%</em>
+          </article>
+          <article class="metric">
+            <span>已同步 CRM 线索</span>
+            <strong>489</strong>
+            <em>今日 · 自动同步 342 条</em>
+          </article>
+          <article class="metric">
+            <span>待经营高意向客户</span>
+            <strong>1,286</strong>
+            <em>今日 · 未留资客户 944 人</em>
+          </article>
+          <article class="metric">
+            <span>活动转化客户</span>
+            <strong>188</strong>
+            <em>今日 · 活动后留资 76 人</em>
+          </article>
+        </div>
+
+        <div class="insight-strip">
+          <article class="insight accent-blue">
+            <span>洞察 1</span>
+            <strong>官网直接留资已自动进入 CRM</strong>
+            <p>本周 342 名客户提交表单，其中 198 名来自官网落地页。</p>
+          </article>
+          <article class="insight accent-green">
+            <span>洞察 2</span>
+            <strong>944 名高意向客户尚未留资</strong>
+            <p>这部分来自浏览网站和内容行为，建议优先做内容触达和再营销。</p>
+          </article>
+          <article class="insight accent-orange">
+            <span>洞察 3</span>
+            <strong>活动后访问产品页转化更高</strong>
+            <p>活动签到后 7 天内访问方案页的客户，留资率达到 24.6%。</p>
+          </article>
+        </div>
+
+        <section class="work-area source-overview">
+          <div class="section-head">
+            <div>
+              <h3 id="conversionTitle">渠道转化概览</h3>
+              <span class="module-scope" id="conversionScope">默认口径：近7天转化，按首次触达渠道归因</span>
+            </div>
+            <div class="segmented">
+              <button class="active">本周</button>
+              <button>本月</button>
+              <button>季度</button>
+            </div>
+          </div>
+          <div class="conversion-tabs" aria-label="转化分析维度">
+            <button class="active" data-conversion-tab="channel">渠道转化</button>
+            <button data-conversion-tab="entry">转化入口</button>
+          </div>
+          <div class="table source-table conversion-panel active" id="channelConversion">
+            <div class="table-row table-head">
+              <span>渠道</span>
+              <span>访问/触达</span>
+              <span>高意向</span>
+              <span>可经营客户</span>
+              <span>同步 CRM</span>
+              <span>销售机会</span>
+            </div>
+            <div class="table-row">
+              <span>自然搜索</span>
+              <span>8,210</span>
+              <span>533</span>
+              <span>72</span>
+              <span>72</span>
+              <span>9</span>
+            </div>
+            <div class="table-row">
+              <span>直接访问</span>
+              <span>3,450</span>
+              <span>421</span>
+              <span>88</span>
+              <span>88</span>
+              <span>13</span>
+            </div>
+            <div class="table-row">
+              <span>付费广告</span>
+              <span>2,860</span>
+              <span>376</span>
+              <span>96</span>
+              <span>96</span>
+              <span>16</span>
+            </div>
+            <div class="table-row">
+              <span>活动渠道</span>
+              <span>3,920</span>
+              <span>614</span>
+              <span>188</span>
+              <span>176</span>
+              <span>31</span>
+            </div>
+            <div class="table-row">
+              <span>内容渠道</span>
+              <span>1,506</span>
+              <span>429</span>
+              <span>96</span>
+              <span>91</span>
+              <span>14</span>
+            </div>
+            <div class="table-row">
+              <span>企微分享</span>
+              <span>980</span>
+              <span>211</span>
+              <span>54</span>
+              <span>48</span>
+              <span>8</span>
+            </div>
+          </div>
+          <div class="table entry-table conversion-panel" id="entryConversion">
+            <div class="table-row table-head">
+              <span>转化入口</span>
+              <span>留资人数</span>
+              <span>有效留资</span>
+              <span>同步 CRM</span>
+              <span>销售机会</span>
+              <span>转化率</span>
+            </div>
+            <div class="table-row">
+              <span>官网表单</span>
+              <span>198</span>
+              <span>186</span>
+              <span>186</span>
+              <span>24</span>
+              <span>8.6%</span>
+            </div>
+            <div class="table-row">
+              <span>落地页表单</span>
+              <span>144</span>
+              <span>132</span>
+              <span>132</span>
+              <span>18</span>
+              <span>11.2%</span>
+            </div>
+            <div class="table-row">
+              <span>活动报名</span>
+              <span>188</span>
+              <span>176</span>
+              <span>176</span>
+              <span>31</span>
+              <span>24.6%</span>
+            </div>
+            <div class="table-row">
+              <span>资料下载</span>
+              <span>96</span>
+              <span>91</span>
+              <span>91</span>
+              <span>14</span>
+              <span>18.4%</span>
+            </div>
+            <div class="table-row">
+              <span>咨询表单</span>
+              <span>31</span>
+              <span>29</span>
+              <span>29</span>
+              <span>6</span>
+              <span>32.1%</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="work-area account-summary-panel">
+          <div class="section-head">
+            <div>
+              <h3>企业经营摘要</h3>
+              <span class="module-scope">默认口径：近7天企业升温与历史客户再活跃</span>
+            </div>
+            <button class="text-button" data-jump="account">查看企业洞察</button>
+          </div>
+          <div class="account-summary-grid">
+            <article>
+              <span>新增高价值企业</span>
+              <strong>12</strong>
+              <p>注册资本、规模、行业匹配度较高</p>
+            </article>
+            <article>
+              <span>历史签约客户重新活跃</span>
+              <strong>8</strong>
+              <p>最近 7 天出现资料下载或方案页访问</p>
+            </article>
+            <article>
+              <span>产品使用中且近期高意向</span>
+              <strong>5</strong>
+              <p>适合标记复购或增购机会</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="work-area">
+          <div class="section-head">
+            <div>
+              <h3>推荐动作列表</h3>
+              <span class="module-scope">默认口径：待处理 + 最近7天触发</span>
+            </div>
+            <button class="text-button">查看全部</button>
+          </div>
+          <div class="table dashboard-action-table">
+            <div class="table-row table-head">
+              <span>客户/企业</span>
+              <span>来源</span>
+              <span>当前阶段</span>
+              <span>意向分</span>
+              <span>CRM 状态</span>
+              <span>推荐动作</span>
+              <span>操作</span>
+            </div>
+            <div class="table-row">
+              <span>XX 制造集团</span>
+              <span>多人浏览</span>
+              <span>企业升温</span>
+              <span><b class="score high">92</b></span>
+              <span>部分同步</span>
+              <span>标记企业机会</span>
+              <span><button class="mini-button">标记</button><button class="mini-ghost">忽略</button></span>
+            </div>
+            <div class="table-row">
+              <span>李明</span>
+              <span>官网表单</span>
+              <span>已留资</span>
+              <span><b class="score high">86</b></span>
+              <span>已同步</span>
+              <span>提醒销售跟进</span>
+              <span><button class="mini-button">提醒</button><button class="mini-ghost">详情</button></span>
+            </div>
+            <div class="table-row">
+              <span>王五</span>
+              <span>活动报名</span>
+              <span>活动后升温</span>
+              <span><b class="score mid">68</b></span>
+              <span>未同步</span>
+              <span>活动回访</span>
+              <span><button class="mini-button">加入分组</button><button class="mini-ghost">详情</button></span>
+            </div>
+            <div class="table-row">
+              <span>李四</span>
+              <span>浏览网站</span>
+              <span>高意向未留资</span>
+              <span><b class="score high">88</b></span>
+              <span>未同步</span>
+              <span>推荐内容触达</span>
+              <span><button class="mini-button">加入分组</button><button class="mini-ghost">详情</button></span>
+            </div>
+          </div>
+        </section>
+
+        <div class="dashboard-support-grid single">
+          <section class="work-area resource-overview">
+            <div class="section-head">
+              <div>
+                <h3>运营资源概览</h3>
+                <span class="module-scope">默认口径：当前累计状态</span>
+              </div>
+              <button class="text-button">资源中心</button>
+            </div>
+            <div class="resource-grid">
+              <article>
+                <span>活动资产</span>
+                <strong>0</strong>
+                <p>报名 0 · 签到 0 · 有效线索 0</p>
+              </article>
+              <article>
+                <span>内容资产</span>
+                <strong>6</strong>
+                <p>文章阅读 149 · 视频播放 0</p>
+              </article>
+              <article>
+                <span>落地页</span>
+                <strong>0</strong>
+                <p>浏览 0 · 有效线索 0</p>
+              </article>
+              <article>
+                <span>资料下载</span>
+                <strong>0</strong>
+                <p>查看 227 · 下载 131</p>
+              </article>
+              <article>
+                <span>表单/咨询</span>
+                <strong>32</strong>
+                <p>表单 1 · 咨询 31</p>
+              </article>
+              <article>
+                <span>资源预警</span>
+                <strong>正常</strong>
+                <p>短信 88,500 · 邮件 14,740</p>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="layers">
+        <div class="filter-bar">
+          <select><option>全部行业</option><option>制造业</option><option>医疗</option><option>金融</option></select>
+          <select><option>全部地区</option><option>华东</option><option>华南</option><option>华北</option></select>
+          <select id="intentLevelSelect"><option value="high">高意向</option><option value="mid">中意向</option><option value="low">低意向</option><option value="silent">沉默客户</option></select>
+          <select><option>最近 30 天</option><option>最近 7 天</option><option>最近 90 天</option></select>
+          <button class="primary-button">筛选</button>
+        </div>
+
+        <div class="intent-level-overview" aria-label="客户意向等级">
+          <button class="intent-level-card high active" data-intent-level="high"><span>高意向</span><strong>80-100 分</strong><em>建议优先经营或提醒销售</em><b>486 人</b></button>
+          <button class="intent-level-card mid" data-intent-level="mid"><span>中意向</span><strong>50-79 分</strong><em>建议持续内容与活动培育</em><b>1,903 人</b></button>
+          <button class="intent-level-card low" data-intent-level="low"><span>低意向</span><strong>20-49 分</strong><em>建议轻量内容触达</em><b>4,216 人</b></button>
+          <button class="intent-level-card silent" data-intent-level="silent"><span>沉默客户</span><strong>0-19 分</strong><em>建议召回或暂缓经营</em><b>8,640 人</b></button>
+        </div>
+
+        <section class="work-area">
+          <div class="section-head">
+            <div><h3 id="intentListTitle">高意向客户</h3><span class="module-scope" id="intentListScope">80-100 分 · 近期出现明确产品兴趣或转化行为</span></div>
+            <span class="intent-rule-version">评分规则 V1.0 · 更新于今日 08:00</span>
+          </div>
+          <div class="intent-action-guide high" id="intentActionGuide"><strong>推荐动作</strong><span>未进入 CRM：同步为线索</span><span>已有销售跟进：提醒销售关注最新行为</span><span>多人同企业活跃：查看企业洞察</span></div>
+          <div class="table customer-table" id="intentCustomerTable">
+            <div class="table-row table-head">
+              <span>客户名称</span><span>所属企业</span><span>行业</span><span>意向分</span><span>最近行为</span><span>CRM 状态</span><span>推荐动作</span>
+            </div>
+            <div class="table-row intent-customer-row">
+              <span><button class="inline-link" data-jump="profileTags">张三</button></span><span>XX 制造集团</span><span>制造业</span><span><b class="score high">94</b></span><span>下载制造业白皮书</span><span>未同步</span><span><button class="mini-button next-action-button" data-action-kind="crm" data-action-target="张三 / XX 制造集团" data-action-score="94" data-action-reason="下载制造业白皮书，已获得有效联系方式但尚未进入 CRM">处理建议</button></span>
+            </div>
+            <div class="table-row intent-customer-row">
+              <span><button class="inline-link" data-jump="profileTags">陈洁</button></span><span>海川医疗</span><span>医疗</span><span><b class="score high">83</b></span><span>访问价格页</span><span>已有线索</span><span><button class="mini-button next-action-button" data-action-kind="sales" data-action-target="陈洁 / 海川医疗" data-action-score="83" data-action-reason="访问价格页，CRM 已有线索，优先通知销售而非继续营销触达">处理建议</button></span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="users">
+        <section class="work-area group-console">
+          <div class="group-toolbar">
+            <div>
+              <h3>用户列表</h3>
+              <span class="module-scope">统一查看用户基础信息、身份、标签和经营资格；客户意向判断请进入意向分层。</span>
+            </div>
+            <button class="ghost-button">导入用户</button>
+          </div>
+          <div class="group-search-row">
+            <input placeholder="搜索姓名、手机号、邮箱或所属企业" />
+            <button class="ghost-button">搜索</button>
+            <select><option>全部身份</option><option>客户</option><option>内部员工</option></select>
+            <select><option>全部用户状态</option><option>可经营</option><option>已排除</option></select>
+          </div>
+          <div class="table group-table user-list-table">
+            <div class="table-row table-head"><span>姓名</span><span>所属企业</span><span>身份</span><span>职位</span><span>用户状态</span><span>最近活跃</span><span>标签</span><span>操作</span></div>
+            <div class="table-row"><span>张三</span><span>XX 制造集团</span><span>客户</span><span>采购负责人</span><span>可经营</span><span>2 天前</span><span>制造业、供应链云</span><span><button class="text-button" data-jump="profileTags">查看画像</button></span></div>
+            <div class="table-row"><span>陈洁</span><span>海川医疗</span><span>客户</span><span>信息化经理</span><span>可经营</span><span>1 天前</span><span>医疗、智能决策</span><span><button class="text-button" data-jump="profileTags">查看画像</button></span></div>
+            <div class="table-row"><span>王五</span><span>用友网络科技股份有限公司</span><span>内部员工</span><span>数智技术专家</span><span>已排除</span><span>今日</span><span>数字营销、财务</span><span><button class="text-button" data-jump="profileTags">查看画像</button></span></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="companies">
+        <section class="work-area company-list-console">
+          <div class="group-toolbar">
+            <div>
+              <h3>企业账户</h3>
+              <span class="module-scope">按企业意向、近期变化、产品与签约情况筛选优先经营企业。</span>
+            </div>
+            <button class="ghost-button">导入公司</button>
+          </div>
+          <div class="company-filter-row">
+            <input placeholder="请输入公司名称/行业/产品关键词" />
+            <button class="ghost-button">搜索</button>
+            <button class="text-button">高级筛选</button>
+            <select>
+              <option>全部企业状态</option>
+              <option>高意向</option>
+              <option>升温</option>
+              <option>培育</option>
+              <option>低活跃</option>
+            </select>
+            <select>
+              <option>全部 CRM 状态</option>
+              <option>已建档</option>
+              <option>未建档</option>
+              <option>部分同步</option>
+            </select>
+          </div>
+          <div class="company-summary-row">
+            <article><span>高意向企业</span><strong>73</strong></article>
+            <article><span>近7天升温</span><strong>28</strong></article>
+            <article><span>历史客户再活跃</span><strong>8</strong></article>
+            <article><span>待标记企业机会</span><strong>19</strong></article>
+          </div>
+          <div class="table company-list-table">
+            <div class="table-row table-head">
+              <span>公司名称</span>
+              <span>企业意向分</span>
+              <span>企业状态</span>
+              <span>近7天变化</span>
+              <span>用户人数</span>
+              <span>参与活动人数</span>
+              <span>在用产品</span>
+              <span>最近签约</span>
+              <span>累计签约</span>
+              <span>行业</span>
+              <span>CRM 状态</span>
+              <span>推荐动作</span>
+            </div>
+            <div class="table-row">
+              <span>西游记互联网科技公司</span>
+              <span><b class="score high">91</b></span>
+              <span><b class="source-tag ai">高意向</b></span>
+              <span class="up-change">+18</span>
+              <span>2,345</span>
+              <span>1,234</span>
+              <span>NCCloud</span>
+              <span>2023-12-15</span>
+              <span>8次</span>
+              <span>互联网/软件服务</span>
+              <span>已建档</span>
+              <span><button class="mini-button">标记机会</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+            </div>
+            <div class="table-row">
+              <span>XX 制造集团</span>
+              <span><b class="score high">88</b></span>
+              <span><b class="source-tag ai">升温</b></span>
+              <span class="up-change">+15</span>
+              <span>642</span>
+              <span>86</span>
+              <span>暂无</span>
+              <span>-</span>
+              <span>0次</span>
+              <span>制造业</span>
+              <span>部分同步</span>
+              <span><button class="mini-button">同步 CRM</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+            </div>
+            <div class="table-row">
+              <span>海川医疗</span>
+              <span><b class="score mid">76</b></span>
+              <span><b class="source-tag">培育</b></span>
+              <span class="up-change">+7</span>
+              <span>318</span>
+              <span>42</span>
+              <span>智能决策系统</span>
+              <span>2024-01-08</span>
+              <span>2次</span>
+              <span>医疗</span>
+              <span>已建档</span>
+              <span><button class="mini-button">发送内容</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+            </div>
+            <div class="table-row">
+              <span>远航自动化</span>
+              <span><b class="score mid">67</b></span>
+              <span><b class="source-tag">培育</b></span>
+              <span class="down-change">-4</span>
+              <span>205</span>
+              <span>31</span>
+              <span>暂无</span>
+              <span>-</span>
+              <span>0次</span>
+              <span>制造业</span>
+              <span>未建档</span>
+              <span><button class="mini-button">加入分组</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+            </div>
+          </div>
+          <div class="pagination-row">
+            <span>共 614 家</span>
+            <select><option>10条/页</option><option>20条/页</option></select>
+            <button class="ghost-button">上一页</button>
+            <button class="primary-button">1</button>
+            <button class="ghost-button">2</button>
+            <button class="ghost-button">3</button>
+            <button class="ghost-button">下一页</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="customerProfile">
+        <div class="customer-profile-hero">
+          <div>
+            <span class="eyebrow">客户维度</span>
+            <h3>张三</h3>
+            <p>采购负责人 · XX 制造集团 · 上海 · CRM 已建档</p>
+            <div class="customer-profile-flags">
+              <b>外部客户</b>
+              <b>关键角色</b>
+              <b>可经营</b>
+            </div>
+          </div>
+          <div class="customer-intent-score">
+            <span>客户意向分</span>
+            <strong>94</strong>
+            <em>高意向</em>
+          </div>
+        </div>
+
+        <section class="work-area customer-profile-summary">
+          <div class="section-head">
+            <div>
+              <h3>客户经营摘要</h3>
+              <span class="module-scope">更新于 2026-06-12 09:20 · 评分规则版本 v1.2</span>
+            </div>
+            <button class="ghost-button">查看评分明细</button>
+          </div>
+          <div class="customer-summary-grid">
+            <article><span>所属企业</span><strong>XX 制造集团</strong><em>企业意向分 91</em></article>
+            <article><span>职位角色</span><strong>采购负责人</strong><em>关键角色 · 决策影响人</em></article>
+            <article><span>最近活跃</span><strong>2 天前</strong><em>下载制造业白皮书</em></article>
+            <article><span>近 30 天行为</span><strong>48 次</strong><em>较上期增加 32%</em></article>
+            <article><span>CRM 状态</span><strong>已同步</strong><em>当前未创建商机</em></article>
+            <article><span>推荐动作</span><strong>提醒销售关注</strong><em>P0 · 建议今日处理</em></article>
+          </div>
+        </section>
+
+        <div class="customer-profile-layout">
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>基础画像</h3>
+                <span class="module-scope">身份、联系方式和客户属性</span>
+              </div>
+            </div>
+            <div class="profile-field-grid">
+              <article><span>用户身份</span><strong>客户 · customer</strong></article>
+              <article><span>手机</span><strong>138****6802</strong></article>
+              <article><span>邮箱</span><strong>zhang***@example.com</strong></article>
+              <article><span>部门</span><strong>采购与供应链中心</strong></article>
+              <article><span>行业</span><strong>装备制造</strong></article>
+              <article><span>客户来源</span><strong>自然搜索 · 官网</strong></article>
+            </div>
+          </section>
+
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>意向判断</h3>
+                <span class="module-scope">规则计算，AI 负责解释原因</span>
+              </div>
+            </div>
+            <div class="customer-intent-reason">
+              <strong>近期采购意向明显上升</strong>
+              <p>近 7 天连续访问解决方案和产品页，并下载制造业白皮书；所属企业同时有 3 名联系人活跃。</p>
+              <div class="intent-reason-list">
+                <span><b>+25</b> 下载白皮书</span>
+                <span><b>+20</b> 多次访问解决方案页</span>
+                <span><b>+15</b> 企业多人活跃</span>
+                <span><b>+10</b> 关键角色加成</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="customer-profile-layout">
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>兴趣与关注</h3>
+                <span class="module-scope">由近期内容行为聚合，用于内容推荐和分组</span>
+              </div>
+            </div>
+            <div class="customer-interest-groups">
+              <div><span>关注产品</span><div class="tag-cloud"><b>YonSuite</b><b>供应链云</b></div></div>
+              <div><span>关注领域</span><div class="tag-cloud"><b>采购管理</b><b>业财一体化</b></div></div>
+              <div><span>关注内容</span><div class="tag-cloud"><b>制造业案例</b><b>数字化转型</b></div></div>
+            </div>
+          </section>
+
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>最近关键行为</h3>
+                <span class="module-scope">仅展示影响意向判断的高价值行为</span>
+              </div>
+            </div>
+            <ol class="timeline customer-behavior-timeline">
+              <li><time>6月10日</time><span>下载《制造业供应链数字化白皮书》</span></li>
+              <li><time>6月9日</time><span>访问供应链解决方案页 3 次</span></li>
+              <li><time>6月7日</time><span>查看 XX 制造行业客户案例</span></li>
+              <li><time>6月3日</time><span>活动签到并观看直播 26 分钟</span></li>
+            </ol>
+          </section>
+        </div>
+
+        <section class="work-area customer-next-action">
+          <div>
+            <span class="eyebrow">下一步建议</span>
+            <strong>提醒销售关注，并发送制造业供应链案例</strong>
+            <p>客户已同步 CRM，无需重复同步；当前系统不自动创建销售任务或商机。</p>
+          </div>
+          <div class="button-row">
+            <button class="primary-button">提醒销售关注</button>
+            <button class="ghost-button">发送推荐内容</button>
+            <button class="ghost-button">加入分组</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="profileTags">
+        <div class="profile-tag-hero">
+          <div>
+            <span class="eyebrow">User Profile</span>
+            <h3>用户画像</h3>
+            <p>画像负责描述“这个人是谁、关注什么、最近做了什么”；客户意向分层负责判断是否值得经营及下一步动作。</p>
+          </div>
+          <div class="profile-tag-status">
+            <span>经营资格</span>
+            <strong>已排除</strong>
+          </div>
+        </div>
+
+        <section class="work-area mk-profile-summary">
+          <div class="section-head">
+            <div>
+              <h3>用户画像摘要</h3>
+              <span class="module-scope">数据来自 GET /user/{yhtId}/profile，生成时间：2026-06-12 08:50。</span>
+            </div>
+            <button class="ghost-button">重新计算画像</button>
+          </div>
+          <div class="mk-summary-grid">
+            <article><span>统一用户 ID</span><strong>bf70d7ce...49b4da</strong></article>
+            <article><span>用户身份</span><strong>内部员工</strong><em>user_scope = internal_employee</em></article>
+            <article><span>经营处理</span><strong>排除推荐</strong><em>不计入意向分层、转化统计和企业评分</em></article>
+            <article><span>最近活跃</span><strong>0 天</strong><em>仅作行为新鲜度参考</em></article>
+            <article><span>行为命中总次数</span><strong>197</strong><em>行为标签累计命中</em></article>
+            <article><span>行为均分</span><strong>6</strong><em>近期行为热度偏低</em></article>
+            <article><span>客户意向分</span><strong>--</strong><em>内部员工不计算 intent_score</em></article>
+          </div>
+        </section>
+
+        <div class="profile-tag-grid">
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>事实标签</h3>
+                <span class="module-scope">来自 member 画像字段，不衰减，适合作为基础画像底座。</span>
+              </div>
+            </div>
+            <div class="profile-field-grid">
+              <article><span>身份</span><strong>员工 · internal_employee</strong></article>
+              <article><span>公司</span><strong>用友网络科技股份有限公司</strong></article>
+              <article><span>部门</span><strong>集团数智化部</strong></article>
+              <article><span>职位</span><strong>BIP 数智技术专家</strong></article>
+              <article><span>地区</span><strong>国内-北京市-海淀区</strong></article>
+              <article><span>注册来源</span><strong>平台H5 · 微信绑定手机号</strong></article>
+            </div>
+          </section>
+
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>画像优化建议</h3>
+                <span class="module-scope">基于当前接口数据现状，建议一期先做这些优化。</span>
+              </div>
+            </div>
+            <div class="tag-rule-list">
+              <div><b>身份与排除状态直接返回</b><span>接口输出 user_scope、is_excluded_from_recommendation 和 exclude_reason，前端不再从标签中推断。</span></div>
+              <div><b>行为标签存在重复值</b><span>产品中“用友BIP”、规模中“大型企业”重复出现，建议同组标签按 value 合并，累加 hits 和 score。</span></div>
+              <div><b>活跃指标只统计行为</b><span>行为活跃分不混入公司、职位、员工等事实标签；标签健康度仅用于技术诊断，不用于经营判断。</span></div>
+              <div><b>不展示 lifecycle</b><span>画像页只展示“最近活跃时间”等客观指标，避免与客户意向分层和 CRM 客户阶段混淆。</span></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="work-area">
+          <div class="section-head">
+            <div>
+              <h3>行为标签 Top 分组</h3>
+              <span class="module-scope">按产品、行业、领域、角色、场景等分组展示，每组取 Top 5。</span>
+            </div>
+            <button class="ghost-button">查看全部标签</button>
+          </div>
+          <div class="behavior-tag-grid">
+            <article>
+              <h4>产品</h4>
+              <div class="tag-cloud"><b>YonSuite · 10</b><b>用友BIP · 10</b><b>YonBIP旗舰版 · 10</b><b>畅捷通 · 5</b></div>
+            </article>
+            <article>
+              <h4>行业</h4>
+              <div class="tag-cloud"><b>流程制造 · 10</b><b>消费品 · 10</b><b>服务业 · 10</b><b>中央企业 · 10</b><b>装备制造 · 10</b></div>
+            </article>
+            <article>
+              <h4>领域</h4>
+              <div class="tag-cloud"><b>人力云 · 10</b><b>财务云 · 10</b><b>供应链云 · 10</b><b>营销云 · 10</b><b>采购云 · 10</b></div>
+            </article>
+            <article>
+              <h4>场景</h4>
+              <div class="tag-cloud"><b>市场活动 · 10</b><b>方案沟通 · 10</b><b>销售打单 · 10</b><b>企业出海 · 10</b><b>交流会议 · 10</b></div>
+            </article>
+          </div>
+        </section>
+
+        <div class="profile-tag-grid">
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>兴趣标签</h3>
+                <span class="module-scope">由行为标签聚合而来，适合内容推荐和分组圈选。</span>
+              </div>
+            </div>
+            <div class="interest-meter-list">
+              <div><span>数字营销</span><strong>100</strong><em style="width: 100%"></em></div>
+              <div><span>财务</span><strong>100</strong><em style="width: 100%"></em></div>
+            </div>
+          </section>
+
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>客户意向分层</h3>
+                <span class="module-scope">经营页面统一使用 intent_score 和 intent_level；lead_grade 仅作为历史兼容字段。</span>
+              </div>
+            </div>
+            <div class="lead-explain">
+              <strong>当前用户不参与客户意向评分</strong>
+              <p>原因：用户身份为内部员工。画像和标签仍可保留用于数据审计，但不生成意向等级、推荐动作，也不进入客户及企业转化统计。</p>
+              <div class="tag-cloud"><b>intent_score：--</b><b>intent_level：--</b><b>排除原因：内部员工</b></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="work-area intent-score-reference">
+          <div class="section-head">
+            <div>
+              <h3>外部客户意向评分口径</h3>
+              <span class="module-scope">仅对具备经营资格的客户计算，评分规则独立于标签分值。</span>
+            </div>
+          </div>
+          <div class="score-reference-grid">
+            <article><span>行为价值</span><strong>浏览、下载、活动参与</strong><em>每条行为按发生时间衰减</em></article>
+            <article><span>内容与路径</span><strong>产品、案例、方案、价格</strong><em>识别关注主题和采购深度</em></article>
+            <article><span>转化动作</span><strong>表单、落地页、报名、资料留资</strong><em>纳入转化入口与评分明细</em></article>
+            <article><span>CRM 状态</span><strong>未同步、已同步、已有客户</strong><em>用于推荐动作和经营解释</em></article>
+          </div>
+          <div class="score-level-row">
+            <span><b>80-100</b> 高意向</span>
+            <span><b>50-79</b> 中意向</span>
+            <span><b>20-49</b> 低意向</span>
+            <span><b>0-19</b> 沉默客户</span>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="settings">
+        <div class="settings-hero">
+          <div>
+            <span class="eyebrow">管理员配置</span>
+            <h3>客户意向评分规则</h3>
+            <p>规则引擎负责计算意向分与企业加成；AI 仅基于结果生成经营解释和动作建议。</p>
+          </div>
+          <div class="settings-version">
+            <span>当前生效版本</span>
+            <strong>V1.0</strong>
+            <em>2026-06-01 生效</em>
+          </div>
+        </div>
+
+        <section class="work-area rules-overview">
+          <div class="section-head">
+            <div>
+              <h3>评分组成与分层阈值</h3>
+              <span class="module-scope">仅具备经营资格的外部客户参与评分；内部员工与无效用户自动排除。</span>
+            </div>
+            <button class="ghost-button">查看版本记录</button>
+            <button class="primary-button">编辑规则</button>
+          </div>
+          <div class="rules-overview-grid">
+            <article><span>行为分</span><strong>浏览、下载、提交、重复访问</strong><em>按行为价值与发生时间计算</em></article>
+            <article><span>内容分</span><strong>文章、案例、方案、白皮书</strong><em>按内容采购相关度计算</em></article>
+            <article><span>活动分</span><strong>报名、签到、互动、会后访问</strong><em>报名仅计活动参与，不等同留资</em></article>
+            <article><span>企业加成</span><strong>多人活跃、关键角色</strong><em>仅用于企业账户评分</em></article>
+          </div>
+          <div class="score-level-row">
+            <span><b>80-100</b> 高意向</span><span><b>50-79</b> 中意向</span><span><b>20-49</b> 低意向</span><span><b>0-19</b> 沉默客户</span>
+          </div>
+        </section>
+
+        <div class="settings-grid">
+          <section class="work-area">
+            <div class="section-head"><div><h3>用户行为权重</h3><span class="module-scope">变更后从下个计算周期起生效。</span></div><button class="text-button">管理行为项</button></div>
+            <div class="table weight-table">
+              <div class="table-row table-head"><span>行为类型</span><span>默认分值</span><span>适用条件</span><span>状态</span></div>
+              <div class="table-row"><span>访问产品页</span><span>+5</span><span>每会话最多计 1 次</span><span>启用</span></div>
+              <div class="table-row"><span>访问价格/方案页</span><span>+10</span><span>每会话最多计 1 次</span><span>启用</span></div>
+              <div class="table-row"><span>下载资料</span><span>+8</span><span>按资料下载事件计分</span><span>启用</span></div>
+              <div class="table-row"><span>提交表单</span><span>+20</span><span>有效留资后计分</span><span>启用</span></div>
+            </div>
+          </section>
+          <section class="work-area">
+            <div class="section-head"><div><h3>时间衰减规则</h3><span class="module-scope">避免历史行为持续放大当前意向。</span></div><button class="text-button">编辑</button></div>
+            <div class="decay-list">
+              <div><span>7 天内行为</span><b>100%</b></div>
+              <div><span>8-30 天行为</span><b>70%</b></div>
+              <div><span>31-90 天行为</span><b>40%</b></div>
+              <div><span>90 天以上行为</span><b>20%</b></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="settingsWeights">
+        <div class="weight-config-titlebar">
+          <div><span class="eyebrow">系统设置</span><h3>用户行为权重配置</h3><p>管理客户意向分的行为基础分、计分上限与时间衰减规则。</p></div>
+          <div class="button-row"><span class="config-version-chip">V1.0 当前生效</span><button class="ghost-button" data-jump="settingsVersions">版本记录</button><button class="ghost-button" id="saveWeightDraftButton">保存草稿</button><button class="primary-button warning-button" id="openPublishWeightButton">发布新版本</button></div>
+        </div>
+
+        <div class="config-warning"><strong>发布影响</strong><span>发布后生成不可变版本快照，并异步重算近 180 天客户意向分。重算期间沿用上一生效版本；历史版本保留，可发起回滚。</span></div>
+
+        <section class="work-area weight-base-config">
+          <div class="section-head"><div><h3>基础配置</h3><span class="module-scope">一期统一采用规则加分制，不启用行为价值/旅程/转化三段加权公式。</span></div></div>
+          <div class="weight-base-grid">
+            <label><span>评分模式</span><select disabled><option>规则加分制（一期）</option></select></label>
+            <label><span>行为统计窗口</span><div class="suffix-input"><input value="180" /><b>天</b></div></label>
+            <label><span>意向分上限</span><div class="suffix-input"><input value="100" /><b>分</b></div></label>
+            <label><span>当前规则版本</span><input value="V1.0" disabled /></label>
+          </div>
+          <div class="decay-config-row"><span>时间衰减：</span><b>7 天内 100%</b><b>8-30 天 70%</b><b>31-90 天 40%</b><b>91-180 天 20%</b></div>
+        </section>
+
+        <section class="work-area weight-rule-console">
+          <div class="weight-toolbar">
+            <div><h3>行为权重规则</h3><span class="module-scope">同一事件编码 + 内容/场景编码必须唯一。</span></div>
+            <div class="button-row"><input id="weightRuleSearch" placeholder="搜索行为名称、事件或场景" /><select id="weightCategoryFilter"><option value="all">全部分类</option><option value="行为">行为</option><option value="内容">内容</option><option value="活动">活动</option></select><button class="primary-button" id="addWeightRuleButton">新增规则</button></div>
+          </div>
+          <div class="table final-weight-table" id="weightRuleTable">
+            <div class="table-row table-head"><span>分类</span><span>行为名称</span><span>事件/场景编码</span><span>基础分</span><span>计分限制</span><span>状态</span><span>操作</span></div>
+            <div class="table-row weight-rule-row" data-category="行为" data-search="访问官网 落地页 browse page"><span>行为</span><span>访问官网/落地页</span><span class="code-text">browse / page</span><span><b class="weight-score">+2</b></span><span>每会话最多 1 次</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+            <div class="table-row weight-rule-row" data-category="行为" data-search="访问产品页 browse product"><span>行为</span><span>访问产品页</span><span class="code-text">browse / product</span><span><b class="weight-score">+5</b></span><span>每会话最多 1 次</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+            <div class="table-row weight-rule-row" data-category="内容" data-search="阅读客户案例 browse case"><span>内容</span><span>阅读客户案例</span><span class="code-text">browse / case</span><span><b class="weight-score">+10</b></span><span>每日最多 2 次</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+            <div class="table-row weight-rule-row" data-category="内容" data-search="下载白皮书 download whitepaper"><span>内容</span><span>下载白皮书</span><span class="code-text">download / whitepaper</span><span><b class="weight-score">+15</b></span><span>同一资料仅计 1 次</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+            <div class="table-row weight-rule-row" data-category="活动" data-search="活动报名 signup activity"><span>活动</span><span>活动报名</span><span class="code-text">signup / activity</span><span><b class="weight-score">+15</b></span><span>同一活动仅计 1 次</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+            <div class="table-row weight-rule-row" data-category="活动" data-search="活动实际签到 signin activity"><span>活动</span><span>活动实际签到</span><span class="code-text">signin / activity</span><span><b class="weight-score">+25</b></span><span>签到成功后计分</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+            <div class="table-row weight-rule-row" data-category="行为" data-search="提交表单 submitForm form"><span>行为</span><span>提交表单</span><span class="code-text">submitForm / form</span><span><b class="weight-score">+20</b></span><span>有效留资后计分</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
+          </div>
+          <div class="weight-rule-note">活动报名是活动参与行为；仅在提交有效联系方式时，另记为“活动报名”转化入口，不额外叠加转化分。</div>
+        </section>
+      </section>
+
+      <section class="page" id="settingsPermissions">
+        <section class="work-area settings-subpage">
+          <div class="section-head"><div><span class="eyebrow">系统设置</span><h3>权限</h3><span class="module-scope">按角色控制客户数据查看范围、规则配置和 CRM 同步操作。</span></div><button class="primary-button">新增角色</button></div>
+          <div class="table weight-table permissions-table">
+            <div class="table-row table-head"><span>角色</span><span>客户经营</span><span>用户中心</span><span>系统设置</span></div>
+            <div class="table-row"><span>市场运营</span><span>看板、分层、动作中心：可操作</span><span>用户与分群：可编辑</span><span>仅查看</span></div>
+            <div class="table-row"><span>销售运营</span><span>看板、分层、动作中心：可查看</span><span>用户画像：可查看</span><span>不可访问</span></div>
+            <div class="table-row"><span>系统管理员</span><span>全部可查看</span><span>全部可管理</span><span>规则、权限、版本：可编辑</span></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="settingsVersions">
+        <section class="work-area settings-subpage">
+          <div class="section-head"><div><span class="eyebrow">系统设置</span><h3>规则版本</h3><span class="module-scope">记录评分规则的发布、启停和回滚，保障历史经营结果可追溯。</span></div><button class="ghost-button">导出记录</button></div>
+          <div class="table weight-table version-table">
+            <div class="table-row table-head"><span>版本</span><span>状态</span><span>生效时间</span><span>变更说明</span></div>
+            <div class="table-row"><span>V1.0</span><span>当前生效</span><span>2026-06-01 00:00</span><span>一期初始规则：规则加分制、时间衰减与企业加成</span></div>
+            <div class="table-row"><span>草稿 V1.1</span><span>待发布</span><span>-</span><span>调整活动后访问产品页的行为权重</span></div>
+            <div class="table-row"><span>V0.9</span><span>历史版本</span><span>2026-05-10 00:00</span><span><button class="text-button">查看配置</button><button class="text-button">回滚到此版本</button></span></div>
+          </div>
+        </section>
+      </section>
+
+      <div class="config-modal-backdrop" id="weightRuleModal" aria-hidden="true">
+        <div class="config-modal">
+          <div class="config-modal-head"><h3 id="weightRuleModalTitle">新增行为权重规则</h3><button class="icon-button close-config-modal" aria-label="关闭">×</button></div>
+          <div class="config-modal-grid">
+            <label><span>分类</span><select id="weightRuleCategoryInput"><option>行为</option><option>内容</option><option>活动</option></select></label>
+            <label><span>行为名称</span><input id="weightRuleNameInput" placeholder="如：访问价格页" /></label>
+            <label><span>事件类型</span><select id="weightRuleEventInput"><option>browse</option><option>download</option><option>signup</option><option>signin</option><option>watchlive</option><option>submitForm</option></select></label>
+            <label><span>内容/场景编码</span><input id="weightRuleSceneInput" placeholder="如：price 或 activity" /></label>
+            <label><span>基础分</span><input id="weightRuleScoreInput" type="number" value="5" min="0" max="100" /></label>
+            <label><span>单日计分上限</span><input id="weightRuleLimitInput" type="number" value="1" min="1" /></label>
+          </div>
+          <div class="config-modal-foot"><button class="ghost-button close-config-modal">取消</button><button class="primary-button" id="saveWeightRuleButton">保存规则</button></div>
+        </div>
+      </div>
+
+      <div class="config-modal-backdrop" id="publishWeightModal" aria-hidden="true">
+        <div class="config-modal publish-config-modal">
+          <div class="config-modal-head"><h3>发布行为权重新版本</h3><button class="icon-button close-publish-modal" aria-label="关闭">×</button></div>
+          <div class="publish-impact-box"><strong>影响范围</strong><p>生成 V1.1 版本快照，并提交近 180 天客户意向分异步重算任务。任务完成前继续使用 V1.0；失败时不切换版本。</p></div>
+          <label class="publish-confirm-check"><input type="checkbox" id="publishWeightAck" />我已核对分值、时间衰减、重复计分限制及影响范围</label>
+          <div class="config-modal-foot"><button class="ghost-button close-publish-modal">取消</button><button class="primary-button" id="confirmPublishWeightButton" disabled>确认发布</button></div>
+        </div>
+      </div>
+
+      <section class="page" id="account">
+        <div class="account-hero">
+          <div>
+            <span class="eyebrow">企业账户</span>
+            <h3>西游记互联网科技公司</h3>
+            <p>互联网/软件服务 · 中型企业 · CRM 已建档 · 所属销售：周一鸣</p>
+          </div>
+          <div class="account-score">
+            <span>企业意向分</span>
+            <strong>91</strong>
+          </div>
+        </div>
+
+        <section class="work-area company-profile">
+          <div class="section-head">
+            <div>
+              <h3>企业基础画像</h3>
+              <span class="module-scope">用于判断客户体量、经营价值、复购与增购可能性</span>
+            </div>
+            <button class="ghost-button">导出数据</button>
+          </div>
+          <div class="profile-grid">
+            <article><span>企业规模</span><strong>中型企业</strong></article>
+            <article><span>人员规模</span><strong>500-1000人</strong></article>
+            <article><span>注册资本</span><strong>5000万</strong></article>
+            <article><span>成立时间</span><strong>2015年</strong></article>
+            <article><span>行业</span><strong>互联网/软件服务</strong></article>
+            <article><span>营业收入</span><strong>2.5亿</strong></article>
+            <article><span>在用产品</span><strong>NCCloud</strong></article>
+          </div>
+        </section>
+
+        <div class="account-grid lower">
+          <section class="work-area">
+            <div class="section-head"><h3>互动分析</h3></div>
+            <div class="profile-metrics">
+              <article><span>用户人数</span><strong>2,345</strong></article>
+              <article><span>参与活动人数</span><strong>1,234</strong></article>
+              <article><span>参加调研次数</span><strong>56</strong></article>
+            </div>
+          </section>
+          <section class="work-area">
+            <div class="section-head"><h3>签约频率分析</h3></div>
+            <div class="contract-table">
+              <div><span>经营方式</span><b class="source-tag ai">SIP续约</b></div>
+              <div><span>最近签约</span><strong>2023-12-15</strong></div>
+              <div><span>累计签约</span><strong>8次</strong></div>
+              <div><span>转化周期</span><strong class="warn-text">47天</strong></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="work-area product-status">
+          <div class="section-head"><h3>产品使用状态</h3></div>
+          <div class="product-card">
+            <div>
+              <strong>NC-NCCloud</strong>
+              <span>激活时间：2023-12-01</span>
+            </div>
+            <b class="source-tag ai">使用中</b>
+          </div>
+        </section>
+
+        <section class="work-area purchase-record">
+          <div class="section-head"><h3>购买记录</h3></div>
+          <div class="table purchase-table">
+            <div class="table-row table-head">
+              <span>产品名称</span><span>购买日期</span><span>状态</span>
+            </div>
+            <div class="table-row">
+              <span>企业绩效分析平台 · 专业版</span><span>2023-12-15</span><span>已签约</span>
+            </div>
+            <div class="table-row">
+              <span>智能决策系统 · 年度服务</span><span>2023-10-22</span><span>已签约</span>
+            </div>
+            <div class="table-row">
+              <span>数据可视化套件</span><span>2023-08-05</span><span>已签约</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="work-area account-user-profile">
+          <div class="section-head">
+            <div>
+              <h3>企业下用户级画像</h3>
+              <span class="module-scope">企业意向分聚合有效联系人意向分、关键角色、兴趣和近期高价值行为；内部员工不参与。</span>
+            </div>
+            <button class="ghost-button">查看全部联系人画像</button>
+          </div>
+          <div class="table account-user-table">
+            <div class="table-row table-head">
+              <span>联系人</span>
+              <span>身份</span>
+              <span>职位/角色</span>
+              <span>意向分层</span>
+              <span>最近活跃</span>
+              <span>近期行为</span>
+              <span>兴趣标签</span>
+              <span>经营处理</span>
+            </div>
+            <div class="table-row">
+              <span>张三</span>
+              <span><b class="source-tag ai">客户</b></span>
+              <span>采购负责人 · 关键角色</span>
+              <span>94 · 高意向</span>
+              <span>2 天前</span>
+              <span>下载白皮书</span>
+              <span class="tag-cloud"><b>财务</b><b>供应链云</b></span>
+              <span>纳入企业评分</span>
+            </div>
+            <div class="table-row">
+              <span>李四</span>
+              <span><b class="source-tag ai">客户</b></span>
+              <span>信息化经理 · 关键角色</span>
+              <span>82 · 高意向</span>
+              <span>1 天前</span>
+              <span>访问方案页 3 次</span>
+              <span class="tag-cloud"><b>数字营销</b><b>YonSuite</b></span>
+              <span>优先销售提醒</span>
+            </div>
+            <div class="table-row">
+              <span>王五</span>
+              <span><b class="source-tag">内部员工</b></span>
+              <span>BIP 数智技术专家</span>
+              <span>--</span>
+              <span>0 天前</span>
+              <span>内部内容浏览</span>
+              <span class="tag-cloud"><b>数字营销</b><b>财务</b></span>
+              <span>排除经营推荐</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="account-grid">
+          <section class="work-area">
+            <div class="section-head">
+              <div>
+                <h3>企业意向变化</h3>
+                <span class="module-scope">一期口径：当前分 + 近7/30天变化 + 升温状态</span>
+              </div>
+            </div>
+            <div class="intent-change-grid">
+              <article>
+                <span>当前意向分</span>
+                <strong>91</strong>
+                <em>高意向企业</em>
+              </article>
+              <article>
+                <span>近7天变化</span>
+                <strong>+18</strong>
+                <em>持续升温</em>
+              </article>
+              <article>
+                <span>近30天变化</span>
+                <strong>+36</strong>
+                <em>从培育进入高意向</em>
+              </article>
+            </div>
+            <div class="change-reasons">
+              <strong>近期升温原因</strong>
+              <span>3 名联系人活跃</span>
+              <span>解决方案页访问 5 次</span>
+              <span>下载资料 1 次</span>
+              <span>历史签约客户重新活跃</span>
+            </div>
+          </section>
+          <section class="work-area">
+            <div class="section-head"><h3>AI 判断</h3></div>
+            <div class="ai-judgement">
+              <strong>该企业近期采购意向上升，建议销售介入。</strong>
+              <p>原因：同企业 3 人活跃，出现解决方案页访问行为，并有决策人下载白皮书。</p>
+              <div class="button-row">
+                <button class="primary-button">标记企业机会</button>
+                <button class="ghost-button">发送推荐内容</button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="account-grid lower">
+          <section class="work-area">
+            <div class="section-head"><h3>活跃联系人</h3></div>
+            <div class="contact-list">
+              <div><b>张三</b><span>采购负责人 · 94 分 · 关键角色</span></div>
+              <div><b>李四</b><span>信息化经理 · 76 分 · 访问产品方案页</span></div>
+              <div><b>王五</b><span>生产总监 · 71 分 · 报名线上活动</span></div>
+            </div>
+          </section>
+          <section class="work-area">
+            <div class="section-head"><h3>关键行为时间线</h3></div>
+            <ol class="timeline">
+              <li><time>5月21日</time><span>张三下载制造业白皮书</span></li>
+              <li><time>5月20日</time><span>李四访问产品方案页</span></li>
+              <li><time>5月18日</time><span>王五报名线上活动</span></li>
+            </ol>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="actions">
+        <div class="kanban-summary">
+          <article><span>待处理</span><strong>214</strong></article>
+          <article><span>已采纳</span><strong>126</strong></article>
+          <article><span>执行中</span><strong>89</strong></article>
+          <article><span>目标达成</span><strong>57</strong></article>
+          <article><span>已忽略</span><strong>31</strong></article>
+        </div>
+        <section class="work-area action-principle">
+          <div class="principle-mark">NBA</div>
+          <div>
+            <span class="eyebrow">NEXT BEST ACTION</span>
+            <h3>高意向决定优先级，触达资格与销售状态决定下一步</h3>
+            <p>系统已检查身份、有效联系方式、渠道授权、CRM 状态、销售保护和频控；高意向客户不默认群发内容。</p>
+          </div>
+          <div class="principle-rules"><span>高意向：优先判断销售交接</span><span>中意向：优先内容培育</span><span>匿名/无授权：广告或站内承接</span></div>
+        </section>
+        <section class="work-area batch-precheck" id="batchPrecheck" aria-hidden="true">
+          <div class="section-head">
+            <div><h3>批量处理预检</h3><span class="module-scope">2,000 人已按动作、渠道、语言和销售状态拆组，不会作为同一批消息发送。</span></div>
+            <button class="icon-button" id="closeBatchPrecheck" aria-label="关闭">×</button>
+          </div>
+          <div class="batch-group-grid">
+            <article class="crm"><span>同步 CRM</span><strong>420</strong><small>有效联系方式 · 未进 CRM</small></article>
+            <article class="sales"><span>提醒销售</span><strong>180</strong><small>销售保护中 · 不营销触达</small></article>
+            <article class="nurture"><span>Email 内容培育</span><strong>930</strong><small>3 个内容版本 · 2 种语言</small></article>
+            <article class="ads"><span>广告再营销</span><strong>270</strong><small>匿名访客 · 无法直接发送</small></article>
+            <article class="exclude"><span>排除</span><strong>200</strong><small>退订、频控、员工或无效身份</small></article>
+          </div>
+        </section>
+        <section class="work-area">
+          <div class="section-head">
+            <div><h3>下一步动作队列</h3><span class="module-scope">建议会随客户状态变化而失效或重新计算</span></div>
+            <div class="action-toolbar"><div class="action-filter" aria-label="动作状态筛选"><button class="active" data-action-filter="all">全部</button><button data-action-filter="待处理">待处理</button><button data-action-filter="待确认">待确认</button><button data-action-filter="已采纳">已采纳</button><button data-action-filter="已执行">已执行</button></div><button class="ghost-button" id="openBatchPrecheck">批量处理预检</button></div>
+          </div>
+          <div class="table action-table">
+            <div class="table-row table-head">
+              <span>客户/企业</span><span>优先级</span><span>推荐原因</span><span>首选动作</span><span>可用渠道</span><span>销售保护</span><span>负责人</span><span>状态/时效</span><span>操作</span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="待处理">
+              <span><b>张三</b><small>XX 制造集团 · 94 分</small></span><span><b class="priority p0">P0</b></span><span>下载白皮书并提交有效联系方式</span><span><b class="action-chip crm">同步 CRM</b></span><span>CRM</span><span>无负责人</span><span>王洁</span><span><b>待处理</b><small>剩余 2 小时</small></span><span><button class="mini-button next-action-button" data-action-kind="crm" data-action-target="张三 / XX 制造集团" data-action-score="94" data-action-reason="下载制造业白皮书并提交有效联系方式，尚未进入 CRM">处理建议</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="待处理">
+              <span><b>XX 制造集团</b><small>3 名联系人升温 · 91 分</small></span><span><b class="priority p0">P0</b></span><span>关键角色同时访问方案与价格页</span><span><b class="action-chip sales">提醒销售</b></span><span>CRM 通知</span><span><b class="protected">保护中</b></span><span>周一鸣</span><span><b>待处理</b><small>剩余 5 小时</small></span><span><button class="mini-button next-action-button" data-action-kind="sales" data-action-target="XX 制造集团" data-action-score="91" data-action-reason="企业内 3 名联系人活跃，决策人与技术负责人同时访问方案页">处理建议</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="待确认">
+              <span><b>王宇</b><small>远航自动化 · 67 分</small></span><span><b class="priority p1">P1</b></span><span>连续阅读制造业案例，尚无强转化信号</span><span><b class="action-chip nurture">内容培育</b></span><span>Email</span><span>未进入销售</span><span>林浩</span><span><b>待确认</b><small>明日 18:00 前</small></span><span><button class="mini-button next-action-button" data-action-kind="nurture" data-action-target="王宇 / 远航自动化" data-action-score="67" data-action-reason="连续阅读制造业客户案例，适合推动下一层决策内容">处理建议</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="已采纳">
+              <span><b>高意向匿名访客</b><small>动态人群 · 1,286 人</small></span><span><b class="priority p1">P1</b></span><span>无联系方式，不具备直接触达资格</span><span><b class="action-chip ads">广告再营销</b></span><span>广告/站内</span><span>不适用</span><span>增长运营</span><span><b>已采纳</b><small>今日 14:20</small></span><span><button class="mini-button next-action-button" data-action-kind="ads" data-action-target="高意向匿名访客 / 1,286 人" data-action-score="88" data-action-reason="没有有效联系方式和直达渠道授权，只能通过广告或站内引导留资">查看设置</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="已执行">
+              <span><b>活动未签到人群</b><small>动态人群 · 930 人</small></span><span><b class="priority p2">P2</b></span><span>已报名未签到，需要承接活动兴趣</span><span><b class="action-chip nurture">发送活动回放</b></span><span>Email</span><span>未进入销售</span><span>活动运营</span><span><b>已执行</b><small>观察中 · 3 天</small></span><span><button class="mini-ghost next-action-button" data-action-kind="nurture" data-action-target="活动未签到人群 / 930 人" data-action-score="58" data-action-reason="已报名但未签到，建议发送活动回放并观察再次活跃">查看结果</button></span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="segment">
+        <section class="work-area group-console">
+          <div class="group-toolbar">
+            <div>
+              <h3>用户分组</h3>
+              <span class="module-scope">AI 创建只是新的创建方式，最终仍保存为现有用户分组。</span>
+            </div>
+            <div class="button-row">
+              <button class="ghost-button" title="沿用现有手动建组流程">手动创建分组</button>
+              <button class="primary-button" data-jump="segmentCreate" data-create-mode="ai">AI 创建分组</button>
+            </div>
+          </div>
+          <div class="group-search-row">
+            <input placeholder="请输入分组名" />
+            <button class="ghost-button">搜索</button>
+            <select>
+              <option>全部类型</option>
+              <option>固定组</option>
+              <option>条件组</option>
+            </select>
+            <select>
+              <option>全部创建方式</option>
+              <option>手动创建</option>
+              <option>AI 生成</option>
+            </select>
+          </div>
+          <div class="group-summary">
+            <article><span>全部分组</span><strong>334</strong></article>
+            <article><span>条件组</span><strong>86</strong></article>
+            <article><span>AI 生成</span><strong>12</strong></article>
+            <article><span>每日更新</span><strong>41</strong></article>
+          </div>
+          <div class="table group-table">
+            <div class="table-row table-head">
+              <span>分组名称</span>
+              <span>人数</span>
+              <span>类型</span>
+              <span>创建方式</span>
+              <span>更新方式</span>
+              <span>简介</span>
+              <span>创建时间</span>
+              <span>操作</span>
+            </div>
+            <div class="table-row">
+              <span>高意向未同步 CRM 客户</span>
+              <span class="hot-number">486</span>
+              <span>条件组</span>
+              <span><b class="source-tag ai">AI 生成</b></span>
+              <span>每日自动</span>
+              <span>意向分大于 80，且 CRM 状态未同步</span>
+              <span>2026-05-22</span>
+              <span><button class="text-button">编辑</button><button class="text-button">导出</button></span>
+            </div>
+            <div class="table-row">
+              <span>访问方案页未留资客户</span>
+              <span class="hot-number">944</span>
+              <span>条件组</span>
+              <span><b class="source-tag ai">AI 生成</b></span>
+              <span>每日自动</span>
+              <span>近 7 天访问方案页，但未产生有效留资</span>
+              <span>2026-05-22</span>
+              <span><button class="text-button">编辑</button><button class="text-button">导出</button></span>
+            </div>
+            <div class="table-row">
+              <span>0318朱翔孟伟</span>
+              <span class="hot-number">2</span>
+              <span>固定组</span>
+              <span><b class="source-tag">手动创建</b></span>
+              <span>不自动更新</span>
+              <span>人工导入名单</span>
+              <span>2026-03-18</span>
+              <span><button class="text-button">编辑</button><button class="text-button">删除</button><button class="text-button">导出</button></span>
+            </div>
+            <div class="table-row">
+              <span>活动报名未签到客户</span>
+              <span class="hot-number">188</span>
+              <span>条件组</span>
+              <span><b class="source-tag">手动创建</b></span>
+              <span>每日自动</span>
+              <span>活动报名成功但未签到，用于活动回访</span>
+              <span>2026-05-20</span>
+              <span><button class="text-button">编辑</button><button class="text-button">导出</button></span>
+            </div>
+            <div class="table-row">
+              <span>0303顾问准备答辩材料的通知内容</span>
+              <span class="hot-number">55</span>
+              <span>固定组</span>
+              <span><b class="source-tag">手动创建</b></span>
+              <span>不自动更新</span>
+              <span>历史固定名单</span>
+              <span>2026-03-03</span>
+              <span><button class="text-button">编辑</button><button class="text-button">删除</button><button class="text-button">导出</button></span>
+            </div>
+          </div>
+          <div class="pagination-row">
+            <span>共 334 条</span>
+            <select><option>10条/页</option><option>20条/页</option></select>
+            <button class="ghost-button">上一页</button>
+            <button class="primary-button">1</button>
+            <button class="ghost-button">2</button>
+            <button class="ghost-button">3</button>
+            <button class="ghost-button">下一页</button>
+          </div>
+        </section>
+
+        <section class="work-area ai-template-panel">
+          <div class="section-head">
+            <div>
+              <h3>AI 分组模板</h3>
+              <span class="module-scope">点击模板后进入新建分组，AI 会先解析为条件组规则。</span>
+            </div>
+          </div>
+          <div class="template-grid">
+            <button data-jump="segmentCreate" data-ai-template="high">高意向未同步 CRM 客户</button>
+            <button data-jump="segmentCreate" data-ai-template="page">访问方案页未留资客户</button>
+            <button data-jump="segmentCreate" data-ai-template="noshow">报名未签到客户</button>
+            <button data-jump="segmentCreate" data-ai-template="silent">活动后升温客户</button>
+            <button data-jump="segmentCreate" data-ai-template="multi">多人活跃企业</button>
+            <button data-jump="segmentCreate" data-ai-template="dormant">沉默高意向客户</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="segmentCreate">
+        <div class="ai-create-title-row">
+          <div>
+            <span class="eyebrow">用户中心 · 用户分组</span>
+            <h3>AI 创建分组</h3>
+            <p>先确认人群与 CRM 经营状态，再生成可编辑的分群规则和后续动作。</p>
+          </div>
+          <div class="create-steps"><span class="done"><b>1</b>定义人群</span><span class="done"><b>2</b>确认状态</span><span><b>3</b>配置动作</span><span><b>4</b>创建发布</span></div>
+        </div>
+
+        <div class="ai-create-top-grid">
+          <section class="work-area ai-prompt-panel">
+            <div class="section-head"><div><h3>从模板开始，或描述你想找的人</h3><span class="module-scope">AI 只生成可编辑规则</span></div></div>
+            <textarea id="segmentInput">帮我找出最近 30 天活跃下降，但曾经参加过活动的制造业客户</textarea>
+            <div class="button-row"><button class="primary-button" id="parseButton">AI 解析条件</button><button class="ghost-button" id="clearSegmentButton">清空</button></div>
+            <div class="ai-template-list">
+              <button class="active" data-ai-template="silent">活动后沉默客户召回<small>先内容召回，再转销售</small></button>
+              <button data-ai-template="high">高意向未进入 CRM<small>优先创建线索</small></button>
+              <button data-ai-template="page">方案页高频访问未留资<small>进入内容培育</small></button>
+              <button data-ai-template="noshow">活动报名未签到<small>活动回访</small></button>
+            </div>
+          </section>
+          <section class="work-area ai-result-panel">
+            <div class="section-head"><div><h3>AI 解析与待确认项</h3><div class="rule-chips" id="ruleChips"><span>行业 = 制造业</span><span>近 30 天活跃下降</span><span>历史参加活动</span><span>意向分 &gt; 40</span></div></div><span class="matched-count" id="segmentTopEstimate">预估 3,428 人</span></div>
+            <div class="ai-statement" id="segmentStatement">识别“活动后沉默的制造业客户”，建议先通过内容或活动召回，再将重新升温的高意向客户交由销售跟进。</div>
+            <div class="ai-question"><b>待确认</b><span>“参加活动”包含报名未签到吗？</span><button data-activity-answer="报名或签到">报名或签到</button><button data-activity-answer="仅签到">仅签到</button></div>
+          </section>
+        </div>
+
+        <div class="ai-create-main-grid">
+          <div>
+            <section class="work-area ai-definition-card">
+              <div class="section-head"><div><h3>分组定义</h3><span class="module-scope">AI 已预填，可按实际运营策略调整。</span></div><span class="status-pill">AI 已预填</span></div>
+              <div class="form-grid">
+                <label><span>分组名称</span><input id="segmentName" value="制造业活动沉默客户召回" /></label>
+                <label><span>更新频率</span><select><option>每天自动更新</option><option>每周自动更新</option><option>仅本次计算</option></select></label>
+                <label><span>负责人</span><select><option>市场运营 - 林浩</option><option>市场运营 - 王洁</option></select></label>
+                <label><span>CRM 匹配规则</span><select><option>邮箱 + 手机 + 企业名称（推荐）</option><option>邮箱 + 手机</option><option>仅 CRM 外部 ID</option></select></label>
+              </div>
+            </section>
+
+            <section class="work-area ai-rules-card">
+              <div class="section-head"><div><h3>圈选条件</h3><span class="module-scope">所有 AI 解析条件均可编辑；默认排除避免重复触达。</span></div><button class="ghost-button">添加条件</button></div>
+              <div class="condition-builder">
+                <div class="condition-group"><div class="condition-head"><strong>客户属性</strong><span>满足全部条件</span></div><div class="condition-row"><select><option>行业</option></select><select><option>等于</option></select><select><option>制造业</option></select><button class="icon-button" aria-label="删除条件">×</button></div><div class="condition-row"><select><option>意向分</option></select><select><option>大于</option></select><input value="40" /><button class="icon-button" aria-label="删除条件">×</button></div></div>
+                <div class="condition-group"><div class="condition-head"><strong>行为条件</strong><span>满足全部条件</span></div><div class="condition-row"><select><option>最近活跃趋势</option></select><select><option>等于</option></select><select><option>最近 30 天下降</option></select><button class="icon-button" aria-label="删除条件">×</button></div><div class="condition-row"><select><option>历史活动行为</option></select><select><option>包含</option></select><select id="activityValue"><option>报名或签到</option><option>仅签到</option></select><button class="icon-button" aria-label="删除条件">×</button></div></div>
+                <div class="condition-group"><div class="condition-head"><strong>默认排除条件</strong><span>避免重复触达</span></div><div class="condition-row"><select><option>CRM 状态</option></select><select><option>不属于</option></select><select><option>明确拒绝、黑名单</option></select><button class="icon-button" aria-label="删除条件">×</button></div></div>
+              </div>
+            </section>
+
+            <section class="work-area ai-crm-card">
+              <div class="section-head"><div><h3>CRM 经营状态与样本名单</h3><span class="module-scope">匹配既有 Lead、Contact 与 Account 后按状态分流，不重复创建线索。</span></div><button class="ghost-button" id="refreshSegmentButton">刷新预估</button></div>
+              <div class="crm-status-tabs"><button class="active" data-crm-status="all"><small>全部客户</small><b>3,428</b></button><button data-crm-status="new"><small>未进入 CRM</small><b>2,126</b></button><button data-crm-status="working"><small>销售跟进中</small><b>480</b></button><button data-crm-status="invalid"><small>暂时无效</small><b>240</b></button><button data-crm-status="converted"><small>已转化</small><b>273</b></button></div>
+              <div class="table crm-sample-table" id="crmSampleTable">
+                <div class="table-row table-head"><span>客户 / 企业</span><span>意向分</span><span>最近行为</span><span>CRM 经营状态</span><span>下一步建议</span></div>
+                <div class="table-row"><span>李敏 / 华东装备</span><span><b class="score mid">61</b></span><span>阅读案例后活跃下降</span><span>未进入 CRM</span><span>内容召回后创建线索</span></div>
+                <div class="table-row"><span>张三 / XX 制造集团</span><span><b class="score high">94</b></span><span>下载白皮书后 12 天未活跃</span><span>销售跟进中</span><span>更新行为并提醒销售</span></div>
+                <div class="table-row"><span>王宇 / 远航自动化</span><span><b class="score mid">67</b></span><span>活动报名未签到</span><span>暂时无效：时机未到</span><span>召回后进入再激活复核</span></div>
+              </div>
+            </section>
+
+            <section class="work-area action-config ai-action-config">
+              <div class="section-head"><div><h3>创建后动作</h3><span class="module-scope">按 CRM 状态自动分流，外部触达均先生成草稿或待确认名单。</span></div><span class="matched-count">建议：先内容召回，再转销售</span></div>
+              <div class="ai-action-grid">
+                <label class="selected"><input type="checkbox" checked /><span><strong>内容召回包</strong><small>为沉默客户生成内容或活动召回草稿，市场确认后发布。</small></span></label>
+                <label class="selected"><input type="checkbox" checked /><span><strong>创建新线索</strong><small>仅未进入 CRM 且意向分达到 60 的客户进入待创建名单。</small></span></label>
+                <label class="selected"><input type="checkbox" checked /><span><strong>更新既有线索</strong><small>回写最新行为和意向变化，达到阈值后提醒销售。</small></span></label>
+                <label><input type="checkbox" /><span><strong>再激活待确认</strong><small>“时机未到”等暂时无效客户达到门槛后进入复核。</small></span></label>
+                <label class="selected"><input type="checkbox" checked /><span><strong>更新已转化客户动态</strong><small>更新 Contact/Account 行为摘要，不重复新建 Lead。</small></span></label>
+                <label class="selected"><input type="checkbox" checked /><span><strong>建立效果追踪</strong><small>追踪触达、再活跃、线索创建、销售跟进与转化。</small></span></label>
+              </div>
+              <div class="button-row action-footer"><span class="publish-guidance">发布后按实际计算人数执行，CRM 写入遵循去重和权限规则。</span><button class="ghost-button" data-jump="segment">返回用户分组</button><button class="ghost-button">保存草稿</button><button class="primary-button" id="publishSegmentButton">创建并发布</button><span class="success-note" id="publishNote">已创建分组：制造业活动沉默客户召回</span></div>
+            </section>
+          </div>
+
+          <aside class="work-area ai-segment-summary">
+            <span class="eyebrow">预计人群</span><strong id="segmentMainEstimate">3,428</strong><p>基于当前规则的预估人数。</p>
+            <div class="mini-breakdown"><div><span>高意向客户</span><b>486</b></div><div><span>近 7 天仍有活跃</span><b>21%</b></div></div>
+            <div class="crm-distribution"><h3>CRM 状态分布</h3><div><span>未进入 CRM</span><b>62%</b><i style="width:62%"></i></div><div><span>销售跟进中</span><b>14%</b><i style="width:14%"></i></div><div><span>培育中</span><b>9%</b><i style="width:9%"></i></div><div><span>暂时无效</span><b>7%</b><i style="width:7%"></i></div><div><span>已转化</span><b>8%</b><i style="width:8%"></i></div></div>
+            <div class="crm-legend">“暂时无效”默认不重新指派销售；需满足再激活门槛后进入复核。</div>
+          </aside>
+        </div>
+      </section>
+
+      <div class="action-drawer-backdrop" id="actionDrawer" aria-hidden="true">
+        <aside class="action-drawer" role="dialog" aria-modal="true" aria-labelledby="actionDrawerTitle">
+          <div class="action-drawer-head">
+            <div><span class="eyebrow" id="actionDrawerCode">NBA · P0</span><h3 id="actionDrawerTitle">处理下一步建议</h3><p id="actionDrawerTarget">张三 / XX 制造集团 · 意向分 94</p></div>
+            <button class="icon-button" id="closeActionDrawer" aria-label="关闭">×</button>
+          </div>
+          <div class="action-stepper">
+            <button class="active" data-action-step="1"><span>1</span>建议依据</button>
+            <button data-action-step="2"><span>2</span><b id="actionStepTwoLabel">交接设置</b></button>
+            <button data-action-step="3"><span>3</span>预览确认</button>
+          </div>
+          <div class="action-drawer-body">
+            <section class="action-step-panel active" data-action-panel="1">
+              <article class="recommendation-card">
+                <span class="eyebrow">为什么现在处理</span>
+                <h3 id="actionReason">下载制造业白皮书并提交有效联系方式，尚未进入 CRM</h3>
+                <p id="actionJudgement">该客户已具备明确转化信号。建议优先完成销售交接，不继续常规群发内容。</p>
+                <div class="action-evidence-grid"><div><span>当前意向</span><strong id="actionScore">94 · 高意向</strong></div><div><span>最近行为</span><strong id="actionBehavior">下载白皮书并访问方案页</strong></div><div><span>期望结果</span><strong id="actionGoal">CRM 返回线索 ID</strong></div><div><span>建议有效期</span><strong>剩余 2 小时</strong></div></div>
+              </article>
+              <article class="action-check-card">
+                <div class="drawer-section-title"><h3>执行前判断</h3><span>4 项已检查</span></div>
+                <div class="action-check ok"><i>✓</i><div><strong>身份与联系方式</strong><small>统一客户档案已完成身份合并</small></div><b>通过</b></div>
+                <div class="action-check ok" id="consentCheck"><i>✓</i><div><strong>渠道授权</strong><small>Email 授权有效</small></div><b>通过</b></div>
+                <div class="action-check warning" id="salesProtectionCheck"><i>!</i><div><strong>销售保护</strong><small>交接后暂停营销触达，等待销售反馈</small></div><b>优先交接</b></div>
+                <div class="action-check ok"><i>✓</i><div><strong>频控与静默时间</strong><small>近 7 天触达 1 次，未命中静默期</small></div><b>通过</b></div>
+              </article>
+            </section>
+
+            <section class="action-step-panel" data-action-panel="2">
+              <div class="handoff-mode" data-action-mode="handoff">
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>销售交接设置</h3><span class="safe-chip">营销保护已开启</span></div>
+                  <div class="handoff-form"><label><span>负责人</span><select><option>周一鸣</option><option>销售运营 - 王洁</option></select></label><label><span>反馈时限</span><select><option>24 小时</option><option>48 小时</option></select></label><label class="wide"><span>交接摘要</span><textarea id="handoffSummary">客户近期出现高价值行为，建议优先确认采购时间与决策角色。</textarea></label></div>
+                </article>
+                <article class="drawer-card"><div class="drawer-section-title"><h3>销售可见的行为证据</h3><span>最近 7 天</span></div><ol class="handoff-timeline"><li><b>下载制造业白皮书</b><span>今天 14:26</span></li><li><b>访问产品方案页 3 次</b><span>今天 11:08</span></li><li><b>提交企业邮箱</b><span>7 月 21 日</span></li></ol></article>
+              </div>
+
+              <div class="nurture-mode" data-action-mode="nurture">
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>执行对象与渠道</h3><span>930 人可触达 · 200 人已排除</span></div>
+                  <div class="channel-choice"><button class="selected" data-channel="Email"><b>邮件</b><span>推荐 · 最近互动渠道</span></button><button data-channel="企微"><b>企微</b><span>可用 · 需销售确认</span></button><button disabled><b>短信</b><span>内容过长，不建议</span></button></div>
+                </article>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>推荐内容资产</h3><span>按行业、角色与最近行为匹配</span></div>
+                  <div class="content-choice"><button class="selected" data-content="制造业数字化案例精读"><i>案例</i><span><b>制造业数字化案例精读</b><small>匹配度 96% · 已审核</small></span><em>✓</em></button><button data-content="制造业解决方案选型指南"><i>指南</i><span><b>制造业解决方案选型指南</b><small>匹配度 91% · 已审核</small></span><em>+</em></button><button data-content="ROI 测算模板"><i>ROI</i><span><b>ROI 测算模板</b><small>匹配度 84% · 已审核</small></span><em>+</em></button></div>
+                </article>
+                <article class="drawer-card send-config"><div class="drawer-section-title"><h3>发送与结果设置</h3><span>一次动作 + 观察规则</span></div><label><span>发送时间</span><select><option>推荐时间：明日 10:30</option><option>立即发送</option></select></label><label><span>目标事件</span><select><option>访问方案页</option><option>预约咨询</option><option>下载资料</option></select></label><label><span>观察窗口</span><select><option>7 天</option><option>3 天</option><option>14 天</option></select></label></article>
+              </div>
+
+              <div class="ads-mode" data-action-mode="ads">
+                <article class="drawer-card anonymous-warning"><strong>该人群不能直接发送内容</strong><p>1,286 名高意向访客仍是匿名身份，没有有效联系方式或渠道授权。系统建议通过广告受众或站内个性化引导留资。</p></article>
+                <article class="drawer-card"><div class="drawer-section-title"><h3>承接方式</h3><span>不导出个人联系方式</span></div><div class="channel-choice"><button class="selected"><b>广告受众</b><span>同步到现有再营销平台</span></button><button><b>站内引导</b><span>再次访问时展示留资 CTA</span></button></div></article>
+              </div>
+            </section>
+
+            <section class="action-step-panel" data-action-panel="3">
+              <article class="drawer-card preview-card">
+                <div class="drawer-section-title"><h3 id="previewTitle">CRM 交接预览</h3><button class="text-button">测试通知</button></div>
+                <div class="handoff-preview" id="handoffPreview"><div class="preview-avatar">张</div><div><span>发送给：周一鸣</span><h3 id="previewHandoffTitle">张三出现新的高意向行为</h3><p id="previewHandoffCopy">意向分 94。下载白皮书并提交有效联系方式，建议在 24 小时内确认线索有效性。</p><div><b>查看客户档案</b><b>有效线索</b><b>暂无需求</b></div></div></div>
+                <div class="message-preview" id="messagePreview"><div class="message-preview-head">邮件 · 移动端预览</div><div class="message-preview-body"><small>Marketing Cloud</small><h3>一份更适合制造业决策人的案例精读</h3><p>你好，结合你最近关注的制造业内容，我们整理了同类企业从方案评估到上线的关键做法。</p><div class="message-hero"><span>3 分钟精读</span><strong id="previewContentName">制造业数字化案例精读</strong></div><button>查看完整案例</button><small>你收到此邮件是因为已订阅相关内容，可随时退订。</small></div></div>
+              </article>
+              <article class="drawer-card final-checklist"><div><span>执行对象</span><strong id="confirmTarget">张三 / XX 制造集团</strong></div><div><span>执行方式</span><strong id="confirmMode">CRM 交接</strong></div><div><span>成功标准</span><strong id="confirmGoal">CRM 返回线索 ID</strong></div><div><span>后续状态</span><strong id="confirmNextState">待销售查看与反馈</strong></div></article>
+            </section>
+
+            <section class="action-success" id="actionSuccess" aria-hidden="true"><div>✓</div><h3 id="actionSuccessTitle">交接已创建</h3><p id="actionSuccessCopy">系统将等待销售查看并反馈；反馈前不会继续营销触达。</p><strong id="actionSuccessState">下一状态：待销售查看</strong></section>
+          </div>
+          <div class="action-drawer-footer" id="actionDrawerFooter"><button class="ghost-button" id="saveActionDraft">保存草稿</button><span>所有调整均保留审计记录</span><button class="ghost-button" id="previousActionStep">忽略建议</button><button class="primary-button" id="nextActionStep">继续 →</button></div>
+        </aside>
+      </div>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
