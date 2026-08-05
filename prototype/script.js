@@ -1,5 +1,5 @@
 const pageTitles = {
-  dashboard: "AI 经营看板",
+  dashboard: "经营看板",
   layers: "客户意向分层",
   companies: "企业账户",
   account: "企业洞察",
