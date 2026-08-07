@@ -154,10 +154,50 @@ const actionLabels = {
   sales: { title: "提醒销售", goal: "销售提交有效性反馈", next: "待销售查看与反馈", success: "销售提醒已发送" },
   nurture: { title: "内容培育", goal: "7 天内访问方案页", next: "观察客户互动与目标事件", success: "内容动作已进入执行队列" },
   ads: { title: "广告或站内承接", goal: "获得有效留资与渠道授权", next: "等待匿名身份转为可经营客户", success: "受众同步任务已创建" },
+  "account-crm": { title: "同步 CRM", goal: "CRM 返回企业 ID 并写入活跃人员", next: "待销售查看企业动态", success: "企业与活跃人员已同步 CRM" },
+  "account-update": { title: "更新 CRM 动态", goal: "最新人员与行为摘要写入已有企业", next: "待销售查看最新动态", success: "CRM 企业动态已更新" },
+};
+
+const accountCrmData = {
+  "XX 制造集团": {
+    match: "发现可能匹配企业",
+    mode: "关联已有企业并补充人员",
+    count: "3 名有效人员 · 1 名匿名访客仅汇总",
+    people: [
+      ["张三", "企业邮箱已验证", "采购负责人", 94, "下载白皮书"],
+      ["李四", "手机号已验证", "信息化经理", 82, "访问方案页 3 次"],
+      ["赵敏", "企业邮箱已验证", "财务负责人", 71, "查看客户案例"],
+    ],
+    behaviors: [["3 名有效人员持续关注供应链云方案", "今日"], ["产品方案页访问 8 次，较上周增长 60%", "近 7 天"], ["新增 1 次白皮书下载", "昨日"]],
+  },
+  "海川医疗": {
+    match: "已匹配 CRM 企业 · ACC-20418",
+    mode: "更新已有企业动态，不重复建档",
+    count: "2 名有效人员 · 无匿名人员写入",
+    people: [
+      ["陈洁", "企业邮箱已验证", "信息化经理", 78, "访问智能决策方案"],
+      ["林涛", "手机号已验证", "业务负责人", 73, "查看医疗行业案例"],
+    ],
+    behaviors: [["新增 2 名活跃人员关注智能决策系统", "今日"], ["医疗行业案例累计阅读 6 次", "近 7 天"], ["企业意向分上升 7 分", "近 7 天"]],
+  },
+  "远航自动化": {
+    match: "CRM 中未发现同名企业",
+    mode: "新建企业并同步有效人员",
+    count: "2 名有效人员 · 3 名匿名访客仅汇总",
+    people: [
+      ["王宇", "企业邮箱已验证", "设备负责人", 69, "访问自动化方案页"],
+      ["刘晨", "手机号已验证", "生产经理", 64, "报名行业活动"],
+    ],
+    behaviors: [["2 名有效人员近期仍有产品兴趣", "近 7 天"], ["3 名匿名访客访问自动化方案页", "近 7 天"], ["企业意向分下降 4 分，建议销售先判断时机", "今日"]],
+  },
 };
 
 function isHandoffAction() {
-  return currentAction.kind === "crm" || currentAction.kind === "sales";
+  return currentAction.kind === "crm" || currentAction.kind === "sales" || isAccountCrmAction();
+}
+
+function isAccountCrmAction() {
+  return currentAction.kind === "account-crm" || currentAction.kind === "account-update";
 }
 
 function renderActionStep(step) {
@@ -178,14 +218,15 @@ function renderActionStep(step) {
 
 function updateActionPreview() {
   const handoff = isHandoffAction();
+  const accountCrm = isAccountCrmAction();
   document.getElementById("handoffPreview").hidden = !handoff;
   document.getElementById("messagePreview").hidden = handoff || currentAction.kind === "ads";
-  document.getElementById("previewTitle").textContent = handoff ? "销售交接预览" : currentAction.kind === "ads" ? "受众同步确认" : `${selectedActionChannel} 内容预览`;
-  document.getElementById("previewHandoffTitle").textContent = `${currentAction.target.split(" /")[0]} 出现新的高意向行为`;
-  document.getElementById("previewHandoffCopy").textContent = `意向分 ${currentAction.score}。${currentAction.reason}。建议在 24 小时内确认线索有效性。`;
+  document.getElementById("previewTitle").textContent = accountCrm ? "CRM 企业同步预览" : handoff ? "销售交接预览" : currentAction.kind === "ads" ? "受众同步确认" : `${selectedActionChannel} 内容预览`;
+  document.getElementById("previewHandoffTitle").textContent = accountCrm ? `${currentAction.target}及活跃人员将同步至 CRM` : `${currentAction.target.split(" /")[0]} 出现新的高意向行为`;
+  document.getElementById("previewHandoffCopy").textContent = accountCrm ? `企业意向分 ${currentAction.score}。${currentAction.reason}同步后销售可在企业记录中查看人员与行为摘要。` : `意向分 ${currentAction.score}。${currentAction.reason}。建议在 24 小时内确认线索有效性。`;
   document.getElementById("previewContentName").textContent = selectedActionContent;
   document.getElementById("confirmTarget").textContent = currentAction.target;
-  document.getElementById("confirmMode").textContent = handoff ? "CRM / 销售交接" : currentAction.kind === "ads" ? "广告受众或站内承接" : `平台执行 · ${selectedActionChannel}`;
+  document.getElementById("confirmMode").textContent = accountCrm ? accountCrmData[currentAction.target].mode : handoff ? "CRM / 销售交接" : currentAction.kind === "ads" ? "广告受众或站内承接" : `平台执行 · ${selectedActionChannel}`;
   document.getElementById("confirmGoal").textContent = actionLabels[currentAction.kind].goal;
   document.getElementById("confirmNextState").textContent = actionLabels[currentAction.kind].next;
 }
@@ -199,29 +240,43 @@ function openActionDrawer(button) {
   };
   const labels = actionLabels[currentAction.kind];
   const handoff = isHandoffAction();
+  const accountCrm = isAccountCrmAction();
   document.getElementById("actionDrawerTitle").textContent = labels.title;
   document.getElementById("actionDrawerTarget").textContent = `${currentAction.target} · 意向分 ${currentAction.score}`;
   document.getElementById("actionDrawerCode").textContent = `NEXT BEST ACTION · ${currentAction.score >= 80 ? "P0" : currentAction.score >= 50 ? "P1" : "P2"}`;
   document.getElementById("actionReason").textContent = currentAction.reason;
   document.getElementById("actionScore").textContent = `${currentAction.score} · ${currentAction.score >= 80 ? "高意向" : currentAction.score >= 50 ? "中意向" : "低意向"}`;
   document.getElementById("actionGoal").textContent = labels.goal;
-  document.getElementById("actionJudgement").textContent = handoff
+  document.getElementById("actionJudgement").textContent = accountCrm
+    ? "企业账户页不直接向人员发送内容。本次仅将企业画像、有效活跃人员与关键行为同步给销售，辅助判断后续跟进。"
+    : handoff
     ? "该对象已具备明确转化信号。继续常规培育可能与销售动作冲突，建议优先完成交接。"
     : currentAction.kind === "ads"
       ? "意向较高，但缺少有效联系方式或渠道授权，不能直接发送内容。"
       : "当前适合推动一个相邻决策行为，不建议直接使用强销售话术。";
-  document.getElementById("actionBehavior").textContent = currentAction.kind === "nurture" ? "持续阅读案例或活动内容" : currentAction.kind === "ads" ? "匿名访问方案与价格页" : "访问价格页并完成留资";
-  document.getElementById("actionStepTwoLabel").textContent = handoff ? "交接设置" : currentAction.kind === "ads" ? "承接设置" : "内容与渠道";
-  document.querySelectorAll("[data-action-mode]").forEach((mode) => mode.hidden = mode.dataset.actionMode !== (handoff ? "handoff" : currentAction.kind));
+  document.getElementById("actionBehavior").textContent = accountCrm ? "企业下多名人员近期持续活跃" : currentAction.kind === "nurture" ? "持续阅读案例或活动内容" : currentAction.kind === "ads" ? "匿名访问方案与价格页" : "访问价格页并完成留资";
+  document.getElementById("actionStepTwoLabel").textContent = accountCrm ? "同步内容" : handoff ? "交接设置" : currentAction.kind === "ads" ? "承接设置" : "内容与渠道";
+  document.querySelectorAll("[data-action-mode]").forEach((mode) => mode.hidden = mode.dataset.actionMode !== (accountCrm ? "account-crm" : handoff ? "handoff" : currentAction.kind));
   document.getElementById("consentCheck").className = `action-check ${currentAction.kind === "ads" ? "warning" : "ok"}`;
-  document.getElementById("consentCheck").querySelector("small").textContent = currentAction.kind === "ads" ? "无有效联系方式，禁止直接发送" : "当前执行渠道授权有效";
+  document.getElementById("consentCheck").querySelector("small").textContent = accountCrm ? "仅同步已识别的有效人员；匿名访客只做企业级汇总" : currentAction.kind === "ads" ? "无有效联系方式，禁止直接发送" : "当前执行渠道授权有效";
   document.getElementById("consentCheck").querySelector("b").textContent = currentAction.kind === "ads" ? "不可直达" : "通过";
   document.getElementById("salesProtectionCheck").className = `action-check ${handoff ? "warning" : "ok"}`;
-  document.getElementById("salesProtectionCheck").querySelector("small").textContent = handoff ? "交接后暂停营销触达，等待销售反馈" : "当前无销售负责人或活跃商机";
+  document.getElementById("salesProtectionCheck").querySelector("small").textContent = accountCrm ? "仅更新 CRM 资料，不自动创建销售任务或商机" : handoff ? "交接后暂停营销触达，等待销售反馈" : "当前无销售负责人或活跃商机";
   document.getElementById("salesProtectionCheck").querySelector("b").textContent = handoff ? "优先交接" : "通过";
   document.getElementById("handoffSummary").value = `意向分 ${currentAction.score}。${currentAction.reason}。建议优先确认采购时间与决策角色。`;
+  if (accountCrm) renderAccountCrmData();
   actionDrawer.setAttribute("aria-hidden", "false");
   renderActionStep(1);
+}
+
+function renderAccountCrmData() {
+  const data = accountCrmData[currentAction.target];
+  document.getElementById("accountCrmMatchStatus").textContent = data.match;
+  document.getElementById("accountCrmTarget").textContent = currentAction.target;
+  document.getElementById("accountCrmWriteMode").textContent = data.mode;
+  document.getElementById("accountActiveCount").textContent = data.count;
+  document.getElementById("accountActivePeople").innerHTML = `<div class="account-sync-person head"><span>人员</span><span>角色</span><span>意向</span><span>最近行为</span></div>${data.people.map(([name, identity, role, score, behavior]) => `<div class="account-sync-person"><span><b>${name}</b><small>${identity}</small></span><span>${role}</span><span><b class="score ${score >= 80 ? "high" : "mid"}">${score}</b></span><span>${behavior}</span></div>`).join("")}`;
+  document.getElementById("accountBehaviorTimeline").innerHTML = data.behaviors.map(([behavior, time]) => `<li><b>${behavior}</b><span>${time}</span></li>`).join("");
 }
 
 function closeActionDrawer() {
@@ -251,7 +306,7 @@ document.getElementById("nextActionStep").addEventListener("click", () => {
   actionSuccess.setAttribute("aria-hidden", "false");
   actionDrawerFooter.hidden = true;
   document.getElementById("actionSuccessTitle").textContent = actionLabels[currentAction.kind].success;
-  document.getElementById("actionSuccessCopy").textContent = isHandoffAction() ? "系统将等待销售查看并反馈；反馈前不会继续营销触达。" : "执行、送达、互动和目标事件会自动回流到客户档案。";
+  document.getElementById("actionSuccessCopy").textContent = isAccountCrmAction() ? "销售可在 CRM 企业记录中查看本次同步的活跃人员与关键行为；匿名访客仅以企业级摘要呈现。" : isHandoffAction() ? "系统将等待销售查看并反馈；反馈前不会继续营销触达。" : "执行、送达、互动和目标事件会自动回流到客户档案。";
   document.getElementById("actionSuccessState").textContent = `下一状态：${actionLabels[currentAction.kind].next}`;
 });
 

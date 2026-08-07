@@ -421,7 +421,7 @@
           <div class="group-toolbar">
             <div>
               <h3>企业账户</h3>
-              <span class="module-scope">按企业意向、近期变化、产品与签约情况筛选优先经营企业。</span>
+              <span class="module-scope">识别优先经营企业，并将企业画像、活跃人员与关键行为同步给销售。</span>
             </div>
             <button class="ghost-button">导入公司</button>
           </div>
@@ -447,7 +447,7 @@
             <article><span>高意向企业</span><strong>73</strong></article>
             <article><span>近7天升温</span><strong>28</strong></article>
             <article><span>历史客户再活跃</span><strong>8</strong></article>
-            <article><span>待标记企业机会</span><strong>19</strong></article>
+            <article><span>待同步 CRM 企业</span><strong>19</strong></article>
           </div>
           <div class="table company-list-table">
             <div class="table-row table-head">
@@ -490,7 +490,7 @@
               <span>0次</span>
               <span>制造业</span>
               <span>部分同步</span>
-              <span><button class="mini-button">同步 CRM</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+              <span><button class="mini-button next-action-button" data-action-kind="account-crm" data-action-target="XX 制造集团" data-action-score="88" data-action-reason="近 7 天企业意向上升 15 分，3 名有效联系人持续访问产品方案与下载资料，CRM 仅完成部分同步。">同步 CRM</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
             </div>
             <div class="table-row">
               <span>海川医疗</span>
@@ -504,7 +504,7 @@
               <span>2次</span>
               <span>医疗</span>
               <span>已建档</span>
-              <span><button class="mini-button">发送内容</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+              <span><button class="mini-button next-action-button" data-action-kind="account-update" data-action-target="海川医疗" data-action-score="76" data-action-reason="企业已在 CRM 建档，近 7 天新增 2 名活跃人员并集中关注智能决策系统，建议补充最新人员与行为动态。">更新 CRM 动态</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
             </div>
             <div class="table-row">
               <span>远航自动化</span>
@@ -518,7 +518,7 @@
               <span>0次</span>
               <span>制造业</span>
               <span>未建档</span>
-              <span><button class="mini-button">加入分组</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+              <span><button class="mini-button next-action-button" data-action-kind="account-crm" data-action-target="远航自动化" data-action-score="67" data-action-reason="已识别 2 名有效活跃人员，企业尚未在 CRM 建档；建议同步企业与人员信息，供销售判断是否跟进。">同步 CRM</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
             </div>
           </div>
           <div class="pagination-row">
@@ -1439,6 +1439,32 @@
                   <div class="handoff-form"><label><span>负责人</span><select><option>周一鸣</option><option>销售运营 - 王洁</option></select></label><label><span>反馈时限</span><select><option>24 小时</option><option>48 小时</option></select></label><label class="wide"><span>交接摘要</span><textarea id="handoffSummary">客户近期出现高价值行为，建议优先确认采购时间与决策角色。</textarea></label></div>
                 </article>
                 <article class="drawer-card"><div class="drawer-section-title"><h3>销售可见的行为证据</h3><span>最近 7 天</span></div><ol class="handoff-timeline"><li><b>下载制造业白皮书</b><span>今天 14:26</span></li><li><b>访问产品方案页 3 次</b><span>今天 11:08</span></li><li><b>提交企业邮箱</b><span>7 月 21 日</span></li></ol></article>
+              </div>
+
+              <div class="account-crm-mode" data-action-mode="account-crm" hidden>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>CRM 企业匹配与同步设置</h3><span class="safe-chip" id="accountCrmMatchStatus">发现可能匹配企业</span></div>
+                  <div class="account-sync-grid">
+                    <div><span>目标企业</span><strong id="accountCrmTarget">XX 制造集团</strong></div>
+                    <div><span>写入方式</span><strong id="accountCrmWriteMode">关联已有企业并补充人员</strong></div>
+                    <label><span>销售负责人</span><select><option>周一鸣</option><option>销售运营 - 王洁</option><option>暂不指定</option></select></label>
+                    <label><span>同步范围</span><select><option>企业画像 + 活跃人员 + 关键行为</option><option>仅企业画像与行为摘要</option></select></label>
+                  </div>
+                </article>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>本次同步的活跃人员</h3><span id="accountActiveCount">3 名有效人员 · 1 名匿名访客仅汇总</span></div>
+                  <div class="account-sync-people" id="accountActivePeople">
+                    <div class="account-sync-person head"><span>人员</span><span>角色</span><span>意向</span><span>最近行为</span></div>
+                    <div class="account-sync-person"><span><b>张三</b><small>企业邮箱已验证</small></span><span>采购负责人</span><span><b class="score high">94</b></span><span>下载白皮书</span></div>
+                    <div class="account-sync-person"><span><b>李四</b><small>手机号已验证</small></span><span>信息化经理</span><span><b class="score high">82</b></span><span>访问方案页 3 次</span></div>
+                    <div class="account-sync-person"><span><b>赵敏</b><small>企业邮箱已验证</small></span><span>财务负责人</span><span><b class="score mid">71</b></span><span>查看客户案例</span></div>
+                  </div>
+                  <p class="account-anonymous-note">匿名访客不创建人员线索，仅以企业级活跃人数和行为趋势写入摘要。</p>
+                </article>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>销售可见的企业行为摘要</h3><span>最近 7 天</span></div>
+                  <ol class="handoff-timeline" id="accountBehaviorTimeline"><li><b>3 名有效人员持续关注供应链云方案</b><span>今日</span></li><li><b>产品方案页访问 8 次，较上周增长 60%</b><span>近 7 天</span></li><li><b>新增 1 次白皮书下载</b><span>昨日</span></li></ol>
+                </article>
               </div>
 
               <div class="nurture-mode" data-action-mode="nurture">
