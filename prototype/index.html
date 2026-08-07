@@ -476,7 +476,7 @@
               <span>8次</span>
               <span>互联网/软件服务</span>
               <span>已建档</span>
-              <span><button class="mini-button">标记机会</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
+              <span><button class="mini-button next-action-button" data-action-kind="account-opportunity" data-action-target="西游记互联网科技公司" data-action-score="91" data-action-reason="近 7 天企业意向上升 18 分，3 名关键人员持续活跃；企业已使用 NCCloud，出现智能决策系统增购信号。">标记机会</button><button class="mini-ghost" data-jump="account">查看洞察</button></span>
             </div>
             <div class="table-row">
               <span>XX 制造集团</span>
@@ -1467,6 +1467,33 @@
                 </article>
               </div>
 
+              <div class="account-opportunity-mode" data-action-mode="account-opportunity" hidden>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>确认企业机会</h3><span class="safe-chip">仅标记机会信号</span></div>
+                  <div class="account-sync-grid opportunity-setting-grid">
+                    <label><span>机会类型</span><select id="opportunityType"><option>增购机会</option><option>新购机会</option><option>续约机会</option><option>交叉销售机会</option></select></label>
+                    <label><span>关注产品</span><select id="opportunityProduct"><option>智能决策系统</option><option>YonSuite</option><option>供应链云</option><option>NCCloud</option></select></label>
+                    <label><span>优先级</span><select><option>P0 · 今日关注</option><option>P1 · 48 小时内</option><option>P2 · 持续观察</option></select></label>
+                    <label><span>销售负责人</span><select><option>周一鸣</option><option>销售运营 - 王洁</option><option>暂不指定</option></select></label>
+                    <label><span>期望反馈时间</span><select><option>24 小时</option><option>48 小时</option><option>3 个工作日</option></select></label>
+                    <label><span>标记后的状态</span><select><option>机会关注中 · 等待销售确认</option></select></label>
+                  </div>
+                </article>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>本次关联的关键人员</h3><span>3 人 · 可调整</span></div>
+                  <div class="opportunity-contact-list">
+                    <label><input type="checkbox" checked /><span><b>张三</b><small>采购负责人 · 94 分 · 下载产品白皮书</small></span><em>关键决策角色</em></label>
+                    <label><input type="checkbox" checked /><span><b>李四</b><small>信息化经理 · 82 分 · 连续访问方案页</small></span><em>技术评估角色</em></label>
+                    <label><input type="checkbox" checked /><span><b>赵敏</b><small>财务负责人 · 71 分 · 查看 ROI 案例</small></span><em>预算影响角色</em></label>
+                  </div>
+                </article>
+                <article class="drawer-card">
+                  <div class="drawer-section-title"><h3>机会摘要</h3><span>同步给 CRM 销售负责人</span></div>
+                  <textarea class="opportunity-summary" id="opportunitySummary">企业近 7 天意向分上升 18 分，采购、信息化与财务角色均出现高价值行为。当前已使用 NCCloud，建议优先确认智能决策系统的增购计划、预算和采购时间。</textarea>
+                  <p class="account-anonymous-note">确认后仅在 Marketing Cloud 标记企业机会并同步信号，不自动创建 CRM 销售任务或正式商机。</p>
+                </article>
+              </div>
+
               <div class="nurture-mode" data-action-mode="nurture">
                 <article class="drawer-card">
                   <div class="drawer-section-title"><h3>执行对象与渠道</h3><span>930 人可触达 · 200 人已排除</span></div>
@@ -1488,7 +1515,7 @@
             <section class="action-step-panel" data-action-panel="3">
               <article class="drawer-card preview-card">
                 <div class="drawer-section-title"><h3 id="previewTitle">CRM 交接预览</h3><button class="text-button">测试通知</button></div>
-                <div class="handoff-preview" id="handoffPreview"><div class="preview-avatar">张</div><div><span>发送给：周一鸣</span><h3 id="previewHandoffTitle">张三出现新的高意向行为</h3><p id="previewHandoffCopy">意向分 94。下载白皮书并提交有效联系方式，建议在 24 小时内确认线索有效性。</p><div><b>查看客户档案</b><b>有效线索</b><b>暂无需求</b></div></div></div>
+                <div class="handoff-preview" id="handoffPreview"><div class="preview-avatar" id="previewAvatar">张</div><div><span>发送给：周一鸣</span><h3 id="previewHandoffTitle">张三出现新的高意向行为</h3><p id="previewHandoffCopy">意向分 94。下载白皮书并提交有效联系方式，建议在 24 小时内确认线索有效性。</p><div id="previewHandoffActions"><b>查看客户档案</b><b>有效线索</b><b>暂无需求</b></div></div></div>
                 <div class="message-preview" id="messagePreview"><div class="message-preview-head">邮件 · 移动端预览</div><div class="message-preview-body"><small>Marketing Cloud</small><h3>一份更适合制造业决策人的案例精读</h3><p>你好，结合你最近关注的制造业内容，我们整理了同类企业从方案评估到上线的关键做法。</p><div class="message-hero"><span>3 分钟精读</span><strong id="previewContentName">制造业数字化案例精读</strong></div><button>查看完整案例</button><small>你收到此邮件是因为已订阅相关内容，可随时退订。</small></div></div>
               </article>
               <article class="drawer-card final-checklist"><div><span>执行对象</span><strong id="confirmTarget">张三 / XX 制造集团</strong></div><div><span>执行方式</span><strong id="confirmMode">CRM 交接</strong></div><div><span>成功标准</span><strong id="confirmGoal">CRM 返回线索 ID</strong></div><div><span>后续状态</span><strong id="confirmNextState">待销售查看与反馈</strong></div></article>

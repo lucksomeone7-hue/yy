@@ -148,6 +148,7 @@ let currentActionStep = 1;
 let currentAction = { kind: "crm", target: "张三 / XX 制造集团", score: 94, reason: "下载制造业白皮书并提交有效联系方式，尚未进入 CRM" };
 let selectedActionChannel = "Email";
 let selectedActionContent = "制造业数字化案例精读";
+let currentActionButton = null;
 
 const actionLabels = {
   crm: { title: "同步 CRM", goal: "CRM 返回线索 ID", next: "待销售查看与反馈", success: "CRM 线索已创建" },
@@ -156,6 +157,7 @@ const actionLabels = {
   ads: { title: "广告或站内承接", goal: "获得有效留资与渠道授权", next: "等待匿名身份转为可经营客户", success: "受众同步任务已创建" },
   "account-crm": { title: "同步 CRM", goal: "CRM 返回企业 ID 并写入活跃人员", next: "待销售查看企业动态", success: "企业与活跃人员已同步 CRM" },
   "account-update": { title: "更新 CRM 动态", goal: "最新人员与行为摘要写入已有企业", next: "待销售查看最新动态", success: "CRM 企业动态已更新" },
+  "account-opportunity": { title: "标记企业机会", goal: "销售提交机会有效性反馈", next: "机会关注中 · 等待销售确认", success: "企业机会已标记" },
 };
 
 const accountCrmData = {
@@ -193,11 +195,15 @@ const accountCrmData = {
 };
 
 function isHandoffAction() {
-  return currentAction.kind === "crm" || currentAction.kind === "sales" || isAccountCrmAction();
+  return currentAction.kind === "crm" || currentAction.kind === "sales" || isAccountCrmAction() || isAccountOpportunityAction();
 }
 
 function isAccountCrmAction() {
   return currentAction.kind === "account-crm" || currentAction.kind === "account-update";
+}
+
+function isAccountOpportunityAction() {
+  return currentAction.kind === "account-opportunity";
 }
 
 function renderActionStep(step) {
@@ -212,26 +218,32 @@ function renderActionStep(step) {
   actionSuccess.setAttribute("aria-hidden", "true");
   actionDrawerFooter.hidden = false;
   document.getElementById("previousActionStep").textContent = step === 1 ? "忽略建议" : "上一步";
-  document.getElementById("nextActionStep").textContent = step < 3 ? "继续 →" : isHandoffAction() ? "确认交接 →" : "确认执行 →";
+  document.getElementById("nextActionStep").textContent = step < 3 ? "继续 →" : isAccountOpportunityAction() ? "确认标记并通知销售 →" : isHandoffAction() ? "确认交接 →" : "确认执行 →";
   if (step === 3) updateActionPreview();
 }
 
 function updateActionPreview() {
   const handoff = isHandoffAction();
   const accountCrm = isAccountCrmAction();
+  const opportunity = isAccountOpportunityAction();
+  const opportunityType = document.getElementById("opportunityType").value;
+  const opportunityProduct = document.getElementById("opportunityProduct").value;
   document.getElementById("handoffPreview").hidden = !handoff;
   document.getElementById("messagePreview").hidden = handoff || currentAction.kind === "ads";
-  document.getElementById("previewTitle").textContent = accountCrm ? "CRM 企业同步预览" : handoff ? "销售交接预览" : currentAction.kind === "ads" ? "受众同步确认" : `${selectedActionChannel} 内容预览`;
-  document.getElementById("previewHandoffTitle").textContent = accountCrm ? `${currentAction.target}及活跃人员将同步至 CRM` : `${currentAction.target.split(" /")[0]} 出现新的高意向行为`;
-  document.getElementById("previewHandoffCopy").textContent = accountCrm ? `企业意向分 ${currentAction.score}。${currentAction.reason}同步后销售可在企业记录中查看人员与行为摘要。` : `意向分 ${currentAction.score}。${currentAction.reason}。建议在 24 小时内确认线索有效性。`;
+  document.getElementById("previewTitle").textContent = opportunity ? "企业机会信号预览" : accountCrm ? "CRM 企业同步预览" : handoff ? "销售交接预览" : currentAction.kind === "ads" ? "受众同步确认" : `${selectedActionChannel} 内容预览`;
+  document.getElementById("previewHandoffTitle").textContent = opportunity ? `${currentAction.target}将标记为${opportunityType}` : accountCrm ? `${currentAction.target}及活跃人员将同步至 CRM` : `${currentAction.target.split(" /")[0]} 出现新的高意向行为`;
+  document.getElementById("previewHandoffCopy").textContent = opportunity ? `关注产品：${opportunityProduct}。企业意向分 ${currentAction.score}，已关联 3 名关键人员。该信号将通知销售确认，不会自动创建 CRM 正式商机。` : accountCrm ? `企业意向分 ${currentAction.score}。${currentAction.reason}同步后销售可在企业记录中查看人员与行为摘要。` : `意向分 ${currentAction.score}。${currentAction.reason}。建议在 24 小时内确认线索有效性。`;
+  document.getElementById("previewAvatar").textContent = opportunity || accountCrm ? "企" : currentAction.target.charAt(0);
+  document.getElementById("previewHandoffActions").innerHTML = opportunity ? "<b>查看企业洞察</b><b>确认为机会</b><b>继续观察</b>" : accountCrm ? "<b>查看 CRM 企业</b><b>确认已查看</b><b>暂不跟进</b>" : "<b>查看客户档案</b><b>有效线索</b><b>暂无需求</b>";
   document.getElementById("previewContentName").textContent = selectedActionContent;
   document.getElementById("confirmTarget").textContent = currentAction.target;
-  document.getElementById("confirmMode").textContent = accountCrm ? accountCrmData[currentAction.target].mode : handoff ? "CRM / 销售交接" : currentAction.kind === "ads" ? "广告受众或站内承接" : `平台执行 · ${selectedActionChannel}`;
+  document.getElementById("confirmMode").textContent = opportunity ? "Marketing Cloud 标记 + CRM 机会信号" : accountCrm ? accountCrmData[currentAction.target].mode : handoff ? "CRM / 销售交接" : currentAction.kind === "ads" ? "广告受众或站内承接" : `平台执行 · ${selectedActionChannel}`;
   document.getElementById("confirmGoal").textContent = actionLabels[currentAction.kind].goal;
   document.getElementById("confirmNextState").textContent = actionLabels[currentAction.kind].next;
 }
 
 function openActionDrawer(button) {
+  currentActionButton = button;
   currentAction = {
     kind: button.dataset.actionKind || "nurture",
     target: button.dataset.actionTarget || "待处理客户",
@@ -241,28 +253,31 @@ function openActionDrawer(button) {
   const labels = actionLabels[currentAction.kind];
   const handoff = isHandoffAction();
   const accountCrm = isAccountCrmAction();
+  const opportunity = isAccountOpportunityAction();
   document.getElementById("actionDrawerTitle").textContent = labels.title;
   document.getElementById("actionDrawerTarget").textContent = `${currentAction.target} · 意向分 ${currentAction.score}`;
   document.getElementById("actionDrawerCode").textContent = `NEXT BEST ACTION · ${currentAction.score >= 80 ? "P0" : currentAction.score >= 50 ? "P1" : "P2"}`;
   document.getElementById("actionReason").textContent = currentAction.reason;
   document.getElementById("actionScore").textContent = `${currentAction.score} · ${currentAction.score >= 80 ? "高意向" : currentAction.score >= 50 ? "中意向" : "低意向"}`;
   document.getElementById("actionGoal").textContent = labels.goal;
-  document.getElementById("actionJudgement").textContent = accountCrm
+  document.getElementById("actionJudgement").textContent = opportunity
+    ? "该企业已形成多人、跨角色的高价值行为，可提交企业级机会信号给销售确认；当前不会直接创建 CRM 正式商机。"
+    : accountCrm
     ? "企业账户页不直接向人员发送内容。本次仅将企业画像、有效活跃人员与关键行为同步给销售，辅助判断后续跟进。"
     : handoff
     ? "该对象已具备明确转化信号。继续常规培育可能与销售动作冲突，建议优先完成交接。"
     : currentAction.kind === "ads"
       ? "意向较高，但缺少有效联系方式或渠道授权，不能直接发送内容。"
       : "当前适合推动一个相邻决策行为，不建议直接使用强销售话术。";
-  document.getElementById("actionBehavior").textContent = accountCrm ? "企业下多名人员近期持续活跃" : currentAction.kind === "nurture" ? "持续阅读案例或活动内容" : currentAction.kind === "ads" ? "匿名访问方案与价格页" : "访问价格页并完成留资";
-  document.getElementById("actionStepTwoLabel").textContent = accountCrm ? "同步内容" : handoff ? "交接设置" : currentAction.kind === "ads" ? "承接设置" : "内容与渠道";
-  document.querySelectorAll("[data-action-mode]").forEach((mode) => mode.hidden = mode.dataset.actionMode !== (accountCrm ? "account-crm" : handoff ? "handoff" : currentAction.kind));
+  document.getElementById("actionBehavior").textContent = opportunity ? "3 名关键角色持续访问产品与决策内容" : accountCrm ? "企业下多名人员近期持续活跃" : currentAction.kind === "nurture" ? "持续阅读案例或活动内容" : currentAction.kind === "ads" ? "匿名访问方案与价格页" : "访问价格页并完成留资";
+  document.getElementById("actionStepTwoLabel").textContent = opportunity ? "机会设置" : accountCrm ? "同步内容" : handoff ? "交接设置" : currentAction.kind === "ads" ? "承接设置" : "内容与渠道";
+  document.querySelectorAll("[data-action-mode]").forEach((mode) => mode.hidden = mode.dataset.actionMode !== (opportunity ? "account-opportunity" : accountCrm ? "account-crm" : handoff ? "handoff" : currentAction.kind));
   document.getElementById("consentCheck").className = `action-check ${currentAction.kind === "ads" ? "warning" : "ok"}`;
-  document.getElementById("consentCheck").querySelector("small").textContent = accountCrm ? "仅同步已识别的有效人员；匿名访客只做企业级汇总" : currentAction.kind === "ads" ? "无有效联系方式，禁止直接发送" : "当前执行渠道授权有效";
+  document.getElementById("consentCheck").querySelector("small").textContent = opportunity ? "机会信号仅关联已识别人员，不进行营销发送" : accountCrm ? "仅同步已识别的有效人员；匿名访客只做企业级汇总" : currentAction.kind === "ads" ? "无有效联系方式，禁止直接发送" : "当前执行渠道授权有效";
   document.getElementById("consentCheck").querySelector("b").textContent = currentAction.kind === "ads" ? "不可直达" : "通过";
   document.getElementById("salesProtectionCheck").className = `action-check ${handoff ? "warning" : "ok"}`;
-  document.getElementById("salesProtectionCheck").querySelector("small").textContent = accountCrm ? "仅更新 CRM 资料，不自动创建销售任务或商机" : handoff ? "交接后暂停营销触达，等待销售反馈" : "当前无销售负责人或活跃商机";
-  document.getElementById("salesProtectionCheck").querySelector("b").textContent = handoff ? "优先交接" : "通过";
+  document.getElementById("salesProtectionCheck").querySelector("small").textContent = opportunity ? "未发现活跃 CRM 商机；标记后等待销售确认" : accountCrm ? "仅更新 CRM 资料，不自动创建销售任务或商机" : handoff ? "交接后暂停营销触达，等待销售反馈" : "当前无销售负责人或活跃商机";
+  document.getElementById("salesProtectionCheck").querySelector("b").textContent = opportunity ? "等待确认" : handoff ? "优先交接" : "通过";
   document.getElementById("handoffSummary").value = `意向分 ${currentAction.score}。${currentAction.reason}。建议优先确认采购时间与决策角色。`;
   if (accountCrm) renderAccountCrmData();
   actionDrawer.setAttribute("aria-hidden", "false");
@@ -306,9 +321,17 @@ document.getElementById("nextActionStep").addEventListener("click", () => {
   actionSuccess.setAttribute("aria-hidden", "false");
   actionDrawerFooter.hidden = true;
   document.getElementById("actionSuccessTitle").textContent = actionLabels[currentAction.kind].success;
-  document.getElementById("actionSuccessCopy").textContent = isAccountCrmAction() ? "销售可在 CRM 企业记录中查看本次同步的活跃人员与关键行为；匿名访客仅以企业级摘要呈现。" : isHandoffAction() ? "系统将等待销售查看并反馈；反馈前不会继续营销触达。" : "执行、送达、互动和目标事件会自动回流到客户档案。";
+  document.getElementById("actionSuccessCopy").textContent = isAccountOpportunityAction() ? "机会信号及关键人员摘要已通知销售。只有销售确认有效后，才进入 CRM 正式商机创建流程。" : isAccountCrmAction() ? "销售可在 CRM 企业记录中查看本次同步的活跃人员与关键行为；匿名访客仅以企业级摘要呈现。" : isHandoffAction() ? "系统将等待销售查看并反馈；反馈前不会继续营销触达。" : "执行、送达、互动和目标事件会自动回流到客户档案。";
   document.getElementById("actionSuccessState").textContent = `下一状态：${actionLabels[currentAction.kind].next}`;
+  if (isAccountOpportunityAction() && currentActionButton) {
+    currentActionButton.textContent = "等待销售确认";
+    currentActionButton.disabled = true;
+  }
 });
+
+document.querySelectorAll("#opportunityType, #opportunityProduct").forEach((select) => select.addEventListener("change", () => {
+  if (currentActionStep === 3 && isAccountOpportunityAction()) updateActionPreview();
+}));
 
 document.querySelectorAll(".channel-choice button[data-channel]").forEach((button) => button.addEventListener("click", () => {
   document.querySelectorAll(".channel-choice button[data-channel]").forEach((item) => item.classList.remove("selected"));
