@@ -509,7 +509,7 @@ button {
 .intent-action-guide.silent { color: #707b76; background: #f5f7f6; }
 
 .action-table .table-row {
-  grid-template-columns: 1.15fr 0.45fr 1.45fr 0.9fr 0.65fr 0.7fr 0.65fr 0.8fr 0.72fr;
+  grid-template-columns: 1.2fr 0.62fr 0.42fr 1.45fr 0.9fr 0.82fr 0.62fr 0.95fr 0.72fr;
 }
 
 .action-table .table-row > span {
@@ -528,6 +528,31 @@ button {
   margin-top: 4px;
   color: var(--muted);
   font-size: 10px;
+}
+
+.target-type {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.target-type.account {
+  color: #b42318;
+  background: #fff0ef;
+}
+
+.target-type.person {
+  color: #365c7d;
+  background: #eef5fb;
+}
+
+.target-type.audience {
+  color: #73510d;
+  background: #fff7df;
 }
 
 .priority.p1 {

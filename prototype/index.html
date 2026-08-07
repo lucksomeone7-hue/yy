@@ -20,7 +20,7 @@
         <button class="nav-item active" data-page="dashboard">经营看板</button>
         <button class="nav-item" data-page="layers">意向分层</button>
         <button class="nav-item" data-page="companies">企业账户</button>
-        <button class="nav-item" data-page="actions">动作中心</button>
+        <button class="nav-item" data-page="actions">经营动作中心</button>
         <span class="nav-group-label">用户中心</span>
         <button class="nav-item" data-page="users">用户列表</button>
         <button class="nav-item" data-page="segment">用户分组</button>
@@ -257,8 +257,8 @@
         <section class="work-area">
           <div class="section-head">
             <div>
-              <h3>推荐动作列表</h3>
-              <span class="module-scope">默认口径：待处理 + 最近7天触发</span>
+              <h3>待确认建议</h3>
+              <span class="module-scope">最近 7 天触发 · 仅展示优先级最高的 4 条，统一进入经营动作中心处理。</span>
             </div>
             <button class="text-button">查看全部</button>
           </div>
@@ -269,17 +269,17 @@
               <span>当前阶段</span>
               <span>意向分</span>
               <span>CRM 状态</span>
-              <span>推荐动作</span>
+              <span>下一步建议</span>
               <span>操作</span>
             </div>
             <div class="table-row">
               <span>XX 制造集团</span>
               <span>多人浏览</span>
               <span>企业升温</span>
-              <span><b class="score high">92</b></span>
+              <span><b class="score high">88</b></span>
               <span>部分同步</span>
-              <span>标记企业机会</span>
-              <span><button class="mini-button">标记</button><button class="mini-ghost">忽略</button></span>
+              <span>同步 CRM</span>
+              <span><button class="mini-button" data-jump="actions">查看动作</button><button class="mini-ghost" data-jump="companies">企业洞察</button></span>
             </div>
             <div class="table-row">
               <span>李明</span>
@@ -288,7 +288,7 @@
               <span><b class="score high">86</b></span>
               <span>已同步</span>
               <span>提醒销售跟进</span>
-              <span><button class="mini-button">提醒</button><button class="mini-ghost">详情</button></span>
+              <span><button class="mini-button" data-jump="actions">查看动作</button><button class="mini-ghost">详情</button></span>
             </div>
             <div class="table-row">
               <span>王五</span>
@@ -297,7 +297,7 @@
               <span><b class="score mid">68</b></span>
               <span>未同步</span>
               <span>活动回访</span>
-              <span><button class="mini-button">加入分组</button><button class="mini-ghost">详情</button></span>
+              <span><button class="mini-button" data-jump="actions">查看动作</button><button class="mini-ghost">详情</button></span>
             </div>
             <div class="table-row">
               <span>李四</span>
@@ -306,7 +306,7 @@
               <span><b class="score high">88</b></span>
               <span>未同步</span>
               <span>推荐内容触达</span>
-              <span><button class="mini-button">加入分组</button><button class="mini-ghost">详情</button></span>
+              <span><button class="mini-button" data-jump="actions">查看动作</button><button class="mini-ghost">详情</button></span>
             </div>
           </div>
         </section>
@@ -377,13 +377,13 @@
             <div><h3 id="intentListTitle">高意向客户</h3><span class="module-scope" id="intentListScope">80-100 分 · 近期出现明确产品兴趣或转化行为</span></div>
             <span class="intent-rule-version">评分规则 V1.0 · 更新于今日 08:00</span>
           </div>
-          <div class="intent-action-guide high" id="intentActionGuide"><strong>推荐动作</strong><span>未进入 CRM：同步为线索</span><span>已有销售跟进：提醒销售关注最新行为</span><span>多人同企业活跃：查看企业洞察</span></div>
+          <div class="intent-action-guide high" id="intentActionGuide"><strong>下一步建议</strong><span>未进入 CRM：同步为线索</span><span>已有销售跟进：提醒销售关注最新行为</span><span>多人同企业活跃：查看企业洞察</span></div>
           <div class="table customer-table" id="intentCustomerTable">
             <div class="table-row table-head">
-              <span>客户名称</span><span>所属企业</span><span>行业</span><span>意向分</span><span>最近行为</span><span>CRM 状态</span><span>推荐动作</span>
+              <span>客户名称</span><span>所属企业</span><span>行业</span><span>意向分</span><span>最近行为</span><span>CRM 状态</span><span>下一步建议</span>
             </div>
             <div class="table-row intent-customer-row">
-              <span><button class="inline-link" data-jump="profileTags">张三</button></span><span>XX 制造集团</span><span>制造业</span><span><b class="score high">94</b></span><span>下载制造业白皮书</span><span>未同步</span><span><button class="mini-button next-action-button" data-action-kind="crm" data-action-target="张三 / XX 制造集团" data-action-score="94" data-action-reason="下载制造业白皮书，已获得有效联系方式但尚未进入 CRM">处理建议</button></span>
+              <span><button class="inline-link" data-jump="profileTags">张三</button></span><span>XX 制造集团</span><span>制造业</span><span><b class="score high">94</b></span><span>下载制造业白皮书</span><span>待企业同步</span><span><button class="mini-button next-action-button" data-action-kind="account-crm" data-action-target="XX 制造集团" data-action-score="94" data-action-reason="张三与同企业另外 2 名活跃人员已合并为一条企业 CRM 同步动作。">处理建议</button></span>
             </div>
             <div class="table-row intent-customer-row">
               <span><button class="inline-link" data-jump="profileTags">陈洁</button></span><span>海川医疗</span><span>医疗</span><span><b class="score high">83</b></span><span>访问价格页</span><span>已有线索</span><span><button class="mini-button next-action-button" data-action-kind="sales" data-action-target="陈洁 / 海川医疗" data-action-score="83" data-action-reason="访问价格页，CRM 已有线索，优先通知销售而非继续营销触达">处理建议</button></span>
@@ -462,7 +462,7 @@
               <span>累计签约</span>
               <span>行业</span>
               <span>CRM 状态</span>
-              <span>推荐动作</span>
+              <span>销售交接建议</span>
             </div>
             <div class="table-row">
               <span>西游记互联网科技公司</span>
@@ -538,7 +538,7 @@
           <div>
             <span class="eyebrow">客户维度</span>
             <h3>张三</h3>
-            <p>采购负责人 · XX 制造集团 · 上海 · CRM 已建档</p>
+            <p>采购负责人 · XX 制造集团 · 上海 · CRM 部分同步</p>
             <div class="customer-profile-flags">
               <b>外部客户</b>
               <b>关键角色</b>
@@ -561,12 +561,12 @@
             <button class="ghost-button">查看评分明细</button>
           </div>
           <div class="customer-summary-grid">
-            <article><span>所属企业</span><strong>XX 制造集团</strong><em>企业意向分 91</em></article>
+            <article><span>所属企业</span><strong>XX 制造集团</strong><em>企业意向分 88</em></article>
             <article><span>职位角色</span><strong>采购负责人</strong><em>关键角色 · 决策影响人</em></article>
             <article><span>最近活跃</span><strong>2 天前</strong><em>下载制造业白皮书</em></article>
             <article><span>近 30 天行为</span><strong>48 次</strong><em>较上期增加 32%</em></article>
-            <article><span>CRM 状态</span><strong>已同步</strong><em>当前未创建商机</em></article>
-            <article><span>推荐动作</span><strong>提醒销售关注</strong><em>P0 · 建议今日处理</em></article>
+            <article><span>CRM 状态</span><strong>待企业同步</strong><em>已聚合张三等 3 名活跃人员</em></article>
+            <article><span>下一步建议</span><strong>纳入企业 CRM 同步</strong><em>P0 · 与企业动作共用一条记录</em></article>
           </div>
         </section>
 
@@ -642,13 +642,12 @@
         <section class="work-area customer-next-action">
           <div>
             <span class="eyebrow">下一步建议</span>
-            <strong>提醒销售关注，并发送制造业供应链案例</strong>
-            <p>客户已同步 CRM，无需重复同步；当前系统不自动创建销售任务或商机。</p>
+            <strong>纳入“XX 制造集团 · 同步 CRM”企业动作</strong>
+            <p>张三与同企业另外 2 名活跃人员已聚合处理，不再生成一条重复的联系人同步任务。</p>
           </div>
           <div class="button-row">
-            <button class="primary-button">提醒销售关注</button>
-            <button class="ghost-button">发送推荐内容</button>
-            <button class="ghost-button">加入分组</button>
+            <button class="primary-button next-action-button" data-action-kind="account-crm" data-action-target="XX 制造集团" data-action-score="88" data-action-reason="张三与同企业另外 2 名活跃人员已聚合为一条企业 CRM 同步动作。">处理企业同步</button>
+            <button class="ghost-button" data-jump="companies">查看企业账户</button>
           </div>
         </section>
       </section>
@@ -1141,10 +1140,10 @@
 
       <section class="page" id="actions">
         <div class="kanban-summary">
-          <article><span>待处理</span><strong>214</strong></article>
-          <article><span>已采纳</span><strong>126</strong></article>
-          <article><span>执行中</span><strong>89</strong></article>
-          <article><span>目标达成</span><strong>57</strong></article>
+          <article><span>待确认</span><strong>214</strong></article>
+          <article><span>已采纳 · 待执行</span><strong>126</strong></article>
+          <article><span>已执行 · 等待反馈</span><strong>89</strong></article>
+          <article><span>已完成</span><strong>57</strong></article>
           <article><span>已忽略</span><strong>31</strong></article>
         </div>
         <section class="work-area action-principle">
@@ -1171,27 +1170,30 @@
         </section>
         <section class="work-area">
           <div class="section-head">
-            <div><h3>下一步动作队列</h3><span class="module-scope">建议会随客户状态变化而失效或重新计算</span></div>
-            <div class="action-toolbar"><div class="action-filter" aria-label="动作状态筛选"><button class="active" data-action-filter="all">全部</button><button data-action-filter="待处理">待处理</button><button data-action-filter="待确认">待确认</button><button data-action-filter="已采纳">已采纳</button><button data-action-filter="已执行">已执行</button></div><button class="ghost-button" id="openBatchPrecheck">批量处理预检</button></div>
+            <div><h3>经营动作队列</h3><span class="module-scope">同一动作可从意向分层或企业账户进入；状态与处理结果在这里统一管理。</span></div>
+            <div class="action-toolbar"><div class="action-filter" aria-label="动作状态筛选"><button class="active" data-action-filter="all">全部</button><button data-action-filter="待确认">待确认建议</button><button data-action-filter="待执行">待执行动作</button><button data-action-filter="等待反馈">等待反馈</button><button data-action-filter="已完成">已完成</button><button data-action-filter="已忽略">已忽略</button></div><button class="ghost-button" id="openBatchPrecheck">批量处理预检</button></div>
           </div>
           <div class="table action-table">
             <div class="table-row table-head">
-              <span>客户/企业</span><span>优先级</span><span>推荐原因</span><span>首选动作</span><span>可用渠道</span><span>销售保护</span><span>负责人</span><span>状态/时效</span><span>操作</span>
-            </div>
-            <div class="table-row action-queue-row" data-action-status="待处理">
-              <span><b>张三</b><small>XX 制造集团 · 94 分</small></span><span><b class="priority p0">P0</b></span><span>下载白皮书并提交有效联系方式</span><span><b class="action-chip crm">同步 CRM</b></span><span>CRM</span><span>无负责人</span><span>王洁</span><span><b>待处理</b><small>剩余 2 小时</small></span><span><button class="mini-button next-action-button" data-action-kind="crm" data-action-target="张三 / XX 制造集团" data-action-score="94" data-action-reason="下载制造业白皮书并提交有效联系方式，尚未进入 CRM">处理建议</button></span>
-            </div>
-            <div class="table-row action-queue-row" data-action-status="待处理">
-              <span><b>XX 制造集团</b><small>3 名联系人升温 · 91 分</small></span><span><b class="priority p0">P0</b></span><span>关键角色同时访问方案与价格页</span><span><b class="action-chip sales">提醒销售</b></span><span>CRM 通知</span><span><b class="protected">保护中</b></span><span>周一鸣</span><span><b>待处理</b><small>剩余 5 小时</small></span><span><button class="mini-button next-action-button" data-action-kind="sales" data-action-target="XX 制造集团" data-action-score="91" data-action-reason="企业内 3 名联系人活跃，决策人与技术负责人同时访问方案页">处理建议</button></span>
+              <span>客户/企业</span><span>对象类型</span><span>优先级</span><span>推荐原因</span><span>首选动作</span><span>执行方式</span><span>负责人</span><span>状态/时效</span><span>操作</span>
             </div>
             <div class="table-row action-queue-row" data-action-status="待确认">
-              <span><b>王宇</b><small>远航自动化 · 67 分</small></span><span><b class="priority p1">P1</b></span><span>连续阅读制造业案例，尚无强转化信号</span><span><b class="action-chip nurture">内容培育</b></span><span>Email</span><span>未进入销售</span><span>林浩</span><span><b>待确认</b><small>明日 18:00 前</small></span><span><button class="mini-button next-action-button" data-action-kind="nurture" data-action-target="王宇 / 远航自动化" data-action-score="67" data-action-reason="连续阅读制造业客户案例，适合推动下一层决策内容">处理建议</button></span>
+              <span><b>XX 制造集团</b><small>包含张三等 3 名活跃人员 · 88 分</small></span><span><b class="target-type account">企业动作</b></span><span><b class="priority p0">P0</b></span><span>CRM 仅部分同步，人员行为已聚合为一条企业动作</span><span><b class="action-chip crm">同步 CRM</b></span><span>企业 + 活跃人员</span><span>王洁</span><span><b>待确认</b><small>剩余 2 小时</small></span><span><button class="mini-button next-action-button" data-action-kind="account-crm" data-action-target="XX 制造集团" data-action-score="88" data-action-reason="3 名有效联系人持续活跃，CRM 仅完成部分同步；该动作与意向分层中的张三共用同一企业动作记录。">处理建议</button></span>
             </div>
-            <div class="table-row action-queue-row" data-action-status="已采纳">
-              <span><b>高意向匿名访客</b><small>动态人群 · 1,286 人</small></span><span><b class="priority p1">P1</b></span><span>无联系方式，不具备直接触达资格</span><span><b class="action-chip ads">广告再营销</b></span><span>广告/站内</span><span>不适用</span><span>增长运营</span><span><b>已采纳</b><small>今日 14:20</small></span><span><button class="mini-button next-action-button" data-action-kind="ads" data-action-target="高意向匿名访客 / 1,286 人" data-action-score="88" data-action-reason="没有有效联系方式和直达渠道授权，只能通过广告或站内引导留资">查看设置</button></span>
+            <div class="table-row action-queue-row" data-action-status="待执行">
+              <span><b>西游记互联网科技公司</b><small>3 名关键人员升温 · 91 分</small></span><span><b class="target-type account">企业动作</b></span><span><b class="priority p0">P0</b></span><span>多人跨角色活跃，出现智能决策系统增购信号</span><span><b class="action-chip sales">标记企业机会</b></span><span>机会信号 + CRM 通知</span><span>周一鸣</span><span><b>已采纳 · 待执行</b><small>剩余 5 小时</small></span><span><button class="mini-button next-action-button" data-action-kind="account-opportunity" data-action-target="西游记互联网科技公司" data-action-score="91" data-action-reason="近 7 天企业意向上升 18 分，3 名关键人员持续活跃；企业已使用 NCCloud，出现智能决策系统增购信号。">继续执行</button></span>
             </div>
-            <div class="table-row action-queue-row" data-action-status="已执行">
-              <span><b>活动未签到人群</b><small>动态人群 · 930 人</small></span><span><b class="priority p2">P2</b></span><span>已报名未签到，需要承接活动兴趣</span><span><b class="action-chip nurture">发送活动回放</b></span><span>Email</span><span>未进入销售</span><span>活动运营</span><span><b>已执行</b><small>观察中 · 3 天</small></span><span><button class="mini-ghost next-action-button" data-action-kind="nurture" data-action-target="活动未签到人群 / 930 人" data-action-score="58" data-action-reason="已报名但未签到，建议发送活动回放并观察再次活跃">查看结果</button></span>
+            <div class="table-row action-queue-row" data-action-status="待确认">
+              <span><b>王宇</b><small>远航自动化 · 67 分</small></span><span><b class="target-type person">联系人动作</b></span><span><b class="priority p1">P1</b></span><span>连续阅读制造业案例，尚无强转化信号</span><span><b class="action-chip nurture">内容培育</b></span><span>Email 草稿</span><span>林浩</span><span><b>待确认</b><small>明日 18:00 前</small></span><span><button class="mini-button next-action-button" data-action-kind="nurture" data-action-target="王宇 / 远航自动化" data-action-score="67" data-action-reason="连续阅读制造业客户案例，适合推动下一层决策内容">处理建议</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="待执行">
+              <span><b>高意向匿名访客</b><small>动态人群 · 1,286 人</small></span><span><b class="target-type audience">人群动作</b></span><span><b class="priority p1">P1</b></span><span>无联系方式，不具备直接触达资格</span><span><b class="action-chip ads">广告再营销</b></span><span>广告/站内</span><span>增长运营</span><span><b>已采纳 · 待执行</b><small>今日 14:20</small></span><span><button class="mini-button next-action-button" data-action-kind="ads" data-action-target="高意向匿名访客 / 1,286 人" data-action-score="88" data-action-reason="没有有效联系方式和直达渠道授权，只能通过广告或站内引导留资">继续执行</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="等待反馈">
+              <span><b>活动未签到人群</b><small>动态人群 · 930 人</small></span><span><b class="target-type audience">人群动作</b></span><span><b class="priority p2">P2</b></span><span>活动回放已发送，正在观察再次活跃</span><span><b class="action-chip nurture">活动回访</b></span><span>Email</span><span>活动运营</span><span><b>已执行 · 等待反馈</b><small>观察中 · 3 天</small></span><span><button class="mini-ghost">查看结果</button></span>
+            </div>
+            <div class="table-row action-queue-row" data-action-status="已完成">
+              <span><b>陈洁</b><small>海川医疗 · 83 分</small></span><span><b class="target-type person">联系人动作</b></span><span><b class="priority p1">P1</b></span><span>价格页访问动态已同步，销售确认线索有效</span><span><b class="action-chip sales">提醒销售</b></span><span>CRM 通知</span><span>周一鸣</span><span><b>已完成</b><small>销售已确认</small></span><span><button class="mini-ghost">查看结果</button></span>
             </div>
           </div>
         </section>
@@ -1376,7 +1378,7 @@
               <div class="table crm-sample-table" id="crmSampleTable">
                 <div class="table-row table-head"><span>客户 / 企业</span><span>意向分</span><span>最近行为</span><span>CRM 经营状态</span><span>下一步建议</span></div>
                 <div class="table-row"><span>李敏 / 华东装备</span><span><b class="score mid">61</b></span><span>阅读案例后活跃下降</span><span>未进入 CRM</span><span>内容召回后创建线索</span></div>
-                <div class="table-row"><span>张三 / XX 制造集团</span><span><b class="score high">94</b></span><span>下载白皮书后 12 天未活跃</span><span>销售跟进中</span><span>更新行为并提醒销售</span></div>
+                <div class="table-row"><span>赵强 / 南方智造</span><span><b class="score high">84</b></span><span>下载白皮书后 12 天未活跃</span><span>销售跟进中</span><span>更新行为并提醒销售</span></div>
                 <div class="table-row"><span>王宇 / 远航自动化</span><span><b class="score mid">67</b></span><span>活动报名未签到</span><span>暂时无效：时机未到</span><span>召回后进入再激活复核</span></div>
               </div>
             </section>

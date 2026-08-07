@@ -3,7 +3,7 @@ const pageTitles = {
   layers: "客户意向分层",
   companies: "企业账户",
   account: "企业洞察",
-  actions: "推荐动作中心",
+  actions: "经营动作中心",
   users: "用户列表",
   customerProfile: "客户画像",
   profileTags: "用户画像",
@@ -70,7 +70,7 @@ const intentLayerData = {
     scope: "80-100 分 · 近期出现明确产品兴趣或转化行为",
     actions: ["未进入 CRM：同步为线索", "已有销售跟进：提醒销售关注最新行为", "多人同企业活跃：查看企业洞察"],
     rows: [
-      ["张三", "XX 制造集团", "制造业", 94, "下载制造业白皮书", "未同步", "同步 CRM"],
+      ["张三", "XX 制造集团", "制造业", 94, "下载制造业白皮书", "待企业同步", "同步 CRM", "account-crm", "XX 制造集团"],
       ["陈洁", "海川医疗", "医疗", 83, "访问价格页", "已有线索", "提醒销售"],
       ["李明", "华东装备", "制造业", 81, "近 7 天访问方案页 4 次", "跟进中", "更新线索动态"],
     ],
@@ -119,16 +119,17 @@ function renderIntentLayer(level) {
   document.getElementById("intentListScope").textContent = config.scope;
   const guide = document.getElementById("intentActionGuide");
   guide.className = `intent-action-guide ${level}`;
-  guide.innerHTML = `<strong>推荐动作</strong>${config.actions.map((action) => `<span>${action}</span>`).join("")}`;
+  guide.innerHTML = `<strong>下一步建议</strong>${config.actions.map((action) => `<span>${action}</span>`).join("")}`;
   table.innerHTML = heading + config.rows.map((row) => {
-    const actionKind = row[6].includes("CRM") ? "crm" : row[6].includes("销售") || row[6].includes("线索") ? "sales" : row[6].includes("排除") ? "ads" : "nurture";
+    const actionKind = row[7] || (row[6].includes("CRM") ? "crm" : row[6].includes("销售") || row[6].includes("线索") ? "sales" : row[6].includes("排除") ? "ads" : "nurture");
+    const actionTarget = row[8] || `${row[0]} / ${row[1]}`;
     return `
     <div class="table-row intent-customer-row">
       <span><button class="inline-link" data-intent-profile>${row[0]}</button></span>
       <span>${row[1]}</span><span>${row[2]}</span>
       <span><b class="score ${level}">${row[3]}</b></span>
       <span>${row[4]}</span><span>${row[5]}</span>
-      <span><button class="mini-button next-action-button" data-action-kind="${actionKind}" data-action-target="${row[0]} / ${row[1]}" data-action-score="${row[3]}" data-action-reason="${row[4]}；CRM 状态：${row[5]}">处理建议</button></span>
+      <span><button class="mini-button next-action-button" data-action-kind="${actionKind}" data-action-target="${actionTarget}" data-action-score="${row[3]}" data-action-reason="${row[4]}；CRM 状态：${row[5]}">处理建议</button></span>
     </div>`;
   }).join("");
 }
@@ -451,11 +452,11 @@ document.querySelectorAll("[data-activity-answer]").forEach((button) => {
 const crmSamples = {
   all: [
     ["李敏 / 华东装备", "61", "阅读案例后活跃下降", "未进入 CRM", "内容召回后创建线索"],
-    ["张三 / XX 制造集团", "94", "下载白皮书后 12 天未活跃", "销售跟进中", "更新行为并提醒销售"],
+    ["赵强 / 南方智造", "84", "下载白皮书后 12 天未活跃", "销售跟进中", "更新行为并提醒销售"],
     ["王宇 / 远航自动化", "67", "活动报名未签到", "暂时无效：时机未到", "召回后进入再激活复核"],
   ],
   new: [["李敏 / 华东装备", "61", "阅读案例后活跃下降", "未进入 CRM", "内容召回后创建线索"]],
-  working: [["张三 / XX 制造集团", "94", "下载白皮书后 12 天未活跃", "销售跟进中", "更新行为并提醒销售"]],
+  working: [["赵强 / 南方智造", "84", "下载白皮书后 12 天未活跃", "销售跟进中", "更新行为并提醒销售"]],
   invalid: [["王宇 / 远航自动化", "67", "活动报名未签到", "暂时无效：时机未到", "召回后进入再激活复核"]],
   converted: [["陈洁 / 泰禾工业", "73", "方案页访问 3 次", "已转化 Contact", "更新客户动态，创建任务"]],
 };
