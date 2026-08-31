@@ -1,9 +1,11 @@
 const pageTitles = {
+  moduleManagement: "模块管理",
   dashboard: "经营看板",
   layers: "客户意向分层",
   companies: "企业账户",
   account: "企业洞察",
   actions: "经营动作中心",
+  landingPages: "落地页管理",
   users: "用户列表",
   customerProfile: "客户画像",
   profileTags: "用户画像",
@@ -14,6 +16,59 @@ const pageTitles = {
   settingsPermissions: "权限",
   settingsVersions: "规则版本",
 };
+
+const moduleFilterState = { organization: "all" };
+
+function filterModules() {
+  const type = document.getElementById("moduleTypeFilter").value;
+  const source = document.getElementById("moduleSourceFilter").value;
+  const query = document.getElementById("moduleNameSearch").value.trim().toLowerCase();
+  const rows = [...document.querySelectorAll(".module-data-row")];
+  let visibleCount = 0;
+
+  rows.forEach((row) => {
+    const matchesOrganization = moduleFilterState.organization === "all" || row.dataset.organization === moduleFilterState.organization;
+    const matchesType = type === "all" || row.dataset.type === type;
+    const matchesSource = source === "all" || row.dataset.source === source;
+    const matchesName = !query || row.dataset.name.toLowerCase().includes(query);
+    const visible = matchesOrganization && matchesType && matchesSource && matchesName;
+    row.classList.toggle("hidden", !visible);
+    if (visible) visibleCount += 1;
+  });
+
+  document.getElementById("moduleResultSummary").textContent = `共 ${visibleCount} 个模板`;
+  document.getElementById("modulePaginationText").textContent = visibleCount ? `显示 1–${visibleCount}，共 ${visibleCount} 条` : "暂无匹配数据";
+  document.getElementById("moduleEmptyState").hidden = visibleCount !== 0;
+}
+
+function resetModuleFilters() {
+  moduleFilterState.organization = "all";
+  document.querySelectorAll("[data-organization]").forEach((button) => {
+    if (button.matches("button")) button.classList.toggle("active", button.dataset.organization === "all");
+  });
+  document.getElementById("moduleTypeFilter").value = "all";
+  document.getElementById("moduleSourceFilter").value = "all";
+  document.getElementById("moduleNameSearch").value = "";
+  filterModules();
+}
+
+document.querySelectorAll(".organization-filter [data-organization]").forEach((button) => {
+  button.addEventListener("click", () => {
+    moduleFilterState.organization = button.dataset.organization;
+    document.querySelectorAll(".organization-filter [data-organization]").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    filterModules();
+  });
+});
+document.getElementById("moduleTypeFilter").addEventListener("change", filterModules);
+document.getElementById("moduleSourceFilter").addEventListener("change", filterModules);
+document.getElementById("moduleNameSearch").addEventListener("input", filterModules);
+document.getElementById("resetModuleFilters").addEventListener("click", resetModuleFilters);
+document.getElementById("emptyResetModuleFilters").addEventListener("click", resetModuleFilters);
+document.getElementById("createModuleButton").addEventListener("click", (event) => {
+  event.currentTarget.textContent = "新建功能待接入";
+  setTimeout(() => { event.currentTarget.textContent = "＋ 新建模板"; }, 1400);
+});
 
 function showPage(page) {
   const parentPage = {
@@ -613,3 +668,139 @@ confirmPublishWeightButton.addEventListener("click", () => {
   confirmPublishWeightButton.disabled = true;
   setTimeout(() => setPublishWeightModal(false), 900);
 });
+
+let landingCurrentScope = "全部可见";
+let landingToastTimer;
+
+function showLandingToast(message) {
+  const toast = document.getElementById("landingToast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(landingToastTimer);
+  landingToastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+}
+
+function renderLandingChips() {
+  const keyword = document.getElementById("landingKeyword").value.trim();
+  const typeLabel = document.getElementById("landingSearchType").selectedOptions[0].textContent;
+  const org = document.getElementById("landingOrg").value;
+  const category = document.getElementById("landingCategory").value;
+  const status = document.getElementById("landingStatus").value;
+  const chips = [
+    `数据范围：${landingCurrentScope}`,
+    keyword ? `${typeLabel}：${keyword}` : "",
+    org ? `组织：${org}` : "",
+    category ? `分类：${category}` : "",
+    status ? `状态：${status}` : "",
+  ].filter(Boolean);
+  const target = document.getElementById("landingChips");
+  target.replaceChildren();
+  const label = document.createElement("span");
+  label.textContent = "当前条件";
+  target.appendChild(label);
+  chips.forEach((value) => {
+    const chip = document.createElement("span");
+    chip.className = "landing-chip";
+    chip.textContent = value;
+    target.appendChild(chip);
+  });
+}
+
+function updateLandingSelection() {
+  const visibleChecks = [...document.querySelectorAll("#landingTable tbody tr")]
+    .filter((row) => row.style.display !== "none")
+    .map((row) => row.querySelector(".landing-row-check"));
+  const selected = document.querySelectorAll(".landing-row-check:checked").length;
+  document.getElementById("landingSelected").textContent = selected;
+  document.getElementById("landingBatch").classList.toggle("show", selected > 0);
+  document.getElementById("landingCheckAll").checked = visibleChecks.length > 0 && visibleChecks.every((check) => check.checked);
+}
+
+function applyLandingFilters() {
+  const keyword = document.getElementById("landingKeyword").value.trim().toLowerCase();
+  const type = document.getElementById("landingSearchType").value;
+  const org = document.getElementById("landingOrg").value;
+  const category = document.getElementById("landingCategory").value;
+  const status = document.getElementById("landingStatus").value;
+  let shown = 0;
+
+  document.querySelectorAll("#landingTable tbody tr").forEach((row) => {
+    const scopeMatch = landingCurrentScope === "全部可见" || row.dataset.scope === landingCurrentScope;
+    const target = type === "all"
+      ? `${row.dataset.title} ${row.dataset.address} ${row.dataset.publisher}`
+      : row.dataset[type];
+    const match = scopeMatch
+      && (!keyword || target.toLowerCase().includes(keyword))
+      && (!org || row.dataset.org === org)
+      && (!category || row.dataset.category === category)
+      && (!status || row.dataset.status === status);
+    row.style.display = match ? "" : "none";
+    if (match) shown += 1;
+  });
+
+  document.getElementById("landingCount").textContent = shown;
+  document.getElementById("landingTable").style.display = shown ? "table" : "none";
+  document.getElementById("landingEmpty").style.display = shown ? "none" : "block";
+  renderLandingChips();
+  updateLandingSelection();
+}
+
+function resetLandingFilters() {
+  landingCurrentScope = "全部可见";
+  document.getElementById("landingKeyword").value = "";
+  document.getElementById("landingSearchType").value = "all";
+  document.getElementById("landingOrg").value = "";
+  document.getElementById("landingCategory").value = "";
+  document.getElementById("landingStatus").value = "";
+  document.querySelectorAll("[data-landing-scope]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.landingScope === "全部可见");
+  });
+  applyLandingFilters();
+  showLandingToast("筛选条件已重置");
+}
+
+document.querySelectorAll("[data-landing-scope]").forEach((button) => {
+  button.addEventListener("click", () => {
+    landingCurrentScope = button.dataset.landingScope;
+    document.querySelectorAll("[data-landing-scope]").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    applyLandingFilters();
+  });
+});
+
+document.getElementById("landingSearchButton").addEventListener("click", applyLandingFilters);
+document.getElementById("landingKeyword").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") applyLandingFilters();
+});
+document.getElementById("landingResetButton").addEventListener("click", resetLandingFilters);
+["landingOrg", "landingCategory", "landingStatus"].forEach((id) => {
+  document.getElementById(id).addEventListener("change", applyLandingFilters);
+});
+document.getElementById("landingAdvancedButton").addEventListener("click", (event) => {
+  const advanced = document.getElementById("landingAdvanced");
+  advanced.classList.toggle("open");
+  event.currentTarget.textContent = advanced.classList.contains("open") ? "收起筛选⌃" : "更多筛选⌄";
+});
+document.getElementById("landingCheckAll").addEventListener("change", (event) => {
+  document.querySelectorAll("#landingTable tbody tr").forEach((row) => {
+    if (row.style.display !== "none") row.querySelector(".landing-row-check").checked = event.currentTarget.checked;
+  });
+  updateLandingSelection();
+});
+document.querySelectorAll(".landing-row-check").forEach((checkbox) => checkbox.addEventListener("change", updateLandingSelection));
+document.querySelectorAll("[data-copy]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const text = button.dataset.copy;
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+    showLandingToast(`已复制：${text}`);
+  });
+});
+
+document.getElementById("landingCreateButton").addEventListener("click", () => showLandingToast("进入新建落地页流程"));
+document.getElementById("landingSaveView").addEventListener("click", () => showLandingToast("已保存为「我的常用视图」"));
+document.getElementById("landingRefresh").addEventListener("click", () => showLandingToast("列表已刷新"));
+document.getElementById("landingColumns").addEventListener("click", () => showLandingToast("列设置已打开"));
+document.getElementById("landingExport").addEventListener("click", () => showLandingToast("正在导出当前筛选结果"));
+document.querySelectorAll("#landingBatch button").forEach((button) => button.addEventListener("click", () => showLandingToast(`${button.textContent.trim()}操作已触发`)));
+
+renderLandingChips();

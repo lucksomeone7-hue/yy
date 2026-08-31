@@ -17,14 +17,18 @@
       </div>
       <nav class="nav" aria-label="主导航">
         <span class="nav-group-label">客户经营</span>
-        <button class="nav-item active" data-page="dashboard">经营看板</button>
+        <button class="nav-item" data-page="dashboard">经营看板</button>
         <button class="nav-item" data-page="layers">意向分层</button>
         <button class="nav-item" data-page="companies">企业账户</button>
         <button class="nav-item" data-page="actions">经营动作中心</button>
+        <span class="nav-group-label">内容与承接</span>
+        <button class="nav-item" data-page="landingPages">落地页管理</button>
         <span class="nav-group-label">用户中心</span>
         <button class="nav-item" data-page="users">用户列表</button>
         <button class="nav-item" data-page="segment">用户分组</button>
         <button class="nav-item" data-page="profileTags">用户画像</button>
+        <span class="nav-group-label">内容资产</span>
+        <button class="nav-item active" data-page="moduleManagement">模块管理</button>
         <span class="nav-group-label nav-group-label-settings">系统设置</span>
         <button class="nav-item" data-page="settings">客户意向评分规则</button>
         <button class="nav-item" data-page="settingsWeights">行为权重</button>
@@ -41,11 +45,110 @@
     <main class="app-shell">
       <header class="topbar">
         <div>
-          <h2 id="pageTitle">经营看板</h2>
+          <h2 id="pageTitle">模块管理</h2>
         </div>
       </header>
 
-      <section class="page active" id="dashboard">
+      <section class="page active" id="moduleManagement">
+        <div class="module-page-intro">
+          <div>
+            <span class="eyebrow">内容中心 · 可复用资产</span>
+            <h3>查找并复用团队模板</h3>
+            <p>按发布归属快速定位模板，也可以组合模板类型、来源和名称进行精确搜索。</p>
+          </div>
+          <button class="primary-button" id="createModuleButton">＋ 新建模板</button>
+        </div>
+
+        <section class="work-area module-filter-panel" aria-label="模块筛选">
+          <div class="organization-filter" role="group" aria-label="机构归属">
+            <span class="filter-label">机构</span>
+            <button class="active" data-organization="all">全部 <b>10</b></button>
+            <button data-organization="mine">本人发布 <b>3</b></button>
+            <button data-organization="current">所在组织 <b>5</b></button>
+            <button data-organization="other">其他组织 <b>2</b></button>
+          </div>
+          <div class="module-advanced-filter">
+            <label>
+              <span>模板类型</span>
+              <select id="moduleTypeFilter">
+                <option value="all">全部类型</option>
+                <option value="page">页面模板</option>
+                <option value="component">组件模板</option>
+              </select>
+            </label>
+            <label>
+              <span>模板来源</span>
+              <select id="moduleSourceFilter">
+                <option value="all">全部来源</option>
+                <option value="服务价值">服务价值</option>
+                <option value="AI 融入核心业务">AI 融入核心业务</option>
+                <option value="图片轮播图">图片轮播图</option>
+                <option value="智能诊断">智能诊断</option>
+                <option value="价值分析">价值分析</option>
+              </select>
+            </label>
+            <label class="module-search-field">
+              <span>名称搜索</span>
+              <span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="moduleNameSearch" type="search" placeholder="输入模板名称" autocomplete="off" /></span>
+            </label>
+            <button class="ghost-button module-reset" id="resetModuleFilters">重置</button>
+          </div>
+        </section>
+
+        <section class="work-area module-list-panel">
+          <div class="section-head module-list-head">
+            <div>
+              <h3>模板列表</h3>
+              <span class="module-scope" id="moduleResultSummary">共 10 个模板</span>
+            </div>
+            <span class="module-permission-note"><i>✓</i> 仅本人及所在组织模板可编辑</span>
+          </div>
+          <div class="table module-table" id="moduleTable">
+            <div class="table-row table-head">
+              <span>终端</span><span>模板类型</span><span>模板来源</span><span>名称</span><span>引用权限</span><span>发布人</span><span>所在机构</span><span>更新时间</span><span>操作</span>
+            </div>
+            <div class="table-row module-data-row" data-organization="current" data-type="component" data-source="服务价值" data-name="服务价值">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>服务价值</span><span><strong>服务价值</strong><small>标准服务价值展示模块</small></span><span><b class="access-badge">可编辑</b></span><span>大服务行业</span><span>高端BG</span><span>08-28 16:59</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="mine" data-type="component" data-source="服务价值" data-name="服务价值精简版">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>服务价值</span><span><strong>服务价值精简版</strong><small>适用于轻量落地页</small></span><span><b class="access-badge">可编辑</b></span><span>陈玉琴</span><span>高端BG</span><span>08-28 16:56</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="mine" data-type="component" data-source="AI 融入核心业务" data-name="智能体-陈玉琴">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>AI 融入核心业务</span><span><strong>智能体-陈玉琴</strong><small>核心业务智能体介绍</small></span><span><b class="access-badge">可编辑</b></span><span>陈玉琴</span><span>高端BG</span><span>08-26 18:21</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="other" data-type="component" data-source="图片轮播图" data-name="图片轮播图">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>图片轮播图</span><span><strong>图片轮播图</strong><small>多图自动轮播模块</small></span><span><b class="access-badge view">可引用</b></span><span>刘聪聪</span><span>超级版事业部</span><span>07-17 09:10</span><span><button class="text-button">预览</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="current" data-type="page" data-source="" data-name="YonIMP 用友智能监控平台">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge page">页面模板</b></span><span><em class="empty-value">未设置</em></span><span><strong>YonIMP｜用友智能监控平台</strong><small>产品专题页面</small></span><span><b class="access-badge">可编辑</b></span><span>杨晨</span><span>客户成功支持服务</span><span>07-07 12:52</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="current" data-type="page" data-source="" data-name="YonIMP 用友智能监控平台 V2">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge page">页面模板</b></span><span><em class="empty-value">未设置</em></span><span><strong>YonIMP｜用友智能监控平台 V2</strong><small>产品专题页面迭代版</small></span><span><b class="access-badge">可编辑</b></span><span>杨晨</span><span>客户成功支持服务</span><span>07-07 12:45</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="current" data-type="component" data-source="智能诊断" data-name="智能诊断">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>智能诊断</span><span><strong>智能诊断</strong><small>智能诊断结果展示</small></span><span><b class="access-badge">可编辑</b></span><span>杨晨</span><span>客户成功支持服务</span><span>07-07 12:41</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="mine" data-type="component" data-source="价值分析" data-name="价值分析">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>价值分析</span><span><strong>价值分析</strong><small>业务价值多维分析</small></span><span><b class="access-badge">可编辑</b></span><span>陈玉琴</span><span>高端BG</span><span>07-07 12:40</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="current" data-type="component" data-source="价值分析" data-name="价值分析看板">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge component">组件模板</b></span><span>价值分析</span><span><strong>价值分析看板</strong><small>指标卡与图表组合</small></span><span><b class="access-badge">可编辑</b></span><span>杨晨</span><span>客户成功支持服务</span><span>07-07 11:05</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="table-row module-data-row" data-organization="other" data-type="page" data-source="价值分析" data-name="价值分析专题页">
+              <span><b class="terminal-badge">WEB</b></span><span><b class="type-badge page">页面模板</b></span><span>价值分析</span><span><strong>价值分析专题页</strong><small>完整价值分析落地页</small></span><span><b class="access-badge view">可引用</b></span><span>杨晨</span><span>客户成功支持服务</span><span>07-07 11:04</span><span><button class="text-button">预览</button><button class="row-more" aria-label="更多操作">···</button></span>
+            </div>
+            <div class="module-empty-state" id="moduleEmptyState" hidden>
+              <i>⌕</i><strong>没有找到匹配的模板</strong><span>尝试调整机构、类型或搜索关键词</span><button class="text-button" id="emptyResetModuleFilters">清空筛选条件</button>
+            </div>
+          </div>
+          <div class="module-pagination">
+            <span id="modulePaginationText">显示 1–10，共 10 条</span>
+            <div><button disabled>‹</button><button class="active">1</button><button disabled>›</button></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="dashboard">
         <div class="dashboard-timebar">
           <div>
             <span class="eyebrow">默认统计口径</span>
@@ -795,6 +898,72 @@
             <span><b>0-19</b> 沉默客户</span>
           </div>
         </section>
+      </section>
+
+      <section class="page" id="landingPages">
+        <div class="landing-page-hero">
+          <div>
+            <span class="eyebrow">内容与承接 / 页面管理</span>
+            <h3>落地页管理</h3>
+            <p>统一查看、筛选和维护本人及下属团队创建的落地页。</p>
+          </div>
+          <button class="primary-button" id="landingCreateButton">＋ 新建落地页</button>
+        </div>
+
+        <section class="landing-filter-card">
+          <div class="landing-filter-row">
+            <strong>数据范围</strong>
+            <div class="landing-scope" id="landingScope">
+              <button class="active" data-landing-scope="全部可见">全部可见</button>
+              <button data-landing-scope="我创建的">我创建的</button>
+              <button data-landing-scope="我的团队">我的团队</button>
+            </div>
+            <div class="landing-search">
+              <select id="landingSearchType" aria-label="搜索字段">
+                <option value="all">全部字段</option>
+                <option value="title">标题</option>
+                <option value="address">页面地址</option>
+                <option value="publisher">发布人</option>
+              </select>
+              <input id="landingKeyword" placeholder="输入标题、页面地址或发布人" />
+              <button id="landingSearchButton">搜索</button>
+            </div>
+            <button class="ghost-button" id="landingAdvancedButton">更多筛选⌄</button>
+            <button class="ghost-button" id="landingResetButton">重置</button>
+          </div>
+          <div class="landing-advanced" id="landingAdvanced">
+            <strong>精确筛选</strong>
+            <select id="landingOrg"><option value="">所属组织：全部</option><option>云通信</option><option>高端BG</option><option>招聘云</option><option>人力事业部</option><option>市场部</option></select>
+            <select id="landingCategory"><option value="">页面分类：全部</option><option>通信云</option><option>体验式营销</option><option>招聘解决方案</option><option>产品发布</option><option>内容下载</option><option>活动报名</option></select>
+            <select id="landingStatus"><option value="">发布状态：全部</option><option>已上线</option><option>未上线</option></select>
+            <button class="landing-save-view" id="landingSaveView">☆ 保存为常用视图</button>
+          </div>
+          <div class="landing-chips" id="landingChips"></div>
+        </section>
+
+        <div class="landing-toolbar">
+          <div><b id="landingCount">6</b> 个落地页 <span>包含本人及 3 个下属组织的数据</span></div>
+          <div><button id="landingRefresh">↻ 刷新</button><button id="landingColumns">⚙ 列设置</button><button id="landingExport">⇩ 导出</button></div>
+        </div>
+
+        <section class="landing-table-card">
+          <div class="landing-table-scroll">
+            <table class="landing-table" id="landingTable">
+              <thead><tr><th><input id="landingCheckAll" type="checkbox" /></th><th>标题</th><th>页面地址</th><th>发布人</th><th>所属组织</th><th>分类</th><th>状态</th><th>更新时间 ↓</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr data-title="用友AI工作手机" data-address="ai-mobile.yonyou.com" data-publisher="邢伟" data-scope="我的团队" data-org="云通信" data-category="通信云" data-status="未上线"><td><input class="landing-row-check" type="checkbox" /></td><td><div class="landing-title-cell"><i>AI</i><span><b>用友AI工作手机</b><small>企业智能通信场景</small></span></div></td><td><code>ai-mobile.yonyou.com</code><button class="landing-copy" data-copy="ai-mobile.yonyou.com">⧉ 复制</button></td><td>邢伟</td><td>云通信<small>用友集团 / 云通信</small></td><td><em>通信云</em></td><td><span class="landing-status">未上线</span></td><td>2026-08-31<small>11:26</small></td><td><button class="landing-link">编辑</button><button class="landing-link" data-copy="ai-mobile.yonyou.com">获取地址</button></td></tr>
+                <tr data-title="用友BIP场景化服务" data-address="scenarios-copy.yonyou.com" data-publisher="陈玉琴" data-scope="我的团队" data-org="高端BG" data-category="体验式营销" data-status="已上线"><td><input class="landing-row-check" type="checkbox" /></td><td><div class="landing-title-cell blue"><i>BIP</i><span><b>用友BIP场景化服务</b><small>解决方案专题页</small></span></div></td><td><code>scenarios-copy.yonyou.com</code><button class="landing-copy" data-copy="scenarios-copy.yonyou.com">⧉ 复制</button></td><td>陈玉琴</td><td>高端BG<small>用友集团 / 高端BG</small></td><td><em>体验式营销</em></td><td><span class="landing-status online">已上线</span></td><td>2026-08-29<small>16:08</small></td><td><button class="landing-link">编辑</button><button class="landing-link" data-copy="scenarios-copy.yonyou.com">获取地址</button></td></tr>
+                <tr data-title="招聘行业解决方案-医药" data-address="hrsaas-med.yonyou.com" data-publisher="郭涛" data-scope="我创建的" data-org="招聘云" data-category="招聘解决方案" data-status="已上线"><td><input class="landing-row-check" type="checkbox" /></td><td><div class="landing-title-cell gold"><i>HR</i><span><b>招聘行业解决方案-医药</b><small>医药行业招聘场景</small></span></div></td><td><code>hrsaas-med.yonyou.com</code><button class="landing-copy" data-copy="hrsaas-med.yonyou.com">⧉ 复制</button></td><td>郭涛</td><td>招聘云<small>用友集团 / 招聘云</small></td><td><em>招聘解决方案</em></td><td><span class="landing-status online">已上线</span></td><td>2026-08-28<small>09:42</small></td><td><button class="landing-link">编辑</button><button class="landing-link" data-copy="hrsaas-med.yonyou.com">获取地址</button></td></tr>
+                <tr data-title="YonBIP 全球化产品发布" data-address="global-bip.yonyou.com" data-publisher="大服务行业" data-scope="我的团队" data-org="高端BG" data-category="产品发布" data-status="未上线"><td><input class="landing-row-check" type="checkbox" /></td><td><div class="landing-title-cell blue"><i>YB</i><span><b>YonBIP 全球化产品发布</b><small>海外产品专题</small></span></div></td><td><code>global-bip.yonyou.com</code><button class="landing-copy" data-copy="global-bip.yonyou.com">⧉ 复制</button></td><td>大服务行业</td><td>高端BG<small>用友集团 / 高端BG</small></td><td><em>产品发布</em></td><td><span class="landing-status">未上线</span></td><td>2026-08-26<small>14:30</small></td><td><button class="landing-link">编辑</button><button class="landing-link" data-copy="global-bip.yonyou.com">获取地址</button></td></tr>
+                <tr data-title="数智人力白皮书下载" data-address="hr-whitepaper.yonyou.com" data-publisher="郭涛" data-scope="我创建的" data-org="人力事业部" data-category="内容下载" data-status="已上线"><td><input class="landing-row-check" type="checkbox" /></td><td><div class="landing-title-cell"><i>HR</i><span><b>数智人力白皮书下载</b><small>内容获客落地页</small></span></div></td><td><code>hr-whitepaper.yonyou.com</code><button class="landing-copy" data-copy="hr-whitepaper.yonyou.com">⧉ 复制</button></td><td>郭涛</td><td>人力事业部<small>用友集团 / 人力事业部</small></td><td><em>内容下载</em></td><td><span class="landing-status online">已上线</span></td><td>2026-08-25<small>17:50</small></td><td><button class="landing-link">编辑</button><button class="landing-link" data-copy="hr-whitepaper.yonyou.com">获取地址</button></td></tr>
+                <tr data-title="用友网络生态伙伴大会" data-address="partner-event.yonyou.com" data-publisher="李小琳" data-scope="我的团队" data-org="市场部" data-category="活动报名" data-status="已上线"><td><input class="landing-row-check" type="checkbox" /></td><td><div class="landing-title-cell gold"><i>会</i><span><b>用友网络生态伙伴大会</b><small>活动报名落地页</small></span></div></td><td><code>partner-event.yonyou.com</code><button class="landing-copy" data-copy="partner-event.yonyou.com">⧉ 复制</button></td><td>李小琳</td><td>市场部<small>用友集团 / 市场部</small></td><td><em>活动报名</em></td><td><span class="landing-status online">已上线</span></td><td>2026-08-23<small>10:16</small></td><td><button class="landing-link">编辑</button><button class="landing-link" data-copy="partner-event.yonyou.com">获取地址</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="landing-empty" id="landingEmpty"><b>没有找到匹配的落地页</b><span>请调整关键词或清空部分筛选条件</span></div>
+        </section>
+        <div class="landing-batch" id="landingBatch">已选 <b id="landingSelected">0</b> 项 <button>批量上线</button><button>移动分类</button><button class="danger-text">删除</button></div>
+        <div class="landing-toast" id="landingToast"></div>
       </section>
 
       <section class="page" id="settings">
