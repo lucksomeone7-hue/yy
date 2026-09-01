@@ -6,7 +6,7 @@
 
 GitHub Pages 启用后访问：
 
-<https://lucksomeone7-hue.github.io/yy/>
+<https://lucksomeone7-hue.github.io/yy/mk>
 
 ## 本地访问
 
@@ -35,4 +35,3 @@ prototype/index.html
 -> 运营确认并执行或交接
 -> 回收内容互动、销售反馈与转化结果
 ```
-
