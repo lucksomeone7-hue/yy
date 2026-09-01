@@ -669,7 +669,7 @@ confirmPublishWeightButton.addEventListener("click", () => {
   setTimeout(() => setPublishWeightModal(false), 900);
 });
 
-let landingCurrentScope = "全部可见";
+let landingCurrentScope = "全部";
 let landingToastTimer;
 
 function showLandingToast(message) {
@@ -686,12 +686,18 @@ function renderLandingChips() {
   const org = document.getElementById("landingOrg").value;
   const category = document.getElementById("landingCategory").value;
   const status = document.getElementById("landingStatus").value;
+  const product = document.getElementById("landingProduct").value;
+  const industry = document.getElementById("landingIndustry").value;
+  const domain = document.getElementById("landingDomain").value;
   const chips = [
     `数据范围：${landingCurrentScope}`,
     keyword ? `${typeLabel}：${keyword}` : "",
     org ? `组织：${org}` : "",
     category ? `分类：${category}` : "",
     status ? `状态：${status}` : "",
+    product ? `产品：${product}` : "",
+    industry ? `行业：${industry}` : "",
+    domain ? `领域：${domain}` : "",
   ].filter(Boolean);
   const target = document.getElementById("landingChips");
   target.replaceChildren();
@@ -722,10 +728,13 @@ function applyLandingFilters() {
   const org = document.getElementById("landingOrg").value;
   const category = document.getElementById("landingCategory").value;
   const status = document.getElementById("landingStatus").value;
+  const product = document.getElementById("landingProduct").value;
+  const industry = document.getElementById("landingIndustry").value;
+  const domain = document.getElementById("landingDomain").value;
   let shown = 0;
 
   document.querySelectorAll("#landingTable tbody tr").forEach((row) => {
-    const scopeMatch = landingCurrentScope === "全部可见" || row.dataset.scope === landingCurrentScope;
+    const scopeMatch = landingCurrentScope === "全部" || row.dataset.scope === landingCurrentScope;
     const target = type === "all"
       ? `${row.dataset.title} ${row.dataset.address} ${row.dataset.publisher}`
       : row.dataset[type];
@@ -733,7 +742,10 @@ function applyLandingFilters() {
       && (!keyword || target.toLowerCase().includes(keyword))
       && (!org || row.dataset.org === org)
       && (!category || row.dataset.category === category)
-      && (!status || row.dataset.status === status);
+      && (!status || row.dataset.status === status)
+      && (!product || row.dataset.product === product)
+      && (!industry || row.dataset.industry === industry)
+      && (!domain || row.dataset.domain === domain);
     row.style.display = match ? "" : "none";
     if (match) shown += 1;
   });
@@ -746,14 +758,17 @@ function applyLandingFilters() {
 }
 
 function resetLandingFilters() {
-  landingCurrentScope = "全部可见";
+  landingCurrentScope = "全部";
   document.getElementById("landingKeyword").value = "";
   document.getElementById("landingSearchType").value = "all";
   document.getElementById("landingOrg").value = "";
   document.getElementById("landingCategory").value = "";
   document.getElementById("landingStatus").value = "";
+  document.getElementById("landingProduct").value = "";
+  document.getElementById("landingIndustry").value = "";
+  document.getElementById("landingDomain").value = "";
   document.querySelectorAll("[data-landing-scope]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.landingScope === "全部可见");
+    button.classList.toggle("active", button.dataset.landingScope === "全部");
   });
   applyLandingFilters();
   showLandingToast("筛选条件已重置");
@@ -773,7 +788,7 @@ document.getElementById("landingKeyword").addEventListener("keydown", (event) =>
   if (event.key === "Enter") applyLandingFilters();
 });
 document.getElementById("landingResetButton").addEventListener("click", resetLandingFilters);
-["landingOrg", "landingCategory", "landingStatus"].forEach((id) => {
+["landingOrg", "landingCategory", "landingStatus", "landingProduct", "landingIndustry", "landingDomain"].forEach((id) => {
   document.getElementById(id).addEventListener("change", applyLandingFilters);
 });
 document.getElementById("landingAdvancedButton").addEventListener("click", (event) => {
@@ -798,9 +813,6 @@ document.querySelectorAll("[data-copy]").forEach((button) => {
 
 document.getElementById("landingCreateButton").addEventListener("click", () => showLandingToast("进入新建落地页流程"));
 document.getElementById("landingSaveView").addEventListener("click", () => showLandingToast("已保存为「我的常用视图」"));
-document.getElementById("landingRefresh").addEventListener("click", () => showLandingToast("列表已刷新"));
-document.getElementById("landingColumns").addEventListener("click", () => showLandingToast("列设置已打开"));
-document.getElementById("landingExport").addEventListener("click", () => showLandingToast("正在导出当前筛选结果"));
 document.querySelectorAll("#landingBatch button").forEach((button) => button.addEventListener("click", () => showLandingToast(`${button.textContent.trim()}操作已触发`)));
 
 renderLandingChips();
