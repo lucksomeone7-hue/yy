@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Marketing Cloud 一期原型</title>
     <link rel="stylesheet" href="./styles.css" />
+      <link rel="stylesheet" href="./customer-expression.css" />
   </head>
   <body>
     <aside class="sidebar">
@@ -785,6 +786,13 @@
             <article><span>行为均分</span><strong>6</strong><em>近期行为热度偏低</em></article>
             <article><span>客户意向分</span><strong>--</strong><em>内部员工不计算 intent_score</em></article>
           </div>
+        </section>
+
+        <section class="work-area expression-module" aria-labelledby="expressionTitle">
+          <div class="section-head"><div><h3 id="expressionTitle">客户表达 <span class="expression-count" id="expressionCount"></span></h3><span class="module-scope">客户在表单中的实际表达 · 按提交时间保留记录</span></div><button class="ghost-button" id="expressionAll">查看全部</button></div>
+          <div class="expression-demo"><label for="expressionScenario">原型示例</label><select id="expressionScenario"><option value="customer">外部客户 · 张三</option><option value="employee">内部员工 · 王五</option><option value="empty">外部客户 · 暂无记录</option><option value="running">外部客户 · 正在整理</option><option value="failed">外部客户 · 整理失败</option><option value="no_content">外部客户 · 未提供业务信息</option></select><span>示例数据，反馈仅在本页演示</span></div>
+          <div id="expressionRecords" aria-live="polite"></div>
+          <p class="expression-footnote">来自客户本次填写，不代表采购判断；线索原有定时与实时同步独立运行。</p>
         </section>
 
         <div class="profile-tag-grid">
@@ -1703,5 +1711,6 @@
     </main>
 
     <script src="./script.js"></script>
+      <script src="./customer-expression.js"></script>
   </body>
 </html>
