@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Marketing Cloud 一期原型</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./sms.css" />
       <link rel="stylesheet" href="./customer-expression.css" />
   </head>
   <body>
@@ -28,6 +29,9 @@
         <button class="nav-item" data-page="users">用户列表</button>
         <button class="nav-item" data-page="segment">用户分组</button>
         <button class="nav-item" data-page="profileTags">用户画像</button>
+        <span class="nav-group-label">营销中心</span>
+        <button class="nav-item" data-page="smsManagement">短信管理</button>
+        <button class="nav-item" data-page="smsTemplates">短信模板</button>
         <span class="nav-group-label">内容资产</span>
         <button class="nav-item active" data-page="moduleManagement">模块管理</button>
         <span class="nav-group-label nav-group-label-settings">系统设置</span>
@@ -50,6 +54,8 @@
         </div>
       </header>
 
+      <section class="page" id="smsManagement"></section>
+      <section class="page" id="smsTemplates"></section>
       <section class="page active" id="moduleManagement">
         <div class="module-page-intro">
           <div>
@@ -1712,5 +1718,6 @@
 
     <script src="./script.js"></script>
       <script src="./customer-expression.js"></script>
+    <script src="./sms.js"></script>
   </body>
 </html>

@@ -1,4 +1,6 @@
 const pageTitles = {
+  smsManagement: "短信管理",
+  smsTemplates: "短信模板",
   moduleManagement: "模块管理",
   dashboard: "经营看板",
   layers: "客户意向分层",
