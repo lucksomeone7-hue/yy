@@ -925,36 +925,48 @@
         </div>
 
         <section class="landing-filter-card">
-          <div class="landing-filter-row">
-            <strong>数据范围</strong>
+          <div class="landing-filter-row" role="group" aria-label="数据范围">
+            <span class="filter-label">数据范围</span>
             <div class="landing-scope" id="landingScope">
               <button class="active" data-landing-scope="全部">全部</button>
               <button data-landing-scope="本人发布">本人发布</button>
               <button data-landing-scope="所在组织">所在组织</button>
               <button data-landing-scope="其他组织">其他组织</button>
             </div>
-            <div class="landing-search">
+          </div>
+          <div class="landing-filter-fields">
+            <label class="filter-field landing-search-type">
+              <span>搜索字段</span>
               <select id="landingSearchType" aria-label="搜索字段">
                 <option value="all">全部字段</option>
                 <option value="title">标题</option>
                 <option value="address">页面地址</option>
                 <option value="publisher">发布人</option>
               </select>
-              <input id="landingKeyword" placeholder="输入标题、页面地址或发布人" />
-              <button id="landingSearchButton">搜索</button>
+            </label>
+            <label class="filter-field landing-keyword-field">
+              <span>关键词</span>
+              <span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="landingKeyword" type="search" placeholder="输入标题、页面地址或发布人" autocomplete="off" /></span>
+            </label>
+            <div class="landing-filter-actions">
+              <button class="primary-button" id="landingSearchButton">搜索</button>
+              <button class="ghost-button landing-advanced-toggle" id="landingAdvancedButton" aria-expanded="false" aria-controls="landingAdvanced">高级筛选 <span aria-hidden="true">⌄</span></button>
+              <button class="ghost-button" id="landingResetButton">重置</button>
             </div>
-            <button class="ghost-button" id="landingAdvancedButton">更多筛选⌄</button>
-            <button class="ghost-button" id="landingResetButton">重置</button>
           </div>
           <div class="landing-advanced" id="landingAdvanced">
-            <strong>精确筛选</strong>
-            <select id="landingOrg"><option value="">所属组织：全部</option><option>云通信</option><option>高端BG</option><option>招聘云</option><option>人力事业部</option><option>市场部</option></select>
-            <select id="landingCategory"><option value="">页面分类：全部</option><option>通信云</option><option>体验式营销</option><option>招聘解决方案</option><option>产品发布</option><option>内容下载</option><option>活动报名</option></select>
-            <select id="landingStatus"><option value="">发布状态：全部</option><option>已上线</option><option>未上线</option></select>
-            <select id="landingProduct"><option value="">产品：全部</option><option>AI工作手机</option><option>YonBIP</option><option>YonHR</option><option>营销云</option></select>
-            <select id="landingIndustry"><option value="">行业：全部</option><option>通用</option><option>医药</option><option>制造</option></select>
-            <select id="landingDomain"><option value="">领域：全部</option><option>数智营销</option><option>数智人力</option><option>企业服务</option><option>市场活动</option></select>
-            <button class="landing-save-view" id="landingSaveView">☆ 保存为常用视图</button>
+            <div class="landing-advanced-head">
+              <div><strong>高级筛选</strong><span>组合更多条件，结果会自动更新</span></div>
+              <button class="landing-save-view" id="landingSaveView">☆ 保存为常用视图</button>
+            </div>
+            <div class="landing-advanced-grid">
+              <label class="filter-field"><span>所属组织</span><select id="landingOrg"><option value="">全部组织</option><option>云通信</option><option>高端BG</option><option>招聘云</option><option>人力事业部</option><option>市场部</option></select></label>
+              <label class="filter-field"><span>页面分类</span><select id="landingCategory"><option value="">全部分类</option><option>通信云</option><option>体验式营销</option><option>招聘解决方案</option><option>产品发布</option><option>内容下载</option><option>活动报名</option></select></label>
+              <label class="filter-field"><span>发布状态</span><select id="landingStatus"><option value="">全部状态</option><option>已上线</option><option>未上线</option></select></label>
+              <label class="filter-field"><span>产品</span><select id="landingProduct"><option value="">全部产品</option><option>AI工作手机</option><option>YonBIP</option><option>YonHR</option><option>营销云</option></select></label>
+              <label class="filter-field"><span>行业</span><select id="landingIndustry"><option value="">全部行业</option><option>通用</option><option>医药</option><option>制造</option></select></label>
+              <label class="filter-field"><span>领域</span><select id="landingDomain"><option value="">全部领域</option><option>数智营销</option><option>数智人力</option><option>企业服务</option><option>市场活动</option></select></label>
+            </div>
           </div>
           <div class="landing-chips" id="landingChips"></div>
         </section>

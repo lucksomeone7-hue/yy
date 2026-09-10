@@ -795,8 +795,9 @@ document.getElementById("landingResetButton").addEventListener("click", resetLan
 });
 document.getElementById("landingAdvancedButton").addEventListener("click", (event) => {
   const advanced = document.getElementById("landingAdvanced");
-  advanced.classList.toggle("open");
-  event.currentTarget.textContent = advanced.classList.contains("open") ? "收起筛选⌃" : "更多筛选⌄";
+  const isOpen = advanced.classList.toggle("open");
+  event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+  event.currentTarget.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span aria-hidden="true">${isOpen ? "⌃" : "⌄"}</span>`;
 });
 document.getElementById("landingCheckAll").addEventListener("change", (event) => {
   document.querySelectorAll("#landingTable tbody tr").forEach((row) => {
