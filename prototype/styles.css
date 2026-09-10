@@ -5000,3 +5000,153 @@ input[type="radio"] {
     padding: 14px 18px;
   }
 }
+
+/* 统一筛选规范：以模块管理筛选条为基准 */
+.unified-filter-panel {
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.unified-filter-panel.embedded {
+  margin-bottom: 14px;
+  box-shadow: none;
+}
+
+.unified-filter-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  background: #fafafb;
+}
+
+.unified-filter-fields.four-columns {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.unified-filter-fields.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.unified-filter-field {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.unified-filter-field > span:first-child {
+  color: #696c72;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.unified-filter-field input,
+.unified-filter-field select {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  border-color: #dedfe2;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.user-filter-grid {
+  grid-template-columns: minmax(300px, 1.6fr) minmax(150px, 0.7fr) minmax(160px, 0.75fr) auto;
+}
+
+.company-basic-filter {
+  grid-template-columns: minmax(360px, 1fr) auto;
+}
+
+.weight-filter-grid {
+  grid-template-columns: minmax(320px, 1fr) minmax(180px, 0.35fr);
+}
+
+.unified-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unified-filter-actions button,
+.unified-reset {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.unified-advanced-toggle span {
+  margin-left: 4px;
+  color: #92949a;
+}
+
+.unified-filter-advanced {
+  display: none;
+  border-top: 1px solid #eeeeef;
+}
+
+.unified-filter-advanced.open {
+  display: block;
+  animation: landing-filter-reveal 0.18s ease-out;
+}
+
+.weight-filter-panel {
+  margin-top: 14px;
+}
+
+/* 落地页筛选沿用同一结构，不再单独强调高级区。 */
+.landing-filter-fields {
+  grid-template-columns: minmax(150px, 0.55fr) minmax(300px, 1.45fr) auto;
+}
+
+.landing-advanced {
+  padding: 16px 18px 18px;
+}
+
+.landing-advanced-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.landing-advanced-actions {
+  display: flex;
+  align-items: end;
+}
+
+.landing-advanced-actions .landing-save-view {
+  min-height: 40px;
+}
+
+@media (max-width: 1100px) {
+  .unified-filter-fields.four-columns,
+  .user-filter-grid,
+  .landing-advanced-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .company-basic-filter {
+    grid-template-columns: minmax(280px, 1fr) auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .unified-filter-fields,
+  .unified-filter-fields.four-columns,
+  .unified-filter-fields.two-columns,
+  .user-filter-grid,
+  .company-basic-filter,
+  .weight-filter-grid,
+  .landing-filter-fields,
+  .landing-advanced-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .unified-filter-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}

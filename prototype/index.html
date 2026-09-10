@@ -467,13 +467,14 @@
       </section>
 
       <section class="page" id="layers">
-        <div class="filter-bar">
-          <select><option>全部行业</option><option>制造业</option><option>医疗</option><option>金融</option></select>
-          <select><option>全部地区</option><option>华东</option><option>华南</option><option>华北</option></select>
-          <select id="intentLevelSelect"><option value="high">高意向</option><option value="mid">中意向</option><option value="low">低意向</option><option value="silent">沉默客户</option></select>
-          <select><option>最近 30 天</option><option>最近 7 天</option><option>最近 90 天</option></select>
-          <button class="primary-button">筛选</button>
-        </div>
+        <section class="unified-filter-panel" aria-label="客户筛选">
+          <div class="unified-filter-fields four-columns">
+            <label class="unified-filter-field"><span>行业</span><select><option>全部行业</option><option>制造业</option><option>医疗</option><option>金融</option></select></label>
+            <label class="unified-filter-field"><span>地区</span><select><option>全部地区</option><option>华东</option><option>华南</option><option>华北</option></select></label>
+            <label class="unified-filter-field"><span>意向等级</span><select id="intentLevelSelect"><option value="high">高意向</option><option value="mid">中意向</option><option value="low">低意向</option><option value="silent">沉默客户</option></select></label>
+            <label class="unified-filter-field"><span>行为时间</span><select><option>最近 30 天</option><option>最近 7 天</option><option>最近 90 天</option></select></label>
+          </div>
+        </section>
 
         <div class="intent-level-overview" aria-label="客户意向等级">
           <button class="intent-level-card high active" data-intent-level="high"><span>高意向</span><strong>80-100 分</strong><em>建议优先经营或提醒销售</em><b>486 人</b></button>
@@ -511,12 +512,14 @@
             </div>
             <button class="ghost-button">导入用户</button>
           </div>
-          <div class="group-search-row">
-            <input placeholder="搜索姓名、手机号、邮箱或所属企业" />
-            <button class="ghost-button">搜索</button>
-            <select><option>全部身份</option><option>客户</option><option>内部员工</option></select>
-            <select><option>全部用户状态</option><option>可经营</option><option>已排除</option></select>
-          </div>
+          <section class="unified-filter-panel embedded" aria-label="用户筛选">
+            <div class="unified-filter-fields user-filter-grid">
+              <label class="unified-filter-field keyword"><span>用户搜索</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input type="search" placeholder="搜索姓名、手机号、邮箱或所属企业" /></span></label>
+              <label class="unified-filter-field"><span>用户身份</span><select><option>全部身份</option><option>客户</option><option>内部员工</option></select></label>
+              <label class="unified-filter-field"><span>用户状态</span><select><option>全部状态</option><option>可经营</option><option>已排除</option></select></label>
+              <button class="ghost-button unified-reset">重置</button>
+            </div>
+          </section>
           <div class="table group-table user-list-table">
             <div class="table-row table-head"><span>姓名</span><span>所属企业</span><span>身份</span><span>职位</span><span>用户状态</span><span>最近活跃</span><span>标签</span><span>操作</span></div>
             <div class="table-row"><span>张三</span><span>XX 制造集团</span><span>客户</span><span>采购负责人</span><span>可经营</span><span>2 天前</span><span>制造业、供应链云</span><span><button class="text-button" data-jump="profileTags">查看画像</button></span></div>
@@ -535,24 +538,21 @@
             </div>
             <button class="ghost-button">导入公司</button>
           </div>
-          <div class="company-filter-row">
-            <input placeholder="请输入公司名称/行业/产品关键词" />
-            <button class="ghost-button">搜索</button>
-            <button class="text-button">高级筛选</button>
-            <select>
-              <option>全部企业状态</option>
-              <option>高意向</option>
-              <option>升温</option>
-              <option>培育</option>
-              <option>低活跃</option>
-            </select>
-            <select>
-              <option>全部 CRM 状态</option>
-              <option>已建档</option>
-              <option>未建档</option>
-              <option>部分同步</option>
-            </select>
-          </div>
+          <section class="unified-filter-panel embedded" aria-label="企业筛选">
+            <div class="unified-filter-fields company-basic-filter">
+              <label class="unified-filter-field keyword"><span>企业搜索</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input type="search" placeholder="输入公司名称、行业或产品关键词" /></span></label>
+              <div class="unified-filter-actions">
+                <button class="ghost-button unified-advanced-toggle" id="companyAdvancedButton" aria-expanded="false" aria-controls="companyAdvancedFilters">高级筛选 <span aria-hidden="true">⌄</span></button>
+                <button class="ghost-button unified-reset">重置</button>
+              </div>
+            </div>
+            <div class="unified-filter-advanced" id="companyAdvancedFilters">
+              <div class="unified-filter-fields two-columns">
+                <label class="unified-filter-field"><span>企业状态</span><select><option>全部状态</option><option>高意向</option><option>升温</option><option>培育</option><option>低活跃</option></select></label>
+                <label class="unified-filter-field"><span>CRM 状态</span><select><option>全部状态</option><option>已建档</option><option>未建档</option><option>部分同步</option></select></label>
+              </div>
+            </div>
+          </section>
           <div class="company-summary-row">
             <article><span>高意向企业</span><strong>73</strong></article>
             <article><span>近7天升温</span><strong>28</strong></article>
@@ -949,16 +949,11 @@
               <span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="landingKeyword" type="search" placeholder="输入标题、页面地址或发布人" autocomplete="off" /></span>
             </label>
             <div class="landing-filter-actions">
-              <button class="primary-button" id="landingSearchButton">搜索</button>
               <button class="ghost-button landing-advanced-toggle" id="landingAdvancedButton" aria-expanded="false" aria-controls="landingAdvanced">高级筛选 <span aria-hidden="true">⌄</span></button>
               <button class="ghost-button" id="landingResetButton">重置</button>
             </div>
           </div>
           <div class="landing-advanced" id="landingAdvanced">
-            <div class="landing-advanced-head">
-              <div><strong>高级筛选</strong><span>组合更多条件，结果会自动更新</span></div>
-              <button class="landing-save-view" id="landingSaveView">☆ 保存为常用视图</button>
-            </div>
             <div class="landing-advanced-grid">
               <label class="filter-field"><span>所属组织</span><select id="landingOrg"><option value="">全部组织</option><option>云通信</option><option>高端BG</option><option>招聘云</option><option>人力事业部</option><option>市场部</option></select></label>
               <label class="filter-field"><span>页面分类</span><select id="landingCategory"><option value="">全部分类</option><option>通信云</option><option>体验式营销</option><option>招聘解决方案</option><option>产品发布</option><option>内容下载</option><option>活动报名</option></select></label>
@@ -966,6 +961,7 @@
               <label class="filter-field"><span>产品</span><select id="landingProduct"><option value="">全部产品</option><option>AI工作手机</option><option>YonBIP</option><option>YonHR</option><option>营销云</option></select></label>
               <label class="filter-field"><span>行业</span><select id="landingIndustry"><option value="">全部行业</option><option>通用</option><option>医药</option><option>制造</option></select></label>
               <label class="filter-field"><span>领域</span><select id="landingDomain"><option value="">全部领域</option><option>数智营销</option><option>数智人力</option><option>企业服务</option><option>市场活动</option></select></label>
+              <div class="landing-advanced-actions"><button class="landing-save-view" id="landingSaveView">☆ 保存为常用视图</button></div>
             </div>
           </div>
           <div class="landing-chips" id="landingChips"></div>
@@ -1074,8 +1070,9 @@
         <section class="work-area weight-rule-console">
           <div class="weight-toolbar">
             <div><h3>行为权重规则</h3><span class="module-scope">同一事件编码 + 内容/场景编码必须唯一。</span></div>
-            <div class="button-row"><input id="weightRuleSearch" placeholder="搜索行为名称、事件或场景" /><select id="weightCategoryFilter"><option value="all">全部分类</option><option value="行为">行为</option><option value="内容">内容</option><option value="活动">活动</option></select><button class="primary-button" id="addWeightRuleButton">新增规则</button></div>
+            <button class="primary-button" id="addWeightRuleButton">新增规则</button>
           </div>
+          <section class="unified-filter-panel embedded weight-filter-panel" aria-label="行为权重筛选"><div class="unified-filter-fields weight-filter-grid"><label class="unified-filter-field keyword"><span>规则搜索</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="weightRuleSearch" type="search" placeholder="搜索行为名称、事件或场景" /></span></label><label class="unified-filter-field"><span>规则分类</span><select id="weightCategoryFilter"><option value="all">全部分类</option><option value="行为">行为</option><option value="内容">内容</option><option value="活动">活动</option></select></label></div></section>
           <div class="table final-weight-table" id="weightRuleTable">
             <div class="table-row table-head"><span>分类</span><span>行为名称</span><span>事件/场景编码</span><span>基础分</span><span>计分限制</span><span>状态</span><span>操作</span></div>
             <div class="table-row weight-rule-row" data-category="行为" data-search="访问官网 落地页 browse page"><span>行为</span><span>访问官网/落地页</span><span class="code-text">browse / page</span><span><b class="weight-score">+2</b></span><span>每会话最多 1 次</span><span><b class="rule-enabled">启用</b></span><span><button class="text-button edit-weight-rule">编辑</button><button class="text-button danger-text">停用</button></span></div>
@@ -1409,20 +1406,14 @@
               <button class="primary-button" data-jump="segmentCreate" data-create-mode="ai">AI 创建分组</button>
             </div>
           </div>
-          <div class="group-search-row">
-            <input placeholder="请输入分组名" />
-            <button class="ghost-button">搜索</button>
-            <select>
-              <option>全部类型</option>
-              <option>固定组</option>
-              <option>条件组</option>
-            </select>
-            <select>
-              <option>全部创建方式</option>
-              <option>手动创建</option>
-              <option>AI 生成</option>
-            </select>
-          </div>
+          <section class="unified-filter-panel embedded" aria-label="用户分组筛选">
+            <div class="unified-filter-fields user-filter-grid">
+              <label class="unified-filter-field keyword"><span>分组搜索</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input type="search" placeholder="输入分组名称" /></span></label>
+              <label class="unified-filter-field"><span>分组类型</span><select><option>全部类型</option><option>固定组</option><option>条件组</option></select></label>
+              <label class="unified-filter-field"><span>创建方式</span><select><option>全部方式</option><option>手动创建</option><option>AI 生成</option></select></label>
+              <button class="ghost-button unified-reset">重置</button>
+            </div>
+          </section>
           <div class="group-summary">
             <article><span>全部分组</span><strong>334</strong></article>
             <article><span>条件组</span><strong>86</strong></article>

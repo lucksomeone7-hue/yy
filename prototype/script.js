@@ -785,7 +785,7 @@ document.querySelectorAll("[data-landing-scope]").forEach((button) => {
   });
 });
 
-document.getElementById("landingSearchButton").addEventListener("click", applyLandingFilters);
+document.getElementById("landingKeyword").addEventListener("input", applyLandingFilters);
 document.getElementById("landingKeyword").addEventListener("keydown", (event) => {
   if (event.key === "Enter") applyLandingFilters();
 });
@@ -816,6 +816,22 @@ document.querySelectorAll("[data-copy]").forEach((button) => {
 
 document.getElementById("landingCreateButton").addEventListener("click", () => showLandingToast("进入新建落地页流程"));
 document.getElementById("landingSaveView").addEventListener("click", () => showLandingToast("已保存为「我的常用视图」"));
+
+const companyAdvancedButton = document.getElementById("companyAdvancedButton");
+companyAdvancedButton.addEventListener("click", () => {
+  const advanced = document.getElementById("companyAdvancedFilters");
+  const isOpen = advanced.classList.toggle("open");
+  companyAdvancedButton.setAttribute("aria-expanded", String(isOpen));
+  companyAdvancedButton.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span aria-hidden="true">${isOpen ? "⌃" : "⌄"}</span>`;
+});
+
+document.querySelectorAll(".unified-reset").forEach((button) => {
+  button.addEventListener("click", () => {
+    const panel = button.closest(".unified-filter-panel");
+    panel.querySelectorAll("input").forEach((input) => { input.value = ""; });
+    panel.querySelectorAll("select").forEach((select) => { select.selectedIndex = 0; });
+  });
+});
 document.querySelectorAll("#landingBatch button").forEach((button) => button.addEventListener("click", () => showLandingToast(`${button.textContent.trim()}操作已触发`)));
 
 renderLandingChips();
