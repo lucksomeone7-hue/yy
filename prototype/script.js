@@ -692,7 +692,7 @@ function renderLandingChips() {
   const industry = document.getElementById("landingIndustry").value;
   const domain = document.getElementById("landingDomain").value;
   const chips = [
-    `数据范围：${landingCurrentScope}`,
+    `发布范围：${landingCurrentScope}`,
     keyword ? `${typeLabel}：${keyword}` : "",
     org ? `组织：${org}` : "",
     category ? `分类：${category}` : "",
@@ -736,7 +736,10 @@ function applyLandingFilters() {
   let shown = 0;
 
   document.querySelectorAll("#landingTable tbody tr").forEach((row) => {
-    const scopeMatch = landingCurrentScope === "全部" || row.dataset.scope === landingCurrentScope;
+    const scopeValue = landingCurrentScope === "所在组织发布" ? "所在组织"
+      : landingCurrentScope === "其他组织发布" ? "其他组织"
+      : landingCurrentScope;
+    const scopeMatch = landingCurrentScope === "全部" || row.dataset.scope === scopeValue;
     const target = type === "all"
       ? `${row.dataset.title} ${row.dataset.address} ${row.dataset.publisher}`
       : row.dataset[type];
@@ -835,3 +838,29 @@ document.querySelectorAll(".unified-reset").forEach((button) => {
 document.querySelectorAll("#landingBatch button").forEach((button) => button.addEventListener("click", () => showLandingToast(`${button.textContent.trim()}操作已触发`)));
 
 renderLandingChips();
+
+// 筛选统一：发布范围文案与数据值兼容，并保留查询按钮作为明确的执行入口。
+const landingSearchButton = document.getElementById("landingSearchButton");
+if (landingSearchButton) landingSearchButton.addEventListener("click", applyLandingFilters);
+
+function filterUsers() {
+  const keyword = document.getElementById("userKeyword").value.trim().toLowerCase();
+  const identity = document.getElementById("userIdentityFilter").value;
+  const status = document.getElementById("userStatusFilter").value;
+  let shown = 0;
+  document.querySelectorAll(".user-list-row").forEach((row) => {
+    const match = (!keyword || row.dataset.search.toLowerCase().includes(keyword))
+      && (!identity || row.dataset.identity === identity)
+      && (!status || row.dataset.status === status);
+    row.style.display = match ? "" : "none";
+    if (match) shown += 1;
+  });
+  const empty = document.getElementById("userEmptyState");
+  if (empty) empty.hidden = Boolean(shown);
+}
+
+const userSearchButton = document.getElementById("userSearchButton");
+if (userSearchButton) userSearchButton.addEventListener("click", filterUsers);
+document.getElementById("userKeyword")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") filterUsers();
+});

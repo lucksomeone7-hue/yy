@@ -469,10 +469,11 @@
       <section class="page" id="layers">
         <section class="unified-filter-panel" aria-label="客户筛选">
           <div class="unified-filter-fields four-columns">
-            <label class="unified-filter-field"><span>行业</span><select><option>全部行业</option><option>制造业</option><option>医疗</option><option>金融</option></select></label>
-            <label class="unified-filter-field"><span>地区</span><select><option>全部地区</option><option>华东</option><option>华南</option><option>华北</option></select></label>
+            <label class="unified-filter-field"><span>行业</span><select id="intentIndustryFilter"><option>全部行业</option><option>制造业</option><option>医疗</option><option>金融</option></select></label>
+            <label class="unified-filter-field"><span>地区</span><select id="intentRegionFilter"><option>全部地区</option><option>华东</option><option>华南</option><option>华北</option></select></label>
             <label class="unified-filter-field"><span>意向等级</span><select id="intentLevelSelect"><option value="high">高意向</option><option value="mid">中意向</option><option value="low">低意向</option><option value="silent">沉默客户</option></select></label>
-            <label class="unified-filter-field"><span>行为时间</span><select><option>最近 30 天</option><option>最近 7 天</option><option>最近 90 天</option></select></label>
+            <label class="unified-filter-field"><span>行为时间</span><select id="intentRangeFilter"><option>最近 30 天</option><option>最近 7 天</option><option>最近 90 天</option></select></label>
+            <button class="primary-button" id="intentApplyFilter">查询</button>
           </div>
         </section>
 
@@ -514,9 +515,10 @@
           </div>
           <section class="unified-filter-panel embedded" aria-label="用户筛选">
             <div class="unified-filter-fields user-filter-grid">
-              <label class="unified-filter-field keyword"><span>用户搜索</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input type="search" placeholder="搜索姓名、手机号、邮箱或所属企业" /></span></label>
-              <label class="unified-filter-field"><span>用户身份</span><select><option>全部身份</option><option>客户</option><option>内部员工</option></select></label>
-              <label class="unified-filter-field"><span>用户状态</span><select><option>全部状态</option><option>可经营</option><option>已排除</option></select></label>
+              <label class="unified-filter-field keyword"><span>用户搜索</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="userKeyword" type="search" placeholder="搜索姓名、手机号、邮箱或所属企业" /></span></label>
+              <label class="unified-filter-field"><span>用户身份</span><select id="userIdentityFilter"><option value="">全部身份</option><option>客户</option><option>内部员工</option></select></label>
+              <label class="unified-filter-field"><span>用户状态</span><select id="userStatusFilter"><option value="">全部状态</option><option>可经营</option><option>已排除</option></select></label>
+              <button class="primary-button" id="userSearchButton">搜索</button>
               <button class="ghost-button unified-reset">重置</button>
             </div>
           </section>
@@ -925,13 +927,13 @@
         </div>
 
         <section class="landing-filter-card">
-          <div class="landing-filter-row" role="group" aria-label="数据范围">
-            <span class="filter-label">数据范围</span>
+          <div class="landing-filter-row" role="group" aria-label="发布范围">
+            <span class="filter-label">发布范围</span>
             <div class="landing-scope" id="landingScope">
               <button class="active" data-landing-scope="全部">全部</button>
               <button data-landing-scope="本人发布">本人发布</button>
-              <button data-landing-scope="所在组织">所在组织</button>
-              <button data-landing-scope="其他组织">其他组织</button>
+              <button data-landing-scope="所在组织发布">所在组织发布</button>
+              <button data-landing-scope="其他组织发布">其他组织发布</button>
             </div>
           </div>
           <div class="landing-filter-fields">
@@ -949,6 +951,7 @@
               <span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="landingKeyword" type="search" placeholder="输入标题、页面地址或发布人" autocomplete="off" /></span>
             </label>
             <div class="landing-filter-actions">
+              <button class="primary-button" id="landingSearchButton">搜索</button>
               <button class="ghost-button landing-advanced-toggle" id="landingAdvancedButton" aria-expanded="false" aria-controls="landingAdvanced">高级筛选 <span aria-hidden="true">⌄</span></button>
               <button class="ghost-button" id="landingResetButton">重置</button>
             </div>
