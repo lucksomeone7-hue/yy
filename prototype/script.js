@@ -1,13 +1,19 @@
 const pageTitles = {
+  contentCenter: "内容中心",
   smsManagement: "短信管理",
   smsTemplates: "短信模板",
-  moduleManagement: "模块管理",
+  moduleManagement: "内容模块",
+  landingCategories: "落地页分类管理",
   dashboard: "经营看板",
   layers: "客户意向分层",
   companies: "企业账户",
   account: "企业洞察",
   actions: "经营动作中心",
-  landingPages: "落地页管理",
+  landingPages: "落地页",
+  activities: "活动管理",
+  activityDetail: "活动详情",
+  leads: "线索管理",
+  leadSettings: "线索设置",
   users: "用户列表",
   customerProfile: "客户画像",
   profileTags: "用户画像",
@@ -38,7 +44,6 @@ function filterModules() {
     if (visible) visibleCount += 1;
   });
 
-  document.getElementById("moduleResultSummary").textContent = `共 ${visibleCount} 个模板`;
   document.getElementById("modulePaginationText").textContent = visibleCount ? `显示 1–${visibleCount}，共 ${visibleCount} 条` : "暂无匹配数据";
   document.getElementById("moduleEmptyState").hidden = visibleCount !== 0;
 }
@@ -62,9 +67,8 @@ document.querySelectorAll(".organization-filter [data-organization]").forEach((b
     filterModules();
   });
 });
-document.getElementById("moduleTypeFilter").addEventListener("change", filterModules);
-document.getElementById("moduleSourceFilter").addEventListener("change", filterModules);
-document.getElementById("moduleNameSearch").addEventListener("input", filterModules);
+document.getElementById("searchModuleFilters").addEventListener("click", filterModules);
+document.getElementById("moduleNameSearch").addEventListener("keydown", (event) => { if (event.key === "Enter") filterModules(); });
 document.getElementById("resetModuleFilters").addEventListener("click", resetModuleFilters);
 document.getElementById("emptyResetModuleFilters").addEventListener("click", resetModuleFilters);
 document.getElementById("createModuleButton").addEventListener("click", (event) => {
@@ -76,18 +80,42 @@ function showPage(page) {
   const parentPage = {
     account: "companies",
     segmentCreate: "segment",
+    activityDetail: "activities",
+    landingPages: "contentCenter",
+    landingCategories: "contentCenter",
+    moduleManagement: "contentCenter",
   };
   const activePage = parentPage[page] || page;
   document.querySelectorAll(".nav-item").forEach((item) => {
     item.classList.toggle("active", item.dataset.page === activePage);
   });
+  document.querySelectorAll(".content-sidebar-children > button").forEach((item) => item.classList.remove("active"));
+  if (activePage !== "contentCenter") {
+    document.querySelector(".content-home-item")?.classList.remove("active");
+  } else if (["landingPages", "landingCategories", "moduleManagement"].includes(page)) {
+    document.querySelector(".content-home-item")?.classList.remove("active");
+    const landingMenuItem = document.querySelector('.content-sidebar-children [data-jump="landingPages"]');
+    landingMenuItem?.classList.add("active");
+    const landingGroup = landingMenuItem?.closest(".content-sidebar-group");
+    document.querySelectorAll(".content-sidebar-group").forEach((group) => {
+      const isLandingGroup = group === landingGroup;
+      group.classList.toggle("open", isLandingGroup);
+      group.querySelector(".content-sidebar-group-toggle")?.setAttribute("aria-expanded", String(isLandingGroup));
+      const children = group.querySelector(".content-sidebar-children");
+      if (children) children.hidden = !isLandingGroup;
+    });
+  }
   document.querySelectorAll(".page").forEach((section) => section.classList.remove("active"));
   document.getElementById(page).classList.add("active");
+  document.querySelectorAll("[data-landing-tab]").forEach((item) => item.classList.toggle("active", item.dataset.landingTab === page));
   document.getElementById("pageTitle").textContent = pageTitles[page];
 }
 
 document.querySelectorAll(".nav-item").forEach((button) => {
-  button.addEventListener("click", () => showPage(button.dataset.page));
+  button.addEventListener("click", () => {
+    showPage(button.dataset.page);
+    if (button.dataset.page === "contentCenter") showContentOverview();
+  });
 });
 
 document.querySelectorAll("[data-jump]").forEach((button) => {
@@ -96,6 +124,649 @@ document.querySelectorAll("[data-jump]").forEach((button) => {
     if (button.dataset.aiTemplate) applySegmentTemplate(button.dataset.aiTemplate);
   });
 });
+
+document.querySelectorAll("[data-landing-tab]").forEach((button) => {
+  button.addEventListener("click", () => showPage(button.dataset.landingTab));
+});
+
+const contentSectionData = {
+  articles: { group: "内容资产", name: "文章", title: "文章管理", description: "统一创建、发布和复用营销文章。", action: "＋ 新建文章", count: 428, rows: [["行业洞察", "制造业数智化白皮书解读", "SEO", "人工", "2,846", "326", "148", "陈玉琴", "今天 10:32", "已上架"], ["产品动态", "AI 融入核心业务的五个实践", "GEO", "AI", "1,920", "184", "96", "杨晨", "昨天 16:45", "草稿"], ["品牌资讯", "企业服务智能化浪潮下的用友战略", "SEO", "AI", "3,128", "412", "203", "大服务行业", "09-12 09:18", "已上架"]] },
+  forms: { title: "表单管理", description: "管理获客表单、收集效果和关联场景。", action: "＋ 新建表单", count: 96, rows: [["数智营销峰会报名表", "峰会报名", "已发布", "1,847", "2026-09-08 10:20", "陈玉琴", "集团市场部"], ["制造业白皮书下载表单", "资料下载", "已发布", "926", "2026-09-05 14:36", "郭涛", "制造业 BG"], ["产品咨询表单", "产品咨询", "收集中", "438", "2026-08-28 09:15", "李小琳", "营销云团队"], ["客户需求调研表", "需求调研", "已停用", "216", "2026-08-16 16:42", "杨晨", "客户成功部"]] },
+  surveys: { title: "问卷管理", description: "创建调研问卷并追踪收集和完成情况。", action: "＋ 新建问卷", count: 34, rows: [["AI 应用成熟度调研问卷", "未发布", "1", "12", "2026-08-01", "2027-08-05"], ["公司财务数智化转型调查问卷", "未发布", "1", "11", "2026-02-27", "2028-03-23"], ["BIP 客户满意度", "收集中", "286", "13", "2026-09-01", "2026-09-30"], ["公司财务数字化转型调研问卷", "已结束", "168", "10", "2025-10-22", "2025-10-31"]] },
+  resources: { title: "资料管理", description: "管理白皮书、手册等可下载内容资产。", action: "＋ 上传资料", count: 316, rows: [["YonBIP 产品能力手册", "PDF", "已上架", "郭涛", "09-12 14:06"], ["制造业数智化白皮书", "PDF", "已上架", "陈玉琴", "09-10 17:42"], ["营销云产品介绍", "PPT", "待审核", "李小琳", "09-08 09:30"]] },
+  videos: { title: "视频管理", description: "管理营销视频、封面、引用与发布状态。", action: "＋ 上传视频", count: 186, rows: [["AI 融入核心业务主题演讲", "直播回放", "已上架", "刘聪聪", "09-13 16:06"], ["YonBIP 产品演示", "产品视频", "已上架", "杨晨", "09-09 11:20"], ["客户案例访谈", "案例视频", "草稿", "陈玉琴", "09-05 15:18"]] },
+  posters: { group: "内容资产", name: "海报", title: "海报管理", description: "统一管理活动传播和专属二维码海报。", action: "＋ 新建海报", count: 68, rows: [["数智营销峰会主视觉", "活动海报", "已上架", "陈玉琴", "09-13 12:20"], ["白皮书下载分享海报", "分享海报", "草稿", "郭涛", "09-10 15:08"]] },
+  products: { group: "业务素材", name: "产品", title: "产品素材", description: "沉淀可复用的产品介绍与能力素材。", action: "＋ 新建产品", count: 42, rows: [["YonBIP 营销云", "产品介绍", "已上架", "产品市场部", "09-12 10:18"], ["用友 BIP", "产品介绍", "已上架", "品牌部", "09-08 16:30"]] },
+  solutions: { group: "业务素材", name: "解决方案", title: "解决方案", description: "统一管理行业及领域解决方案素材。", action: "＋ 新建方案", count: 76, rows: [["制造业数智营销解决方案", "行业方案", "已上架", "制造业 BG", "09-11 14:20"], ["大型企业客户经营方案", "领域方案", "草稿", "市场部", "09-07 09:36"]] },
+  cases: { group: "业务素材", name: "客户案例", title: "客户案例", description: "沉淀客户实践和成功案例，支持多场景复用。", action: "＋ 新建案例", count: 129, rows: [["某装备集团客户经营实践", "制造业案例", "已上架", "行业市场部", "09-13 08:50"], ["某消费品企业增长案例", "消费品案例", "待审核", "陈玉琴", "09-09 17:06"]] },
+  customerWall: { group: "业务素材", name: "客户墙", title: "客户墙", description: "管理客户品牌、行业标签与展示授权。", action: "＋ 添加客户", count: 218, rows: [["制造行业标杆客户", "客户分组", "已发布", "品牌部", "09-12 15:40"], ["央国企客户精选", "客户分组", "草稿", "市场部", "09-06 11:26"]] },
+  aggregations: { group: "页面与承接", name: "聚合页", title: "聚合页管理", description: "组合多种内容，形成专题或传播入口。", action: "＋ 新建聚合页", count: 24, rows: [["AI 融入核心业务专题", "内容专题", "已发布", "陈玉琴", "09-13 11:35"], ["制造业数字化内容合集", "行业专题", "草稿", "郭涛", "09-08 10:18"]] },
+};
+
+const contentSectionMeta = {
+  forms: ["获客组件", "表单"], surveys: ["获客组件", "调查问卷"], resources: ["内容资产", "资料"], videos: ["内容资产", "视频"],
+};
+
+const contentViewConfig = {
+  articles: [
+    { id: "list", label: "文章列表" }, { id: "categories", label: "文章分类", count: 18, action: "＋ 新建分类", rows: [["数字化转型", "一级分类", "已启用", "陈玉琴", "今天 09:20"], ["白皮书", "一级分类", "已启用", "郭涛", "09-12 16:30"], ["产品动态", "一级分类", "已启用", "杨晨", "09-10 11:06"]] },
+    { id: "templates", label: "文章模板", count: 26, action: "＋ 新建模板", rows: [["行业白皮书解读模板", "图文模板", "已启用", "品牌部", "09-13 10:10"], ["产品发布模板", "图文模板", "已启用", "市场部", "09-09 15:42"]] },
+    { id: "topics", label: "文章专题", count: 12, action: "＋ 新建专题", rows: [["AI 融入核心业务", "文章专题", "已发布", "陈玉琴", "09-12 17:20"], ["企业数智化", "文章专题", "草稿", "杨晨", "09-07 14:08"]] },
+    { id: "public", label: "公共文章池", count: 156, action: "＋ 申请入池", rows: [["2026 企业服务趋势洞察", "公共文章", "可引用", "集团市场部", "09-14 08:45"], ["用友 BIP 品牌介绍", "公共文章", "可引用", "品牌部", "09-11 16:12"]] },
+  ],
+  forms: [{ id: "list", label: "表单列表" }, { id: "analytics", label: "数据分析", action: "导出分析数据" }],
+  surveys: [{ id: "list", label: "问卷列表" }],
+  resources: [{ id: "list", label: "资料列表" }, { id: "categories", label: "资料分类" }],
+  videos: [{ id: "list", label: "视频列表" }, { id: "categories", label: "视频分类" }],
+  posters: [{ id: "list", label: "海报列表" }, { id: "categories", label: "海报分类" }],
+};
+
+const contentCategoryRows = {
+  articles: [["industry", "行业洞察", 1, "", "09-14 10:26"], ["manufacturing", "制造业", 2, "industry", "09-13 16:08"], ["consumer", "消费品", 2, "industry", "09-12 09:42"], ["product", "产品动态", 1, "", "09-10 11:06"], ["brand", "品牌资讯", 1, "", "09-08 14:30"]],
+  resources: [["guide", "操作说明", 1, "", "09-14 10:26"], ["product-guide", "产品手册", 2, "guide", "09-13 16:08"], ["service-guide", "服务指南", 2, "guide", "09-12 09:42"], ["updates", "系统更新", 1, "", "09-10 11:06"], ["download", "下载文档", 1, "", "09-08 14:30"]],
+  videos: [["product-video", "产品演示", 1, "", "09-14 10:26"], ["feature-video", "功能演示", 2, "product-video", "09-13 16:08"], ["event-video", "活动回放", 1, "", "09-11 09:42"], ["case-video", "客户案例", 1, "", "09-08 14:30"]],
+  posters: [["event-poster", "活动传播", 1, "", "09-14 10:26"], ["online-event", "线上活动", 2, "event-poster", "09-13 16:08"], ["offline-event", "线下活动", 2, "event-poster", "09-12 09:42"], ["product-poster", "产品推广", 1, "", "09-10 11:06"], ["resource-poster", "资料分享", 1, "", "09-08 14:30"]],
+};
+
+function renderContentRows(rows) {
+  document.getElementById("contentSectionList").innerHTML = rows.map((row) => `<div class="content-list-row"><span><b>${row[0]}</b><small>营销内容资产</small></span><span>${row[1]}<small>${row[2]}</small></span><span>${row[3]}</span><span>${row[4]}</span><span><button class="text-button">编辑</button><button class="row-more" aria-label="更多操作">···</button></span></div>`).join("");
+}
+
+function renderArticleRows(rows) {
+  document.getElementById("contentSectionList").innerHTML = rows.map((row) => `<div class="article-list-row"><span>${row[0]}</span><span><b>${row[1]}</b></span><span><em>${row[2]}</em></span><span><em class="article-source">${row[3]}</em></span><span>${row[4]}</span><span>${row[5]}</span><span>${row[6]}</span><span>${row[7]}</span><span>${row[8]}</span><span><b class="article-status ${row[9] === "已上架" ? "online" : ""}">${row[9]}</b></span><span><button class="text-button">编辑</button><button class="text-button">${row[9] === "已上架" ? "下架" : "上架"}</button><button class="row-more" aria-label="更多操作">···</button></span></div>`).join("");
+}
+
+function renderFormRows(rows) {
+  document.getElementById("contentSectionList").innerHTML = rows.map((row) => {
+    const stateAction = row[2] === "已停用" ? "重新开启" : row[2] === "收集中" ? "渠道推广" : "渠道推广";
+    const stateMenuAction = row[2] === "已停用" ? "" : "<button>停止收集</button>";
+    return `<div class="form-list-row"><span><b>${row[0]}</b></span><span>${row[1]}</span><span><b class="form-status ${row[2] === "已发布" ? "online" : ""}">${row[2]}</b></span><span><strong>${row[3]}</strong></span><span>${row[4]}</span><span>${row[5]}</span><span>${row[6]}</span><span class="form-row-actions"><button class="text-button">编辑</button><button class="text-button">${stateAction}</button><span class="form-more-wrap"><button class="text-button form-more-button" aria-expanded="false">更多⌄</button><span class="form-more-menu" hidden><button>复制表单</button><button>查看数据分析</button><button>导出数据</button>${stateMenuAction}<button class="danger">删除</button></span></span></span></div>`;
+  }).join("");
+  document.querySelectorAll(".form-more-button").forEach((button) => button.addEventListener("click", () => {
+    const menu = button.nextElementSibling;
+    document.querySelectorAll(".form-more-menu").forEach((item) => { if (item !== menu) item.hidden = true; });
+    menu.hidden = !menu.hidden;
+    button.setAttribute("aria-expanded", String(!menu.hidden));
+  }));
+}
+
+function renderFormAnalytics() {
+  document.getElementById("contentSectionList").innerHTML = `<section class="form-analytics"><div class="form-analytics-metrics"><article><span>累计收集</span><strong>3,427</strong><small>较上月 +18.6%</small></article><article><span>有效提交</span><strong>3,086</strong><small>有效率 90.0%</small></article><article><span>产生线索</span><strong>1,264</strong><small>线索转化率 41.0%</small></article><article><span>运行中表单</span><strong>18</strong><small>3 个近 7 天无提交</small></article></div><div class="form-analytics-grid"><section><h4>近 7 天收集趋势</h4><div class="form-trend-bars"><i style="--h:46%"><b>386</b><span>周一</span></i><i style="--h:58%"><b>472</b><span>周二</span></i><i style="--h:72%"><b>586</b><span>周三</span></i><i style="--h:65%"><b>528</b><span>周四</span></i><i style="--h:84%"><b>684</b><span>周五</span></i><i style="--h:50%"><b>408</b><span>周六</span></i><i style="--h:45%"><b>363</b><span>周日</span></i></div></section><section><h4>表单效果排行</h4><div class="form-ranking"><div><b>数智营销峰会报名表</b><span>1,847 次</span><em>53.9%</em></div><div><b>制造业白皮书下载表单</b><span>926 次</span><em>27.0%</em></div><div><b>产品咨询表单</b><span>438 次</span><em>12.8%</em></div></div></section></div></section>`;
+}
+
+function renderSurveyRows(rows) {
+  document.getElementById("contentSectionList").innerHTML = rows.map((row) => `<div class="survey-list-row"><span><input type="checkbox" aria-label="选择${row[0]}" /></span><span><b>${row[0]}</b></span><span><b class="survey-status ${row[1] === "收集中" ? "collecting" : ""}">${row[1]}</b></span><span>${row[2]}</span><span>${row[3]}</span><span>${row[4]}</span><span>${row[5]}</span><span class="survey-row-actions"><button class="text-button">编辑</button><button class="text-button">推广链接</button><span class="survey-more-wrap"><button class="text-button survey-more-button" aria-expanded="false">更多⌄</button><span class="survey-more-menu" hidden><button>统计</button><button>导出</button><button>复制</button><button class="danger">删除</button></span></span></span></div>`).join("");
+  document.querySelectorAll(".survey-more-button").forEach((button) => button.addEventListener("click", () => {
+    const menu = button.nextElementSibling;
+    document.querySelectorAll(".survey-more-menu").forEach((item) => { if (item !== menu) item.hidden = true; });
+    menu.hidden = !menu.hidden;
+    button.setAttribute("aria-expanded", String(!menu.hidden));
+  }));
+}
+
+function renderContentCategoryRows(section) {
+  const rows = contentCategoryRows[section] || [];
+  const parentIds = new Set(rows.filter((row) => row[2] > 1).map((row) => row[3]));
+  document.getElementById("contentSectionList").innerHTML = rows.map(([id, name, level, parent, updated]) => `<div class="content-category-row level-${level}" data-category-id="${id}" data-category-parent="${parent}"><span class="category-tree-name">${parentIds.has(id) ? `<button class="category-tree-toggle" aria-label="收起${name}" aria-expanded="true">⌄</button>` : `<i></i>`}<b>${name}</b></span><span><em>${level === 1 ? "一级分类" : "二级分类"}</em></span><span>${updated}</span><span class="category-row-actions"><button class="text-button">添加子分类</button><span class="category-more-wrap"><button class="text-button category-more-button" aria-expanded="false">更多⌄</button><span class="category-more-menu" hidden><button>编辑</button><button>删除</button><button>复制链接</button></span></span></span></div>`).join("");
+  document.querySelectorAll(".category-tree-toggle").forEach((button) => button.addEventListener("click", () => {
+    const row = button.closest(".content-category-row");
+    const expanded = button.getAttribute("aria-expanded") === "true";
+    document.querySelectorAll(`[data-category-parent="${row.dataset.categoryId}"]`).forEach((child) => { child.hidden = expanded; });
+    button.setAttribute("aria-expanded", String(!expanded));
+    button.textContent = expanded ? "›" : "⌄";
+  }));
+  document.querySelectorAll(".category-more-button").forEach((button) => button.addEventListener("click", () => {
+    const menu = button.nextElementSibling;
+    document.querySelectorAll(".category-more-menu").forEach((item) => { if (item !== menu) item.hidden = true; });
+    menu.hidden = !menu.hidden;
+    button.setAttribute("aria-expanded", String(!menu.hidden));
+  }));
+}
+
+function setContentListHeader(categoryMode, articleMode = false, formMode = false, surveyMode = false) {
+  const head = document.getElementById("contentListHead");
+  head.classList.toggle("category-mode", categoryMode);
+  head.classList.toggle("article-mode", articleMode);
+  head.classList.toggle("form-mode", formMode);
+  head.classList.toggle("survey-mode", surveyMode);
+  head.innerHTML = categoryMode
+    ? `<span>分类名称</span><span>层级</span><span>更新时间</span><span>操作</span>`
+    : articleMode ? `<span>分类</span><span>文章标题</span><span>类型</span><span>来源</span><span>阅读</span><span>分享</span><span>收藏</span><span>发布者</span><span>更新时间</span><span>状态</span><span>操作</span>`
+    : formMode ? `<span>表单名称</span><span>标题</span><span>状态</span><span>收集数</span><span>创建时间</span><span>创建者</span><span>归属组织</span><span>操作</span>`
+    : surveyMode ? `<span><input type="checkbox" aria-label="全选问卷" /></span><span>问卷名称</span><span>问卷状态</span><span>收集数</span><span>问题数</span><span>开始时间</span><span>结束时间</span><span>操作</span>`
+    : `<span>标题</span><span>类型 / 状态</span><span>发布人</span><span>更新时间</span><span>操作</span>`;
+}
+
+function configureContentFilters(section, viewId) {
+  const category = document.querySelector('[data-content-filter-field="category"]');
+  const status = document.querySelector('[data-content-filter-field="status"]');
+  const type = document.querySelector('[data-content-filter-field="type"]');
+  const advanced = document.querySelector('[data-content-filter-field="advanced"]');
+  const reset = document.querySelector('[data-content-filter-field="reset"]');
+  const keyword = document.getElementById("contentKeywordFilter");
+  if (section === "forms" && viewId === "list") {
+    keyword.placeholder = "请输入表单名称或标题";
+    category.hidden = true;
+    status.innerHTML = "<option>全部状态</option><option>已发布</option><option>收集中</option><option>已停用</option>";
+    type.innerHTML = "<option>全部创建者</option><option>陈玉琴</option><option>郭涛</option><option>李小琳</option><option>杨晨</option>";
+    type.hidden = false;
+    reset.hidden = false;
+  } else if (section === "surveys" && viewId === "list") {
+    keyword.placeholder = "请输入问卷名称";
+    category.hidden = true;
+    status.innerHTML = "<option>全部状态</option><option>未发布</option><option>收集中</option><option>已结束</option>";
+    type.hidden = true;
+    reset.hidden = true;
+  } else if (["resources", "videos", "posters"].includes(section) && viewId === "list") {
+    const labels = { resources: "资料", videos: "视频", posters: "海报" };
+    keyword.placeholder = `请输入${labels[section]}名称`;
+    category.hidden = false;
+    category.innerHTML = section === "resources" ? "<option>全部分类</option><option>操作说明</option><option>系统更新</option><option>下载文档</option>" : section === "videos" ? "<option>全部分类</option><option>产品演示</option><option>活动回放</option><option>客户案例</option>" : "<option>全部分类</option><option>活动传播</option><option>产品推广</option><option>资料分享</option>";
+    status.innerHTML = "<option>全部状态</option><option>已上架</option><option>草稿</option><option>待审核</option>";
+    type.hidden = true;
+    reset.hidden = false;
+  } else {
+    keyword.placeholder = "请输入文章标题";
+    category.innerHTML = "<option>全部分类</option><option>行业洞察</option><option>产品动态</option><option>品牌资讯</option>";
+    category.hidden = false;
+    status.innerHTML = "<option>全部状态</option><option>已上架</option><option>未上架</option><option>草稿</option>";
+    type.innerHTML = "<option>全部类型</option><option>SEO</option><option>GEO</option>";
+    reset.hidden = false;
+  }
+}
+
+function setContentView(section, viewId) {
+  const config = contentSectionData[section];
+  const view = (contentViewConfig[section] || []).find((item) => item.id === viewId);
+  document.querySelectorAll("#contentViewTabs button").forEach((button) => button.classList.toggle("active", button.dataset.view === viewId));
+  const filterlessViews = new Set(["categories", "templates", "topics"]);
+  const filterPanel = document.getElementById("contentSectionFilter");
+  const analyticsMode = section === "forms" && viewId === "analytics";
+  filterPanel.hidden = filterlessViews.has(viewId) || analyticsMode;
+  document.getElementById("contentPublishScope").hidden = false;
+  const publicPool = section === "articles" && viewId === "public";
+  document.querySelectorAll("[data-content-filter-field]").forEach((field) => { field.hidden = publicPool; });
+  const categoryMode = viewId === "categories" && Object.hasOwn(contentCategoryRows, section);
+  const articleMode = section === "articles" && viewId === "list";
+  const formMode = section === "forms" && viewId === "list";
+  const surveyMode = section === "surveys" && viewId === "list";
+  configureContentFilters(section, viewId);
+  document.querySelector('[data-content-filter-field="type"]').hidden = !(articleMode || formMode);
+  document.querySelector('[data-content-filter-field="advanced"]').hidden = !articleMode;
+  if (publicPool) document.querySelectorAll("[data-content-filter-field]").forEach((field) => { field.hidden = true; });
+  document.getElementById("articleAiCreate").hidden = !articleMode;
+  document.getElementById("contentArticleAdvanced").hidden = true;
+  document.getElementById("contentAdvancedToggle").setAttribute("aria-expanded", "false");
+  document.getElementById("contentAdvancedToggle").textContent = "高级筛选⌄";
+  document.getElementById("contentSectionCreate").textContent = categoryMode ? "＋ 新建分类" : (view?.action || config.action);
+  document.getElementById("contentListHead").hidden = analyticsMode;
+  setContentListHeader(categoryMode, articleMode, formMode, surveyMode);
+  if (categoryMode) renderContentCategoryRows(section);
+  else if (articleMode) renderArticleRows(config.rows);
+  else if (formMode) renderFormRows(config.rows);
+  else if (surveyMode) renderSurveyRows(config.rows);
+  else if (analyticsMode) renderFormAnalytics();
+  else renderContentRows(view?.rows || config.rows);
+}
+
+document.getElementById("contentAdvancedToggle")?.addEventListener("click", (event) => {
+  const panel = document.getElementById("contentArticleAdvanced");
+  panel.hidden = !panel.hidden;
+  event.currentTarget.setAttribute("aria-expanded", String(!panel.hidden));
+  event.currentTarget.textContent = panel.hidden ? "高级筛选⌄" : "收起筛选⌃";
+});
+
+function applyContentListFilters() {
+  const keyword = document.getElementById("contentKeywordFilter").value.trim().toLowerCase();
+  const selects = [...document.querySelectorAll("#contentSectionFilter select:not([hidden])")];
+  const activeValues = selects.map((select) => select.value).filter((value) => value && !value.startsWith("全部"));
+  const rows = [...document.querySelectorAll("#contentSectionList > div:not(#contentListEmpty)")];
+  let shown = 0;
+  rows.forEach((row) => {
+    const text = row.textContent.toLowerCase();
+    const matches = (!keyword || text.includes(keyword)) && activeValues.every((value) => text.includes(value.toLowerCase()));
+    row.hidden = !matches;
+    if (matches) shown += 1;
+  });
+  let empty = document.getElementById("contentListEmpty");
+  if (!empty) {
+    empty = document.createElement("div");
+    empty.id = "contentListEmpty";
+    empty.className = "content-list-empty";
+    empty.innerHTML = '<b>没有找到匹配内容</b><span>请调整筛选条件后重试</span><button class="ghost-button">清空筛选条件</button>';
+    document.getElementById("contentSectionList").appendChild(empty);
+    empty.querySelector("button").addEventListener("click", resetContentListFilters);
+  }
+  empty.hidden = shown !== 0;
+}
+
+function resetContentListFilters() {
+  document.getElementById("contentKeywordFilter").value = "";
+  document.querySelectorAll("#contentSearchRow select").forEach((select) => { select.selectedIndex = 0; });
+  document.querySelectorAll("#contentArticleAdvanced input").forEach((input) => { input.value = ""; });
+  document.querySelectorAll("#contentArticleAdvanced select").forEach((select) => { select.selectedIndex = 0; });
+  document.getElementById("contentArticleAdvanced").hidden = true;
+  const advancedToggle = document.getElementById("contentAdvancedToggle");
+  advancedToggle.setAttribute("aria-expanded", "false");
+  advancedToggle.textContent = "高级筛选⌄";
+  document.querySelectorAll("#contentPublishScope button").forEach((button, index) => button.classList.toggle("active", index === 0));
+  applyContentListFilters();
+}
+
+document.querySelector("#contentSearchRow .primary-button")?.addEventListener("click", applyContentListFilters);
+document.getElementById("contentKeywordFilter")?.addEventListener("keydown", (event) => { if (event.key === "Enter") applyContentListFilters(); });
+document.querySelector('[data-content-filter-field="reset"]')?.addEventListener("click", resetContentListFilters);
+document.querySelectorAll("#contentPublishScope button").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll("#contentPublishScope button").forEach((item) => item.classList.remove("active"));
+  button.classList.add("active");
+}));
+
+function openContentSection(section) {
+  document.querySelector(".content-center-hero").hidden = true;
+  document.querySelector(".content-local-nav").hidden = true;
+  document.getElementById("contentOverview").hidden = true;
+  document.getElementById("contentMorePanel").hidden = true;
+  const panel = document.getElementById("contentSectionPanel");
+  panel.hidden = false;
+  const config = contentSectionData[section];
+  if (!config) return;
+  const [fallbackGroup, fallbackName] = contentSectionMeta[section] || ["内容中心", config.title.replace(/管理|素材/g, "")];
+  document.getElementById("contentSectionGroup").textContent = config.group || fallbackGroup;
+  document.getElementById("contentSectionCrumb").textContent = config.name || fallbackName;
+  document.getElementById("contentSectionTitle").textContent = config.title;
+  document.getElementById("contentSectionDescription").textContent = config.description;
+  const tabs = contentViewConfig[section] || [{ id: "list", label: `${config.name || fallbackName}列表` }];
+  const tabsElement = document.getElementById("contentViewTabs");
+  tabsElement.innerHTML = tabs.map((tab, index) => `<button class="${index === 0 ? "active" : ""}" data-view="${tab.id}">${tab.label}</button>`).join("");
+  tabsElement.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => setContentView(section, button.dataset.view)));
+  setContentView(section, tabs[0].id);
+  document.querySelectorAll("[data-content-section]").forEach((item) => item.classList.toggle("active", item.dataset.contentSection === section));
+  document.querySelector(".content-home-item")?.classList.remove("active");
+  const activeSidebarItem = document.querySelector(`.content-sidebar-children [data-content-section="${section}"]`);
+  if (activeSidebarItem) {
+    const activeGroup = activeSidebarItem.closest(".content-sidebar-group");
+    document.querySelectorAll(".content-sidebar-group").forEach((item) => {
+      const isActiveGroup = item === activeGroup;
+      item.classList.toggle("open", isActiveGroup);
+      item.querySelector(".content-sidebar-group-toggle").setAttribute("aria-expanded", String(isActiveGroup));
+      item.querySelector(".content-sidebar-children").hidden = !isActiveGroup;
+    });
+  }
+  document.getElementById("contentCreateMenu").hidden = true;
+  document.getElementById("contentCreateButton").setAttribute("aria-expanded", "false");
+}
+
+function showContentOverview() {
+  document.querySelector(".content-center-hero").hidden = false;
+  document.querySelector(".content-local-nav").hidden = false;
+  document.getElementById("contentOverview").hidden = false;
+  document.getElementById("contentSectionPanel").hidden = true;
+  document.getElementById("contentMorePanel").hidden = true;
+  document.querySelectorAll("[data-content-section]").forEach((item) => item.classList.remove("active"));
+  document.querySelector(".content-home-item")?.classList.add("active");
+}
+
+document.querySelectorAll("[data-content-section]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.dataset.contentSection === "more") {
+      document.querySelector(".content-center-hero").hidden = true;
+      document.querySelector(".content-local-nav").hidden = true;
+      document.getElementById("contentOverview").hidden = true;
+      document.getElementById("contentSectionPanel").hidden = true;
+      document.getElementById("contentMorePanel").hidden = false;
+      document.querySelectorAll("[data-content-section]").forEach((item) => item.classList.toggle("active", item.dataset.contentSection === "more"));
+    } else {
+      showPage("contentCenter");
+      openContentSection(button.dataset.contentSection);
+    }
+  });
+});
+
+document.querySelectorAll(".content-sidebar-group-toggle").forEach((button) => {
+  button.addEventListener("click", () => {
+    const group = button.closest(".content-sidebar-group");
+    const opening = !group.classList.contains("open");
+    document.querySelectorAll(".content-sidebar-group").forEach((item) => {
+      item.classList.remove("open");
+      item.querySelector(".content-sidebar-group-toggle").setAttribute("aria-expanded", "false");
+      item.querySelector(".content-sidebar-children").hidden = true;
+    });
+    if (opening) {
+      group.classList.add("open");
+      button.setAttribute("aria-expanded", "true");
+      group.querySelector(".content-sidebar-children").hidden = false;
+    }
+  });
+});
+document.getElementById("backToContentOverview")?.addEventListener("click", showContentOverview);
+document.getElementById("backFromContentMore")?.addEventListener("click", showContentOverview);
+document.getElementById("contentCreateButton")?.addEventListener("click", (event) => {
+  const menu = document.getElementById("contentCreateMenu");
+  menu.hidden = !menu.hidden;
+  event.currentTarget.setAttribute("aria-expanded", String(!menu.hidden));
+});
+
+document.getElementById("contentMoreShortcut")?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const dropdown = document.getElementById("contentMoreDropdown");
+  dropdown.hidden = !dropdown.hidden;
+  event.currentTarget.setAttribute("aria-expanded", String(!dropdown.hidden));
+});
+document.getElementById("contentMoreDropdown")?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  if (event.target.closest("[data-content-section]")) {
+    event.currentTarget.hidden = true;
+    document.getElementById("contentMoreShortcut").setAttribute("aria-expanded", "false");
+  }
+});
+
+let activityRange = "全部";
+let appliedActivityFilters = { keyword: "", status: "", publisher: "", form: "", startDate: "", endDate: "", visibility: "", lead: "", audit: "", undertake: false };
+
+function renderActivityAppliedFilters() {
+  const definitions = [
+    ["range", "发布范围", activityRange, "全部"],
+    ["keyword", "关键字", appliedActivityFilters.keyword, ""],
+    ["status", "活动状态", appliedActivityFilters.status, ""],
+    ["publisher", "发布人", appliedActivityFilters.publisher, ""],
+    ["form", "活动形式", appliedActivityFilters.form, ""],
+    ["startDate", "创建时间", appliedActivityFilters.startDate && appliedActivityFilters.endDate ? `${appliedActivityFilters.startDate} 至 ${appliedActivityFilters.endDate}` : appliedActivityFilters.startDate || appliedActivityFilters.endDate, ""],
+    ["visibility", "可见范围", appliedActivityFilters.visibility, ""],
+    ["lead", "线索策略", appliedActivityFilters.lead, ""],
+    ["audit", "审核状态", appliedActivityFilters.audit, ""],
+    ["undertake", "承办方", appliedActivityFilters.undertake ? "仅我承办" : "", ""],
+  ];
+  const chips = document.getElementById("activityAppliedChips");
+  chips.innerHTML = definitions
+    .filter(([, , value, defaultValue]) => value && value !== defaultValue)
+    .map(([key, label, value]) => `<button class="activity-filter-chip" data-remove-activity-filter="${key}">${label}：${value}<i aria-hidden="true">×</i></button>`)
+    .join("");
+  document.getElementById("activityApplied").hidden = !chips.childElementCount;
+}
+
+function readActivityFilters() {
+  appliedActivityFilters = {
+    keyword: document.getElementById("activitySearch").value.trim(),
+    status: document.getElementById("activityStatusFilter").value,
+    publisher: document.getElementById("activityPublisherFilter").value,
+    form: document.getElementById("activityFormFilter").value,
+    startDate: document.getElementById("activityStartDate").value,
+    endDate: document.getElementById("activityEndDate").value,
+    visibility: document.getElementById("activityVisibilityFilter").value,
+    lead: document.getElementById("activityLeadFilter").value,
+    audit: document.getElementById("activityAuditFilter").value,
+    undertake: document.getElementById("activityUndertakeFilter").checked,
+  };
+}
+
+function filterActivities() {
+  const { keyword, status, publisher, form, startDate, endDate, visibility, lead, audit, undertake } = appliedActivityFilters;
+  const query = keyword.toLowerCase();
+  let shown = 0;
+  document.querySelectorAll(".activity-row:not(.head)").forEach((row) => {
+    const rangeMatch = activityRange === "全部" || row.dataset.range.includes(activityRange);
+    const queryMatch = !query || row.dataset.search.toLowerCase().includes(query);
+    const statusMatch = !status || row.dataset.status === status;
+    const publisherMatch = !publisher || row.dataset.publisher === publisher;
+    const formMatch = !form || row.dataset.form === form;
+    const visibilityMatch = !visibility || row.dataset.visibility === visibility;
+    const leadMatch = !lead || row.dataset.lead === lead;
+    const auditMatch = !audit || row.dataset.audit === audit;
+    const undertakeMatch = !undertake || row.dataset.undertake === "true";
+    const dateMatch = (!startDate || row.dataset.created >= startDate) && (!endDate || row.dataset.created <= endDate);
+    const visible = rangeMatch && queryMatch && statusMatch && publisherMatch && formMatch && visibilityMatch && leadMatch && auditMatch && undertakeMatch && dateMatch;
+    row.hidden = !visible;
+    if (visible) shown += 1;
+  });
+  const empty = document.getElementById("activityEmpty");
+  if (empty) empty.hidden = shown !== 0;
+  document.querySelector(".activity-table").classList.toggle("has-empty", shown === 0);
+  renderActivityAppliedFilters();
+}
+
+function resetActivityFilters() {
+  activityRange = "全部";
+  ["activitySearch", "activityStartDate", "activityEndDate"].forEach((id) => { document.getElementById(id).value = ""; });
+  ["activityStatusFilter", "activityPublisherFilter", "activityFormFilter", "activityVisibilityFilter", "activityLeadFilter", "activityAuditFilter"].forEach((id) => { document.getElementById(id).value = ""; });
+  document.getElementById("activityUndertakeFilter").checked = false;
+  document.querySelectorAll("[data-activity-range]").forEach((item) => item.classList.toggle("active", item.dataset.activityRange === "全部"));
+  appliedActivityFilters = { keyword: "", status: "", publisher: "", form: "", startDate: "", endDate: "", visibility: "", lead: "", audit: "", undertake: false };
+  const advanced = document.getElementById("activityAdvanced");
+  advanced.classList.remove("open");
+  const toggle = document.getElementById("activityAdvancedButton");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.innerHTML = '高级筛选 <span aria-hidden="true">⌄</span>';
+  filterActivities();
+}
+
+document.querySelectorAll("[data-activity-range]").forEach((button) => {
+  button.addEventListener("click", () => {
+    activityRange = button.dataset.activityRange;
+    document.querySelectorAll("[data-activity-range]").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    filterActivities();
+  });
+});
+document.getElementById("activitySearchButton")?.addEventListener("click", () => {
+  readActivityFilters();
+  filterActivities();
+});
+document.getElementById("activitySearch")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    readActivityFilters();
+    filterActivities();
+  }
+});
+document.getElementById("activityAdvancedButton")?.addEventListener("click", (event) => {
+  const advanced = document.getElementById("activityAdvanced");
+  const isOpen = advanced.classList.toggle("open");
+  event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+  event.currentTarget.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span aria-hidden="true">${isOpen ? "⌃" : "⌄"}</span>`;
+});
+document.getElementById("activityReset")?.addEventListener("click", resetActivityFilters);
+document.getElementById("activityClearFilters")?.addEventListener("click", resetActivityFilters);
+document.getElementById("activityAppliedChips")?.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-remove-activity-filter]");
+  if (!chip) return;
+  const key = chip.dataset.removeActivityFilter;
+  if (key === "range") {
+    activityRange = "全部";
+    document.querySelectorAll("[data-activity-range]").forEach((item) => item.classList.toggle("active", item.dataset.activityRange === "全部"));
+  } else {
+    const fieldMap = { keyword: "activitySearch", status: "activityStatusFilter", publisher: "activityPublisherFilter", form: "activityFormFilter", startDate: "activityStartDate", visibility: "activityVisibilityFilter", lead: "activityLeadFilter", audit: "activityAuditFilter", undertake: "activityUndertakeFilter" };
+    if (key === "startDate") {
+      appliedActivityFilters.startDate = "";
+      appliedActivityFilters.endDate = "";
+      document.getElementById("activityStartDate").value = "";
+      document.getElementById("activityEndDate").value = "";
+    } else {
+      appliedActivityFilters[key] = key === "undertake" ? false : "";
+      const field = document.getElementById(fieldMap[key]);
+      if (key === "undertake") field.checked = false;
+      else field.value = "";
+    }
+  }
+  filterActivities();
+});
+document.querySelectorAll("[data-open-activity]").forEach((button) => button.addEventListener("click", () => showPage("activityDetail")));
+document.querySelectorAll("[data-activity-tab]").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-activity-tab]").forEach((item) => item.classList.remove("active"));
+    document.querySelectorAll("[data-activity-panel]").forEach((panel) => panel.classList.remove("active"));
+    button.classList.add("active");
+    document.querySelector(`[data-activity-panel="${button.dataset.activityTab}"]`)?.classList.add("active");
+  });
+});
+document.getElementById("createActivityButton")?.addEventListener("click", (event) => {
+  const original = event.currentTarget.textContent;
+  event.currentTarget.textContent = "发布流程待接入";
+  setTimeout(() => { event.currentTarget.textContent = original; }, 1400);
+});
+
+let leadMode = "mk";
+let leadView = "all";
+let leadAppliedFilters = { keyword: "", source: "", time: "", valid: "", route: "", owner: "", history: "", region: "" };
+
+function openLeadSettingPanel(panel) {
+  document.querySelectorAll("[data-lead-setting-tab]").forEach((item) => item.classList.toggle("active", item.dataset.leadSettingTab === panel));
+  document.querySelectorAll("[data-lead-setting-panel]").forEach((item) => item.classList.toggle("active", item.dataset.leadSettingPanel === panel));
+}
+
+function renderLeadMode() {
+  const isMk = leadMode === "mk";
+  document.getElementById("leadModeName").textContent = isMk ? "MK线索分派" : "同步CRM";
+  document.getElementById("leadModeDescription").textContent = isMk ? "按区域规则自动分派至MK组织及负责人" : "根据组织关系和渠道映射将线索同步至CRM";
+  document.getElementById("leadModeHealth").textContent = isMk ? "5条规则生效" : "组织12/12 · 渠道28/30";
+  document.getElementById("leadModeHealthNote").textContent = isMk ? "最近24小时分派成功率 96.8%" : "最近24小时同步成功率 95.6%";
+  document.getElementById("leadPendingLabel").textContent = isMk ? "待分派" : "待同步";
+  document.getElementById("leadExceptionLabel").textContent = isMk ? "分派异常" : "同步异常";
+  document.getElementById("leadTargetHeader").textContent = isMk ? "分派至" : "CRM编码";
+  document.getElementById("leadOverviewMode").textContent = isMk ? "MK线索分派" : "同步CRM";
+  document.getElementById("leadOverviewNote").textContent = isMk ? "新进入线索按地区规则分派至MK组织及负责人" : "新进入线索根据组织关系和渠道映射同步至CRM";
+  document.querySelectorAll('[data-mode-label="mk"]').forEach((item) => { item.hidden = !isMk; });
+  document.querySelectorAll('[data-mode-label="crm"]').forEach((item) => { item.hidden = isMk; });
+  document.querySelectorAll("[data-health-mk]").forEach((item) => { item.hidden = !isMk; });
+  document.querySelectorAll("[data-health-crm]").forEach((item) => { item.hidden = isMk; });
+  const stateLabels = isMk ? { pending: "待分派", success: "已分派", exception: "分派异常" } : { pending: "待同步", success: "已同步CRM", exception: "同步异常" };
+  document.querySelectorAll("[data-mode-state]").forEach((item) => { item.textContent = stateLabels[item.dataset.modeState]; });
+  document.querySelectorAll(".lead-primary-action").forEach((item) => { item.textContent = isMk ? item.dataset.actionMk : item.dataset.actionCrm; });
+  document.querySelectorAll(".lead-row:not(.head)").forEach((row, index) => {
+    row.dataset.route = isMk ? "MK线索分派" : "同步CRM";
+    const target = row.querySelector("[data-lead-target]");
+    const result = row.querySelector("[data-lead-result]");
+    if (!isMk) {
+      target.textContent = row.dataset.view === "success" ? `CRM-20260915${String(index + 1).padStart(3, "0")}` : "—";
+      result.textContent = row.dataset.view === "pending" ? "等待同步任务" : row.dataset.view === "exception" ? "渠道未映射" : "CRM已成功接收";
+    } else {
+      const mkTargets = ["—", "华北区 · 王洁", "—", "华东区 · 李明"];
+      const mkResults = ["等待区域规则匹配", "规则：北京企业线索", "地区未配置接收组织", "规则：上海企业线索"];
+      target.textContent = mkTargets[index];
+      result.textContent = mkResults[index];
+    }
+  });
+  filterLeads();
+}
+
+function readLeadFilters() {
+  leadAppliedFilters = {
+    keyword: document.getElementById("leadKeyword").value.trim(),
+    source: document.getElementById("leadSourceFilter").value,
+    time: document.getElementById("leadTimeFilter").value,
+    valid: document.getElementById("leadValidFilter").value,
+    route: document.getElementById("leadRouteFilter").value,
+    owner: document.getElementById("leadOwnerFilter").value,
+    history: document.getElementById("leadHistoryFilter").value,
+    region: document.getElementById("leadRegionFilter").value,
+  };
+}
+
+function renderLeadFilterChips() {
+  const labels = { keyword: "关键字", source: "线索来源", time: "提交时间", valid: "是否有效", route: "流转方式", owner: "负责人", history: "历史提交", region: "地区" };
+  const displayValues = { today: "今天", "7d": "近7天", "30d": "近30天" };
+  const chips = document.getElementById("leadFilterChips");
+  chips.innerHTML = Object.entries(leadAppliedFilters).filter(([, value]) => value).map(([key, value]) => `<button data-remove-lead-filter="${key}">${labels[key]}：${displayValues[value] || (value === "yes" ? "有历史提交" : value === "no" ? "无历史提交" : value)}<i>×</i></button>`).join("");
+  document.getElementById("leadFilterSummary").hidden = !chips.childElementCount;
+}
+
+function filterLeads() {
+  const query = leadAppliedFilters.keyword.toLowerCase();
+  let shown = 0;
+  document.querySelectorAll(".lead-row:not(.head)").forEach((row) => {
+    const visible = (leadView === "all" || row.dataset.view === leadView)
+      && (!query || row.dataset.search.toLowerCase().includes(query))
+      && (!leadAppliedFilters.source || row.dataset.source === leadAppliedFilters.source)
+      && (!leadAppliedFilters.time || Number(row.dataset.age) <= (leadAppliedFilters.time === "today" ? 0 : leadAppliedFilters.time === "7d" ? 7 : 30))
+      && (!leadAppliedFilters.valid || row.dataset.valid === leadAppliedFilters.valid)
+      && (!leadAppliedFilters.route || row.dataset.route === leadAppliedFilters.route)
+      && (!leadAppliedFilters.owner || row.dataset.owner === leadAppliedFilters.owner)
+      && (!leadAppliedFilters.history || (leadAppliedFilters.history === "yes" ? row.dataset.history === "yes" : row.dataset.history === "no"))
+      && (!leadAppliedFilters.region || row.dataset.region === leadAppliedFilters.region);
+    row.hidden = !visible;
+    if (visible) shown += 1;
+  });
+  document.getElementById("leadTotal").textContent = shown;
+  document.getElementById("leadEmpty").hidden = shown !== 0;
+  document.querySelector(".lead-table-scroll").hidden = shown === 0;
+  renderLeadFilterChips();
+}
+
+function resetLeadFilters() {
+  leadView = "all";
+  leadAppliedFilters = { keyword: "", source: "", time: "", valid: "", route: "", owner: "", history: "", region: "" };
+  document.getElementById("leadKeyword").value = "";
+  ["leadSourceFilter", "leadTimeFilter", "leadValidFilter", "leadRouteFilter", "leadOwnerFilter", "leadHistoryFilter", "leadRegionFilter"].forEach((id) => { document.getElementById(id).value = ""; });
+  document.querySelectorAll("[data-lead-view]").forEach((item) => item.classList.toggle("active", item.dataset.leadView === "all"));
+  document.getElementById("leadAdvanced").classList.remove("open");
+  const toggle = document.getElementById("leadAdvancedButton");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.innerHTML = '高级筛选 <span>⌄</span>';
+  filterLeads();
+}
+
+document.querySelectorAll("[data-lead-view]").forEach((button) => button.addEventListener("click", () => {
+  leadView = button.dataset.leadView;
+  document.querySelectorAll("[data-lead-view]").forEach((item) => item.classList.remove("active"));
+  button.classList.add("active");
+  filterLeads();
+}));
+document.getElementById("leadSearchButton")?.addEventListener("click", () => { readLeadFilters(); filterLeads(); });
+document.getElementById("leadKeyword")?.addEventListener("keydown", (event) => { if (event.key === "Enter") { readLeadFilters(); filterLeads(); } });
+document.getElementById("leadAdvancedButton")?.addEventListener("click", (event) => {
+  const open = document.getElementById("leadAdvanced").classList.toggle("open");
+  event.currentTarget.setAttribute("aria-expanded", String(open));
+  event.currentTarget.innerHTML = `${open ? "收起筛选" : "高级筛选"} <span>${open ? "⌃" : "⌄"}</span>`;
+});
+document.getElementById("leadResetButton")?.addEventListener("click", resetLeadFilters);
+document.getElementById("leadClearFilters")?.addEventListener("click", resetLeadFilters);
+document.getElementById("leadFilterChips")?.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-remove-lead-filter]");
+  if (!chip) return;
+  const fieldMap = { keyword: "leadKeyword", source: "leadSourceFilter", valid: "leadValidFilter", route: "leadRouteFilter", owner: "leadOwnerFilter", history: "leadHistoryFilter", region: "leadRegionFilter" };
+  leadAppliedFilters[chip.dataset.removeLeadFilter] = "";
+  document.getElementById(fieldMap[chip.dataset.removeLeadFilter]).value = "";
+  filterLeads();
+});
+document.querySelectorAll("[data-open-lead]").forEach((button) => button.addEventListener("click", () => {
+  document.getElementById("leadDrawerName").textContent = button.dataset.openLead;
+  document.getElementById("leadDrawer").classList.add("open");
+  document.getElementById("leadDrawer").setAttribute("aria-hidden", "false");
+}));
+document.querySelectorAll("[data-close-lead]").forEach((button) => button.addEventListener("click", () => { document.getElementById("leadDrawer").classList.remove("open"); document.getElementById("leadDrawer").setAttribute("aria-hidden", "true"); }));
+document.querySelectorAll("[data-history-name]").forEach((button) => button.addEventListener("click", () => {
+  document.getElementById("leadHistoryName").textContent = button.dataset.historyName;
+  document.getElementById("leadHistoryDrawer").classList.add("open");
+  document.getElementById("leadHistoryDrawer").setAttribute("aria-hidden", "false");
+}));
+document.querySelectorAll("[data-close-history]").forEach((button) => button.addEventListener("click", () => { document.getElementById("leadHistoryDrawer").classList.remove("open"); document.getElementById("leadHistoryDrawer").setAttribute("aria-hidden", "true"); }));
+document.querySelectorAll("[data-lead-setting-tab]").forEach((button) => button.addEventListener("click", () => openLeadSettingPanel(button.dataset.leadSettingTab)));
+document.querySelectorAll("[data-open-route-setting]").forEach((button) => button.addEventListener("click", () => openLeadSettingPanel("route")));
+document.querySelectorAll('input[name="leadRouteMode"]').forEach((radio) => radio.addEventListener("change", () => {
+  document.querySelectorAll(".lead-route-options label").forEach((item) => item.classList.toggle("selected", item.contains(radio)));
+  document.getElementById("leadRouteImpact").hidden = radio.value === leadMode;
+  document.getElementById("leadRouteImpactText").textContent = radio.value === "crm" ? "新进入的线索将同步CRM，不再执行MK区域分派。" : "新进入的线索将执行MK区域分派，不再自动同步CRM。";
+}));
+document.getElementById("cancelLeadRoute")?.addEventListener("click", () => {
+  const radio = document.querySelector(`input[name="leadRouteMode"][value="${leadMode}"]`);
+  radio.checked = true;
+  document.querySelectorAll(".lead-route-options label").forEach((item) => item.classList.toggle("selected", item.contains(radio)));
+  document.getElementById("leadRouteImpact").hidden = true;
+});
+document.getElementById("confirmLeadRoute")?.addEventListener("click", () => {
+  leadMode = document.querySelector('input[name="leadRouteMode"]:checked').value;
+  document.getElementById("leadRouteImpact").hidden = true;
+  renderLeadMode();
+  const toast = document.getElementById("leadToast");
+  toast.textContent = `流转方式已切换为${leadMode === "mk" ? "MK线索分派" : "同步CRM"}，仅对新进入线索生效`;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2400);
+});
+document.querySelectorAll("[data-crm-config-tab]").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll("[data-crm-config-tab]").forEach((item) => item.classList.remove("active"));
+  document.querySelectorAll("[data-crm-config-panel]").forEach((item) => item.classList.remove("active"));
+  button.classList.add("active");
+  document.querySelector(`[data-crm-config-panel="${button.dataset.crmConfigTab}"]`).classList.add("active");
+}));
+renderLeadMode();
 
 document.querySelectorAll(".time-filter button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -166,6 +837,14 @@ const intentLayerData = {
 
 function renderIntentLayer(level) {
   const config = intentLayerData[level];
+  const industry = document.getElementById("intentIndustryFilter")?.value || "全部行业";
+  const region = document.getElementById("intentRegionFilter")?.value || "";
+  const range = Number(document.getElementById("intentRangeFilter")?.value || 0);
+  const regionByIndex = ["华东", "华南", "华北"];
+  const ageByLevel = { high: [2, 1, 7], mid: [7, 14, 14], low: [21, 25, 30], silent: [65, 120, 180] };
+  const rows = config.rows.filter((row, index) => (industry === "全部行业" || row[2] === industry)
+    && (!region || regionByIndex[index] === region)
+    && (!range || ageByLevel[level][index] <= range));
   const table = document.getElementById("intentCustomerTable");
   const heading = table.querySelector(".table-head").outerHTML;
   document.querySelectorAll("[data-intent-level]").forEach((button) => {
@@ -177,7 +856,7 @@ function renderIntentLayer(level) {
   const guide = document.getElementById("intentActionGuide");
   guide.className = `intent-action-guide ${level}`;
   guide.innerHTML = `<strong>下一步建议</strong>${config.actions.map((action) => `<span>${action}</span>`).join("")}`;
-  table.innerHTML = heading + config.rows.map((row) => {
+  table.innerHTML = heading + rows.map((row) => {
     const actionKind = row[7] || (row[6].includes("CRM") ? "crm" : row[6].includes("销售") || row[6].includes("线索") ? "sales" : row[6].includes("排除") ? "ads" : "nurture");
     const actionTarget = row[8] || `${row[0]} / ${row[1]}`;
     return `
@@ -188,13 +867,13 @@ function renderIntentLayer(level) {
       <span>${row[4]}</span><span>${row[5]}</span>
       <span><button class="mini-button next-action-button" data-action-kind="${actionKind}" data-action-target="${actionTarget}" data-action-score="${row[3]}" data-action-reason="${row[4]}；CRM 状态：${row[5]}">处理建议</button></span>
     </div>`;
-  }).join("");
+  }).join("") + (rows.length ? "" : '<div class="content-list-empty"><b>没有找到匹配客户</b><span>请调整行业或意向等级后重试</span></div>');
 }
 
 document.querySelectorAll("[data-intent-level]").forEach((button) => {
   button.addEventListener("click", () => renderIntentLayer(button.dataset.intentLevel));
 });
-document.getElementById("intentLevelSelect").addEventListener("change", (event) => renderIntentLayer(event.target.value));
+document.getElementById("intentApplyFilter")?.addEventListener("click", () => renderIntentLayer(document.getElementById("intentLevelSelect").value));
 document.getElementById("intentCustomerTable").addEventListener("click", (event) => {
   if (event.target.closest("[data-intent-profile]")) showPage("profileTags");
 });
@@ -775,6 +1454,10 @@ function resetLandingFilters() {
   document.querySelectorAll("[data-landing-scope]").forEach((button) => {
     button.classList.toggle("active", button.dataset.landingScope === "全部");
   });
+  document.getElementById("landingAdvanced").classList.remove("open");
+  const advancedToggle = document.getElementById("landingAdvancedButton");
+  advancedToggle.setAttribute("aria-expanded", "false");
+  advancedToggle.innerHTML = '高级筛选 <span aria-hidden="true">⌄</span>';
   applyLandingFilters();
   showLandingToast("筛选条件已重置");
 }
@@ -828,11 +1511,43 @@ companyAdvancedButton.addEventListener("click", () => {
   companyAdvancedButton.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span aria-hidden="true">${isOpen ? "⌃" : "⌄"}</span>`;
 });
 
+document.getElementById("intentAdvancedButton")?.addEventListener("click", (event) => {
+  const advanced = document.getElementById("intentAdvancedFilters");
+  const isOpen = advanced.classList.toggle("open");
+  event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+  event.currentTarget.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span>${isOpen ? "⌃" : "⌄"}</span>`;
+});
+
+document.getElementById("userAdvancedButton")?.addEventListener("click", (event) => {
+  const advanced = document.getElementById("userAdvancedFilters");
+  const isOpen = advanced.classList.toggle("open");
+  event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+  event.currentTarget.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span aria-hidden="true">${isOpen ? "⌃" : "⌄"}</span>`;
+});
+
+document.getElementById("groupAdvancedButton")?.addEventListener("click", (event) => {
+  const advanced = document.getElementById("groupAdvancedFilters");
+  const isOpen = advanced.classList.toggle("open");
+  event.currentTarget.setAttribute("aria-expanded", String(isOpen));
+  event.currentTarget.innerHTML = `${isOpen ? "收起筛选" : "高级筛选"} <span aria-hidden="true">${isOpen ? "⌃" : "⌄"}</span>`;
+});
+
 document.querySelectorAll(".unified-reset").forEach((button) => {
   button.addEventListener("click", () => {
     const panel = button.closest(".unified-filter-panel");
     panel.querySelectorAll("input").forEach((input) => { input.value = ""; });
     panel.querySelectorAll("select").forEach((select) => { select.selectedIndex = 0; });
+    const advanced = panel.querySelector(".unified-filter-advanced");
+    const toggle = panel.querySelector(".unified-advanced-toggle");
+    advanced?.classList.remove("open");
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.innerHTML = '高级筛选 <span aria-hidden="true">⌄</span>';
+    }
+    if (panel.querySelector("#intentLevelSelect")) renderIntentLayer("high");
+    if (panel.querySelector("#userKeyword")) filterUsers();
+    if (panel.querySelector("#groupKeyword")) filterGroups();
+    if (panel.querySelector("#companyKeyword")) filterCompanies();
   });
 });
 document.querySelectorAll("#landingBatch button").forEach((button) => button.addEventListener("click", () => showLandingToast(`${button.textContent.trim()}操作已触发`)));
@@ -847,11 +1562,23 @@ function filterUsers() {
   const keyword = document.getElementById("userKeyword").value.trim().toLowerCase();
   const identity = document.getElementById("userIdentityFilter").value;
   const status = document.getElementById("userStatusFilter").value;
+  const gender = document.getElementById("userGenderFilter").value;
+  const industry = document.getElementById("userIndustryFilter").value;
+  const region = document.getElementById("userRegionFilter").value;
+  const source = document.getElementById("userSourceFilter").value;
+  const registeredDays = document.getElementById("userRegisteredFilter").value;
+  const activeDays = document.getElementById("userActiveFilter").value;
   let shown = 0;
   document.querySelectorAll(".user-list-row").forEach((row) => {
     const match = (!keyword || row.dataset.search.toLowerCase().includes(keyword))
       && (!identity || row.dataset.identity === identity)
-      && (!status || row.dataset.status === status);
+      && (!status || row.dataset.status === status)
+      && (!gender || row.dataset.gender === gender)
+      && (!industry || row.dataset.industry === industry)
+      && (!region || row.dataset.region === region)
+      && (!source || row.dataset.source === source)
+      && (!registeredDays || Number(row.dataset.registeredDays) <= Number(registeredDays))
+      && (activeDays === "" || Number(row.dataset.activeDays) <= Number(activeDays));
     row.style.display = match ? "" : "none";
     if (match) shown += 1;
   });
@@ -863,4 +1590,45 @@ const userSearchButton = document.getElementById("userSearchButton");
 if (userSearchButton) userSearchButton.addEventListener("click", filterUsers);
 document.getElementById("userKeyword")?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") filterUsers();
+});
+function filterGroups() {
+  const keyword = document.getElementById("groupKeyword").value.trim().toLowerCase();
+  const type = document.getElementById("groupTypeFilter").value;
+  const create = document.getElementById("groupCreateFilter").value;
+  let shown = 0;
+  document.querySelectorAll(".group-list-row").forEach((row) => {
+    const match = (!keyword || row.dataset.search.toLowerCase().includes(keyword))
+      && (!type || row.dataset.type === type)
+      && (!create || row.dataset.create === create);
+    row.hidden = !match;
+    if (match) shown += 1;
+  });
+  document.getElementById("groupEmptyState").hidden = shown !== 0;
+  document.getElementById("groupListTable").classList.toggle("has-empty", shown === 0);
+}
+
+function filterCompanies() {
+  const keyword = document.getElementById("companyKeyword").value.trim().toLowerCase();
+  const status = document.getElementById("companyStatusFilter").value;
+  const crm = document.getElementById("companyCrmFilter").value;
+  let shown = 0;
+  document.querySelectorAll(".company-list-row").forEach((row) => {
+    const match = (!keyword || row.dataset.search.toLowerCase().includes(keyword))
+      && (!status || row.dataset.status === status)
+      && (!crm || row.dataset.crm === crm);
+    row.hidden = !match;
+    if (match) shown += 1;
+  });
+  document.getElementById("companyEmptyState").hidden = shown !== 0;
+  document.getElementById("companyListTable").classList.toggle("has-empty", shown === 0);
+}
+
+document.getElementById("companySearchButton")?.addEventListener("click", filterCompanies);
+document.getElementById("companyKeyword")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") filterCompanies();
+});
+
+document.getElementById("groupSearchButton")?.addEventListener("click", filterGroups);
+document.getElementById("groupKeyword")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") filterGroups();
 });
