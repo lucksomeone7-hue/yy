@@ -31,6 +31,12 @@ prototype/index.html
 - `CHANGELOG.md`：正式评审版本的变更记录。
 - `prototype/version.json`：原型当前版本的机器可读元数据。
 - `prototype/`：可直接打开和发布的交互原型。
+- `archive/v1.0.0/`：冻结的 `v1.0.0` 评审归档，不随最新原型更新。
+
+## 在线预览
+
+- 最新稳定版：<https://lucksomeone7-hue.github.io/yy/mk/>
+- v1.0.0 归档：<https://lucksomeone7-hue.github.io/yy/archive/v1.0.0/>
 
 ## 核心链路
 

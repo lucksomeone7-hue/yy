@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "name": "Marketing Cloud 客户经营一期原型",
+  "releasedAt": "2026-09-11",
+  "channel": "stable",
+  "sourceBranch": "main",
+  "previewPath": "/mk/"
+}

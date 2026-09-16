@@ -29,8 +29,9 @@ jobs:
 
       - name: Prepare site
         run: |
-          mkdir -p _site/mk
+          mkdir -p _site/mk _site/archive/v1.0.0
           cp -R prototype/. _site/mk/
+          cp -R archive/v1.0.0/. _site/archive/v1.0.0/
 
       - name: Upload prototype
         uses: actions/upload-pages-artifact@v3
