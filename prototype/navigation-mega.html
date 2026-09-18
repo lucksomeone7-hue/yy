@@ -3,25 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Marketing Cloud 一期原型 · 导航修订版</title>
+    <title>Marketing Cloud 一期原型 · 全量导航方案</title>
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./sms.css" />
       <link rel="stylesheet" href="./customer-expression.css" />
     <link rel="stylesheet" href="./navigation.css" />
+    <link rel="stylesheet" href="./navigation-mega.css" />
   </head>
-  <body>
+  <body class="mk-mega-layout">
     <header class="mk-global-header">
-      <a class="mk-logo" href="#dashboard"><span>用友</span><strong>Marketing Cloud</strong></a>
-      <span class="mk-edition">一期原型 · 导航修订版</span>
+      <button class="mk-all-trigger" id="mkAllOpen" aria-haspopup="dialog" aria-label="打开全部功能" title="全部功能">
+        <span aria-hidden="true"></span>
+      </button>
+      <a class="mk-logo" href="#dashboard" aria-label="用友 Marketing Cloud 首页"><span>用友</span></a>
+      <a class="mk-home-link" href="#dashboard"><span aria-hidden="true">⌂</span> 工作台</a>
       <button class="mk-search-trigger" id="mkSearchOpen"><span>⌕</span> 搜索功能菜单 <kbd>⌘ K</kbd></button>
       <span class="mk-org">集团信息技术部</span>
     </header>
     <aside class="mk-navigation" aria-label="平台导航">
-      <nav class="mk-primary" id="mkPrimary" aria-label="业务模块"></nav>
+      
       <section class="mk-secondary" aria-label="当前模块功能">
         <div class="mk-secondary-head"><h2 id="mkModuleTitle">工作台</h2><button id="mkCollapse" aria-label="收起功能导航" aria-expanded="true" title="收起功能导航">‹</button></div>
         <div id="mkSecondary"></div>
-        <div class="mk-nav-foot"><span>v2.0.0-rc.1</span><span>仅菜单 = 尚无原型页</span></div>
+        <div class="mk-nav-foot"><span>方案 B · 全量导航</span><span>仅菜单 = 尚无原型页</span></div>
       </section>
     </aside>
     <button class="mk-expand" id="mkExpand" aria-label="展开功能导航" hidden>›</button>
@@ -2010,6 +2014,10 @@
       </div>
     </main>
 
+    <dialog id="mkAllDialog" class="mk-all-dialog" aria-labelledby="mkAllTitle">
+      <header class="mk-all-header"><div><span class="mk-panel-brand">MK</span><h2 id="mkAllTitle">全部功能</h2></div><label><span class="mk-visually-hidden">搜索全部功能</span><input id="mkAllSearch" type="search" placeholder="搜索功能名称，例如短信、表单、用户" autocomplete="off"></label><button id="mkAllClose" aria-label="关闭全部功能">×</button></header>
+      <div class="mk-all-body"><nav id="mkPrimary" class="mk-all-categories" aria-label="全部功能分类"></nav><section class="mk-all-content"><div class="mk-all-content-head"><h3 id="mkAllCategoryTitle">内容与页面</h3><p id="mkAllDescription">按业务场景查找功能，星标收藏常用入口。</p></div><div id="mkAllGrid" class="mk-all-grid"></div><p id="mkAllNotice" role="status"></p></section></div>
+    </dialog>
     <dialog id="mkSearchDialog" class="mk-search-dialog" aria-labelledby="mkSearchTitle">
       <div class="mk-search-head"><h2 id="mkSearchTitle">查找功能</h2><button id="mkSearchClose" aria-label="关闭功能搜索">×</button></div>
       <label class="mk-search-label">功能名称或旧菜单名称<input id="mkSearchInput" type="search" placeholder="例如：用户、落地页、邮件、渠道" autocomplete="off"></label>
@@ -2020,6 +2028,6 @@
     <script src="./script.js"></script>
       <script src="./customer-expression.js"></script>
     <script src="./sms.js"></script>
-    <script src="./navigation.js"></script>
+    <script src="./navigation-mega.js"></script>
   </body>
 </html>

@@ -1,27 +1,27 @@
 const pageTitles = {
-  contentCenter: "内容中心",
+  contentCenter: "内容概览",
   smsManagement: "短信管理",
   smsTemplates: "短信模板",
   moduleManagement: "内容模块",
   landingCategories: "落地页分类管理",
   dashboard: "经营看板",
   layers: "客户意向分层",
-  companies: "企业账户",
+  companies: "企业客户",
   account: "企业洞察",
-  actions: "经营动作中心",
+  actions: "行动待办",
   landingPages: "落地页",
   activities: "活动管理",
   activityDetail: "活动详情",
   leads: "线索管理",
-  leadSettings: "线索设置",
-  users: "用户列表",
+  leadSettings: "流转配置",
+  users: "联系人",
   customerProfile: "客户画像",
-  profileTags: "用户画像",
-  segment: "用户分组",
+  profileTags: "画像与标签",
+  segment: "人群分组",
   segmentCreate: "AI 创建分组",
-  settings: "客户意向评分规则",
+  settings: "意向评分配置",
   settingsWeights: "行为权重",
-  settingsPermissions: "权限",
+  settingsPermissions: "角色权限",
   settingsVersions: "规则版本",
 };
 
@@ -77,38 +77,12 @@ document.getElementById("createModuleButton").addEventListener("click", (event) 
 });
 
 function showPage(page) {
-  const parentPage = {
-    account: "companies",
-    segmentCreate: "segment",
-    activityDetail: "activities",
-    landingPages: "contentCenter",
-    landingCategories: "contentCenter",
-    moduleManagement: "contentCenter",
-  };
-  const activePage = parentPage[page] || page;
-  document.querySelectorAll(".nav-item").forEach((item) => {
-    item.classList.toggle("active", item.dataset.page === activePage);
-  });
-  document.querySelectorAll(".content-sidebar-children > button").forEach((item) => item.classList.remove("active"));
-  if (activePage !== "contentCenter") {
-    document.querySelector(".content-home-item")?.classList.remove("active");
-  } else if (["landingPages", "landingCategories", "moduleManagement"].includes(page)) {
-    document.querySelector(".content-home-item")?.classList.remove("active");
-    const landingMenuItem = document.querySelector('.content-sidebar-children [data-jump="landingPages"]');
-    landingMenuItem?.classList.add("active");
-    const landingGroup = landingMenuItem?.closest(".content-sidebar-group");
-    document.querySelectorAll(".content-sidebar-group").forEach((group) => {
-      const isLandingGroup = group === landingGroup;
-      group.classList.toggle("open", isLandingGroup);
-      group.querySelector(".content-sidebar-group-toggle")?.setAttribute("aria-expanded", String(isLandingGroup));
-      const children = group.querySelector(".content-sidebar-children");
-      if (children) children.hidden = !isLandingGroup;
-    });
-  }
+  if (!document.getElementById(page)?.classList.contains("page")) return;
   document.querySelectorAll(".page").forEach((section) => section.classList.remove("active"));
   document.getElementById(page).classList.add("active");
   document.querySelectorAll("[data-landing-tab]").forEach((item) => item.classList.toggle("active", item.dataset.landingTab === page));
   document.getElementById("pageTitle").textContent = pageTitles[page];
+  window.mkNavigation?.syncPage(page);
 }
 
 document.querySelectorAll(".nav-item").forEach((button) => {
@@ -382,21 +356,13 @@ function openContentSection(section) {
   setContentView(section, tabs[0].id);
   document.querySelectorAll("[data-content-section]").forEach((item) => item.classList.toggle("active", item.dataset.contentSection === section));
   document.querySelector(".content-home-item")?.classList.remove("active");
-  const activeSidebarItem = document.querySelector(`.content-sidebar-children [data-content-section="${section}"]`);
-  if (activeSidebarItem) {
-    const activeGroup = activeSidebarItem.closest(".content-sidebar-group");
-    document.querySelectorAll(".content-sidebar-group").forEach((item) => {
-      const isActiveGroup = item === activeGroup;
-      item.classList.toggle("open", isActiveGroup);
-      item.querySelector(".content-sidebar-group-toggle").setAttribute("aria-expanded", String(isActiveGroup));
-      item.querySelector(".content-sidebar-children").hidden = !isActiveGroup;
-    });
-  }
+  window.mkNavigation?.syncContent(section);
   document.getElementById("contentCreateMenu").hidden = true;
   document.getElementById("contentCreateButton").setAttribute("aria-expanded", "false");
 }
 
 function showContentOverview() {
+  window.mkNavigation?.syncPage("contentCenter");
   document.querySelector(".content-center-hero").hidden = false;
   document.querySelector(".content-local-nav").hidden = false;
   document.getElementById("contentOverview").hidden = false;

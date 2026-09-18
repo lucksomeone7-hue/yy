@@ -1,8 +1,8 @@
 {
-  "version": "1.1.0",
-  "name": "Marketing Cloud 客户经营一期原型",
-  "releasedAt": "2026-09-16",
-  "channel": "stable",
+  "version": "2.0.0-rc.1",
+  "name": "Marketing Cloud 一期原型 · 导航方案评审版",
+  "channel": "review",
   "sourceBranch": "main",
-  "previewPath": "/mk/"
+  "previewPath": "/mk/",
+  "updatedAt": "2026-09-18"
 }
