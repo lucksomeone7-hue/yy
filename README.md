@@ -38,6 +38,7 @@ prototype/index.html
 - 方案 A · 一般导航：<https://lucksomeone7-hue.github.io/yy/mk/>
 - 方案 B · 全量导航：<https://lucksomeone7-hue.github.io/yy/mk/navigation-mega.html>
 - 方案 C · 精简导航：<https://lucksomeone7-hue.github.io/yy/mk/navigation-context.html>
+- 方案 D · 管理员导航：<https://lucksomeone7-hue.github.io/yy/mk/navigation-admin.html>
 - v1.0.0 归档：<https://lucksomeone7-hue.github.io/yy/archive/v1.0.0/>
 
 ## 核心链路

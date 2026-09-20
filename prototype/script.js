@@ -2,6 +2,17 @@ const pageTitles = {
   contentCenter: "内容概览",
   smsManagement: "短信管理",
   smsTemplates: "短信模板",
+  emailManagement: "邮件列表",
+  emailTemplates: "邮件模板",
+  automation: "营销自动化",
+  wechatMarketing: "微信营销",
+  employeeMarketing: "全员营销",
+  shareRanking: "分享排行",
+  channels: "渠道管理",
+  channelCategories: "渠道分类",
+  organizationManagement: "组织管理",
+  accountManagement: "账号管理",
+  roleManagement: "角色管理",
   moduleManagement: "内容模块",
   landingCategories: "落地页分类管理",
   dashboard: "经营看板",
@@ -569,9 +580,9 @@ document.getElementById("createActivityButton")?.addEventListener("click", (even
   setTimeout(() => { event.currentTarget.textContent = original; }, 1400);
 });
 
-let leadMode = "mk";
+let leadMode = "none";
 let leadView = "all";
-let leadAppliedFilters = { keyword: "", source: "", time: "", valid: "", route: "", owner: "", history: "", region: "" };
+let leadAppliedFilters = { keyword: "", source: "", time: "", valid: "", channel: "", code: "", crmStatus: "", transfer: "", region: "" };
 
 function openLeadSettingPanel(panel) {
   document.querySelectorAll("[data-lead-setting-tab]").forEach((item) => item.classList.toggle("active", item.dataset.leadSettingTab === panel));
@@ -579,16 +590,8 @@ function openLeadSettingPanel(panel) {
 }
 
 function renderLeadMode() {
-  const isMk = leadMode === "mk";
-  document.getElementById("leadModeName").textContent = isMk ? "MK线索分派" : "同步CRM";
-  document.getElementById("leadModeDescription").textContent = isMk ? "按区域规则自动分派至MK组织及负责人" : "根据组织关系和渠道映射将线索同步至CRM";
-  document.getElementById("leadModeHealth").textContent = isMk ? "5条规则生效" : "组织12/12 · 渠道28/30";
-  document.getElementById("leadModeHealthNote").textContent = isMk ? "最近24小时分派成功率 96.8%" : "最近24小时同步成功率 95.6%";
-  document.getElementById("leadPendingLabel").textContent = isMk ? "待分派" : "待同步";
-  document.getElementById("leadExceptionLabel").textContent = isMk ? "分派异常" : "同步异常";
+  const isMk = leadMode === "none";
   document.getElementById("leadTargetHeader").textContent = isMk ? "分派至" : "CRM编码";
-  document.getElementById("leadOverviewMode").textContent = isMk ? "MK线索分派" : "同步CRM";
-  document.getElementById("leadOverviewNote").textContent = isMk ? "新进入线索按地区规则分派至MK组织及负责人" : "新进入线索根据组织关系和渠道映射同步至CRM";
   document.querySelectorAll('[data-mode-label="mk"]').forEach((item) => { item.hidden = !isMk; });
   document.querySelectorAll('[data-mode-label="crm"]').forEach((item) => { item.hidden = isMk; });
   document.querySelectorAll("[data-health-mk]").forEach((item) => { item.hidden = !isMk; });
@@ -619,18 +622,19 @@ function readLeadFilters() {
     source: document.getElementById("leadSourceFilter").value,
     time: document.getElementById("leadTimeFilter").value,
     valid: document.getElementById("leadValidFilter").value,
-    route: document.getElementById("leadRouteFilter").value,
-    owner: document.getElementById("leadOwnerFilter").value,
-    history: document.getElementById("leadHistoryFilter").value,
+    channel: document.getElementById("leadChannelFilter").value.trim(),
+    code: document.getElementById("leadCodeFilter").value.trim(),
+    crmStatus: document.getElementById("leadCrmStatusFilter").value,
+    transfer: document.getElementById("leadTransferFilter").value,
     region: document.getElementById("leadRegionFilter").value,
   };
 }
 
 function renderLeadFilterChips() {
-  const labels = { keyword: "关键字", source: "线索来源", time: "提交时间", valid: "是否有效", route: "流转方式", owner: "负责人", history: "历史提交", region: "地区" };
+  const labels = { keyword: "手机号/标题", source: "线索来源", time: "提交时间", valid: "是否有效", channel: "渠道", code: "编码", crmStatus: "CRM状态", transfer: "传输状态", region: "地区" };
   const displayValues = { today: "今天", "7d": "近7天", "30d": "近30天" };
   const chips = document.getElementById("leadFilterChips");
-  chips.innerHTML = Object.entries(leadAppliedFilters).filter(([, value]) => value).map(([key, value]) => `<button data-remove-lead-filter="${key}">${labels[key]}：${displayValues[value] || (value === "yes" ? "有历史提交" : value === "no" ? "无历史提交" : value)}<i>×</i></button>`).join("");
+  chips.innerHTML = Object.entries(leadAppliedFilters).filter(([, value]) => value).map(([key, value]) => `<button data-remove-lead-filter="${key}">${labels[key]}：${displayValues[value] || value}<i>×</i></button>`).join("");
   document.getElementById("leadFilterSummary").hidden = !chips.childElementCount;
 }
 
@@ -643,9 +647,10 @@ function filterLeads() {
       && (!leadAppliedFilters.source || row.dataset.source === leadAppliedFilters.source)
       && (!leadAppliedFilters.time || Number(row.dataset.age) <= (leadAppliedFilters.time === "today" ? 0 : leadAppliedFilters.time === "7d" ? 7 : 30))
       && (!leadAppliedFilters.valid || row.dataset.valid === leadAppliedFilters.valid)
-      && (!leadAppliedFilters.route || row.dataset.route === leadAppliedFilters.route)
-      && (!leadAppliedFilters.owner || row.dataset.owner === leadAppliedFilters.owner)
-      && (!leadAppliedFilters.history || (leadAppliedFilters.history === "yes" ? row.dataset.history === "yes" : row.dataset.history === "no"))
+      && (!leadAppliedFilters.channel || row.dataset.channel.toLowerCase().includes(leadAppliedFilters.channel.toLowerCase()))
+      && (!leadAppliedFilters.code || `${row.dataset.crmCode} ${row.dataset.ccCode}`.toLowerCase().includes(leadAppliedFilters.code.toLowerCase()))
+      && (!leadAppliedFilters.crmStatus || row.dataset.crmStatus === leadAppliedFilters.crmStatus)
+      && (!leadAppliedFilters.transfer || row.dataset.transfer === leadAppliedFilters.transfer)
       && (!leadAppliedFilters.region || row.dataset.region === leadAppliedFilters.region);
     row.hidden = !visible;
     if (visible) shown += 1;
@@ -658,9 +663,9 @@ function filterLeads() {
 
 function resetLeadFilters() {
   leadView = "all";
-  leadAppliedFilters = { keyword: "", source: "", time: "", valid: "", route: "", owner: "", history: "", region: "" };
+  leadAppliedFilters = { keyword: "", source: "", time: "", valid: "", channel: "", code: "", crmStatus: "", transfer: "", region: "" };
   document.getElementById("leadKeyword").value = "";
-  ["leadSourceFilter", "leadTimeFilter", "leadValidFilter", "leadRouteFilter", "leadOwnerFilter", "leadHistoryFilter", "leadRegionFilter"].forEach((id) => { document.getElementById(id).value = ""; });
+  ["leadSourceFilter", "leadTimeFilter", "leadValidFilter", "leadChannelFilter", "leadCodeFilter", "leadCrmStatusFilter", "leadTransferFilter", "leadRegionFilter"].forEach((id) => { document.getElementById(id).value = ""; });
   document.querySelectorAll("[data-lead-view]").forEach((item) => item.classList.toggle("active", item.dataset.leadView === "all"));
   document.getElementById("leadAdvanced").classList.remove("open");
   const toggle = document.getElementById("leadAdvancedButton");
@@ -687,15 +692,35 @@ document.getElementById("leadClearFilters")?.addEventListener("click", resetLead
 document.getElementById("leadFilterChips")?.addEventListener("click", (event) => {
   const chip = event.target.closest("[data-remove-lead-filter]");
   if (!chip) return;
-  const fieldMap = { keyword: "leadKeyword", source: "leadSourceFilter", valid: "leadValidFilter", route: "leadRouteFilter", owner: "leadOwnerFilter", history: "leadHistoryFilter", region: "leadRegionFilter" };
+  const fieldMap = { keyword: "leadKeyword", source: "leadSourceFilter", time: "leadTimeFilter", valid: "leadValidFilter", channel: "leadChannelFilter", code: "leadCodeFilter", crmStatus: "leadCrmStatusFilter", transfer: "leadTransferFilter", region: "leadRegionFilter" };
   leadAppliedFilters[chip.dataset.removeLeadFilter] = "";
   document.getElementById(fieldMap[chip.dataset.removeLeadFilter]).value = "";
   filterLeads();
 });
 document.querySelectorAll("[data-open-lead]").forEach((button) => button.addEventListener("click", () => {
-  document.getElementById("leadDrawerName").textContent = button.dataset.openLead;
+  const row = button.closest(".lead-row");
+  const identity = row?.children[0], company = row?.children[1], state = row?.querySelector("[data-mode-state]");
+  const name = button.dataset.openLead, phone = identity?.querySelector("small")?.textContent || "—", companyName = company?.childNodes[0]?.textContent.trim() || "—", job = company?.querySelector("small")?.textContent || "—";
+  document.getElementById("leadDrawerName").textContent = name;
+  document.getElementById("leadDrawerPhone").textContent = phone;
+  document.getElementById("leadDrawerCompany").textContent = `${companyName} · ${job}`;
+  document.getElementById("leadDrawerStatus").textContent = state?.textContent || row?.dataset.valid || "待判断";
+  document.getElementById("leadDetailName").textContent = name;
+  document.getElementById("leadDetailPhone").textContent = phone;
+  document.getElementById("leadDetailCompany").textContent = companyName;
+  document.getElementById("leadDetailValid").textContent = row?.dataset.valid || "—";
+  document.getElementById("leadDetailCrmCode").textContent = row?.dataset.crmCode || "—";
+  document.getElementById("leadDetailCcCode").textContent = row?.dataset.ccCode || "—";
+  document.getElementById("leadDetailCrmStatus").textContent = row?.dataset.crmStatus || "—";
+  document.getElementById("leadDetailTransfer").textContent = row?.dataset.transfer || "—";
+  document.querySelectorAll("[data-lead-detail-tab]").forEach((item) => item.classList.toggle("active", item.dataset.leadDetailTab === "basic"));
+  document.querySelectorAll("[data-lead-detail-panel]").forEach((item) => item.classList.toggle("active", item.dataset.leadDetailPanel === "basic"));
   document.getElementById("leadDrawer").classList.add("open");
   document.getElementById("leadDrawer").setAttribute("aria-hidden", "false");
+}));
+document.querySelectorAll("[data-lead-detail-tab]").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll("[data-lead-detail-tab]").forEach((item) => item.classList.toggle("active", item === button));
+  document.querySelectorAll("[data-lead-detail-panel]").forEach((item) => item.classList.toggle("active", item.dataset.leadDetailPanel === button.dataset.leadDetailTab));
 }));
 document.querySelectorAll("[data-close-lead]").forEach((button) => button.addEventListener("click", () => { document.getElementById("leadDrawer").classList.remove("open"); document.getElementById("leadDrawer").setAttribute("aria-hidden", "true"); }));
 document.querySelectorAll("[data-history-name]").forEach((button) => button.addEventListener("click", () => {
@@ -709,7 +734,13 @@ document.querySelectorAll("[data-open-route-setting]").forEach((button) => butto
 document.querySelectorAll('input[name="leadRouteMode"]').forEach((radio) => radio.addEventListener("change", () => {
   document.querySelectorAll(".lead-route-options label").forEach((item) => item.classList.toggle("selected", item.contains(radio)));
   document.getElementById("leadRouteImpact").hidden = radio.value === leadMode;
-  document.getElementById("leadRouteImpactText").textContent = radio.value === "crm" ? "新进入的线索将同步CRM，不再执行MK区域分派。" : "新进入的线索将执行MK区域分派，不再自动同步CRM。";
+  const impacts = {
+    none: ["后续新增线索将保留在 Marketing Cloud，不向外部系统传输。", ["已有线索不会重新传输", "当前待处理线索继续沿用原路径", "管理员仍可在线索列表中查看和处理"]],
+    crm: ["后续符合条件的新线索将由 Marketing Cloud 直接同步至 CRM。", ["请先确认组织、渠道和字段映射完整", "同步结果将在列表的传输状态中展示", "同步失败的线索可按失败原因处理"]],
+    cc: ["后续符合条件的新线索将先同步至 CC，再由 CC 按规则同步至 CRM。", ["请先确认 CC 编码、组织和部门配置", "CRM 的最终结果取决于 CC 侧同步规则", "两段传输状态均需保留，便于定位失败环节"]],
+  };
+  document.getElementById("leadRouteImpactText").textContent = impacts[radio.value][0];
+  document.getElementById("leadRouteImpactList").innerHTML = impacts[radio.value][1].map((item) => `<li>${item}</li>`).join("");
 }));
 document.getElementById("cancelLeadRoute")?.addEventListener("click", () => {
   const radio = document.querySelector(`input[name="leadRouteMode"][value="${leadMode}"]`);
@@ -722,7 +753,8 @@ document.getElementById("confirmLeadRoute")?.addEventListener("click", () => {
   document.getElementById("leadRouteImpact").hidden = true;
   renderLeadMode();
   const toast = document.getElementById("leadToast");
-  toast.textContent = `流转方式已切换为${leadMode === "mk" ? "MK线索分派" : "同步CRM"}，仅对新进入线索生效`;
+  const modeNames = { none: "不同步", crm: "同步至 CRM", cc: "同步至 CC" };
+  toast.textContent = `流转方式已保存为“${modeNames[leadMode]}”，仅对新进入线索生效`;
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 2400);
 });
@@ -732,6 +764,18 @@ document.querySelectorAll("[data-crm-config-tab]").forEach((button) => button.ad
   button.classList.add("active");
   document.querySelector(`[data-crm-config-panel="${button.dataset.crmConfigTab}"]`).classList.add("active");
 }));
+document.querySelectorAll("[data-assignment-tab]").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll("[data-assignment-tab]").forEach((item) => item.classList.toggle("active", item === button));
+  document.querySelectorAll("[data-assignment-panel]").forEach((item) => item.classList.toggle("active", item.dataset.assignmentPanel === button.dataset.assignmentTab));
+}));
+document.querySelectorAll("[data-dedupe-tab]").forEach((button) => button.addEventListener("click", () => {
+  document.querySelectorAll("[data-dedupe-tab]").forEach((item) => item.classList.toggle("active", item === button));
+  document.querySelectorAll(".dedupe-rule-table > span").forEach((cell) => {
+    const rowStart = cell.parentElement.children[Math.floor((Array.from(cell.parentElement.children).indexOf(cell) - 7) / 7) * 7 + 7];
+    cell.hidden = button.dataset.dedupeTab !== "all" && rowStart?.dataset.dedupeSystem !== button.dataset.dedupeTab;
+  });
+}));
+document.querySelectorAll("[data-config-create]").forEach((button) => button.addEventListener("click", () => showLandingToast(`进入新建${button.dataset.configCreate}流程`)));
 renderLeadMode();
 
 document.querySelectorAll(".time-filter button").forEach((button) => {
@@ -1554,6 +1598,9 @@ function filterUsers() {
 
 const userSearchButton = document.getElementById("userSearchButton");
 if (userSearchButton) userSearchButton.addEventListener("click", filterUsers);
+document.querySelectorAll("[data-user-edit]").forEach((button) => {
+  button.addEventListener("click", () => showLandingToast(`进入编辑联系人：${button.dataset.userEdit}`));
+});
 document.getElementById("userKeyword")?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") filterUsers();
 });
