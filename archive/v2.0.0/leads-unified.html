@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>线索管理 · 统一工作台方案</title>
+  <link rel="stylesheet" href="leads-unified.css" />
+  <style>[hidden]{display:none!important}.filters{grid-template-columns:repeat(5,minmax(0,1fr))}.advanced{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:1200px){.filters,.advanced{grid-template-columns:repeat(3,minmax(0,1fr))}}</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span>Y</span><div><b>用友 Marketing Cloud</b><small>数智营销 · 客户经营</small></div></div>
+    <nav>
+      <p>线索中心</p>
+      <button class="active">●　线索管理</button>
+      <button>○　线索设置</button>
+      <p>相关功能</p>
+      <button>○　活动管理</button>
+      <button>○　用户画像</button>
+      <button>○　短信管理</button>
+    </nav>
+    <div class="version"><b>统一工作台方案</b><span>历史MK与CRM数据统一查询</span></div>
+  </aside>
+
+  <main>
+    <header><h1>线索管理</h1><span>线索中心 / 线索管理 / 统一工作台方案</span></header>
+    <section class="mode-banner">
+      <div class="mode-icon">流</div>
+      <div><small>当前生效流转模式</small><strong>同步CRM</strong><p>新进入线索将根据组织关系与渠道映射同步至CRM；历史线索保留原流转方式。</p></div>
+      <div class="mode-health"><span><i></i> 配置存在风险</span><small>组织映射 12/12 · 渠道映射 28/30</small></div>
+      <button>查看配置</button>
+    </section>
+
+    <section class="alerts">
+      <button data-quick-mode="CRM同步" data-quick-state="pending"><span>当前模式待处理</span><b>12</b><small>CRM同步 · 查看待同步线索 →</small></button>
+      <button data-quick-mode="MK区域分派" data-quick-state="pending"><span>历史方式待处理</span><b>3</b><small>MK区域分派 · 切换前遗留 →</small></button>
+      <button data-quick-state="exception"><span>处理异常</span><b>4</b><small>需要补充配置或重试 →</small></button>
+      <div><span>今日新增</span><b>128</b><small>较昨日 +8.5%</small></div>
+    </section>
+
+    <section class="workspace">
+      <div class="tabs" role="tablist">
+        <button class="active" data-view="all">全部线索 <b>53</b></button>
+        <button data-view="pending">待处理 <b>15</b></button>
+        <button data-view="success">处理成功 <b>34</b></button>
+        <button data-view="exception">处理异常 <b>4</b></button>
+      </div>
+
+      <div class="filters">
+        <label class="wide"><span>关键字</span><input id="keyword" placeholder="姓名 / 手机号 / 公司 / 标题" /></label>
+        <label><span>线索来源</span><select id="source"><option value="">全部来源</option><option>表单</option><option>活动</option><option>资料下载</option></select></label>
+        <label><span>提交时间</span><select id="submitTime"><option value="">不限时间</option><option value="today">今天</option><option value="7d">近7天</option><option value="30d">近30天</option></select></label>
+        <label><span>流转方式</span><select id="routeMode"><option value="">全部方式</option><option>MK区域分派</option><option>CRM同步</option></select></label>
+        <label><span>是否有效</span><select id="valid"><option value="">全部</option><option>有效</option><option>待判断</option><option>无效</option></select></label>
+        <button class="primary" id="search">搜索</button><button id="advancedToggle">高级筛选⌄</button><button id="reset">重置</button>
+      </div>
+      <div class="advanced" id="advanced">
+        <label><span>具体状态</span><select id="rawState"><option value="">全部状态</option><option>待分派</option><option>已分派</option><option>分派异常</option><option>待同步</option><option>同步中</option><option>已同步</option><option>同步失败</option></select></label>
+        <label><span>来源渠道</span><select id="channel"><option value="">全部渠道</option><option>官网</option><option>微信</option><option>线下会议</option><option>资料中心</option></select></label>
+        <label><span>所属 / 接收组织</span><select id="org"><option value="">全部组织</option><option>市场运营部</option><option>华北区</option><option>华东区</option><option>未匹配</option></select></label>
+        <label><span>负责人</span><select id="owner"><option value="">全部负责人</option><option>王洁</option><option>李明</option><option>未分派</option></select></label>
+        <label><span>地区</span><select id="region"><option value="">全部地区</option><option>北京</option><option>上海</option><option>江苏</option></select></label>
+        <label><span>历史提交</span><select id="history"><option value="">全部</option><option value="yes">有历史提交</option><option value="no">首次提交</option></select></label>
+        <label><span>CRM编码</span><input id="crmCode" placeholder="请输入完整CRM编码" /></label>
+        <label><span>异常类型</span><select id="exceptionType"><option value="">全部异常</option><option>组织未匹配</option><option>渠道未映射</option><option>接口失败</option></select></label>
+      </div>
+      <div class="result-line" hidden><div id="chips"></div></div>
+
+      <div class="table-wrap">
+        <div class="lead-table">
+          <div class="row head"><span>线索</span><span>公司 / 职务</span><span>来源与标题</span><span>提交时间</span><span>流转方式</span><span>处理状态 / 原始状态</span><span>流转信息</span><span>处理结果</span><span>操作</span></div>
+          <div class="row" data-view="pending" data-mode="CRM同步" data-state="待同步" data-source="表单" data-search="李丹丹 远航自动化 高级筛选优化调研"><span><button class="link" data-detail="李丹丹">李丹丹</button><small>166****1692 · 3次提交</small></span><span>远航自动化<small>市场总监</small></span><span>表单<small>高级筛选优化调研</small></span><span>09-15 10:32</span><span><em class="route crm">CRM同步</em></span><span><b class="state pending">待处理</b><small>待同步</small></span><span>等待同步</span><span>等待同步任务执行</span><span><button class="mini primary">立即同步</button><button class="mini" data-detail="李丹丹">详情</button></span></div>
+          <div class="row" data-view="pending" data-mode="MK区域分派" data-state="待分派" data-source="活动" data-search="赵磊 北辰制造 数智营销峰会"><span><button class="link" data-detail="赵磊">赵磊</button><small>137****6218 · 首次提交</small></span><span>北辰制造<small>信息化负责人</small></span><span>活动<small>数智营销峰会</small></span><span>09-10 15:21</span><span><em class="route mk">MK区域分派</em><small>历史方式</small></span><span><b class="state pending">待处理</b><small>待分派</small></span><span>尚未分派</span><span>切换前遗留任务</span><span><button class="mini primary">立即分派</button><button class="mini" data-detail="赵磊">详情</button></span></div>
+          <div class="row" data-view="success" data-mode="MK区域分派" data-state="已分派" data-source="活动" data-search="张晨 华北装备 数智营销峰会"><span><button class="link" data-detail="张晨">张晨</button><small>138****5521 · 首次提交</small></span><span>华北装备<small>信息总监</small></span><span>活动<small>用友数智营销峰会</small></span><span>09-15 09:18</span><span><em class="route mk">MK区域分派</em></span><span><b class="state success">处理成功</b><small>已分派</small></span><span>华北区 · 王洁</span><span>命中“北京企业线索”</span><span><button class="mini">分派记录</button><button class="mini" data-detail="张晨">详情</button></span></div>
+          <div class="row" data-view="success" data-mode="CRM同步" data-state="已同步" data-source="表单" data-search="陈洁 同创科技 YonBIP产品咨询"><span><button class="link" data-detail="陈洁">陈洁</button><small>136****9063 · 4次提交</small></span><span>同创科技<small>采购负责人</small></span><span>表单<small>YonBIP产品咨询</small></span><span>09-14 14:05</span><span><em class="route crm">CRM同步</em></span><span><b class="state success">处理成功</b><small>已同步</small></span><span>CRM-20260915004</span><span>传输成功<small>CRM状态：跟进中</small></span><span><button class="mini">同步结果</button><button class="mini" data-detail="陈洁">详情</button></span></div>
+          <div class="row" data-view="exception" data-mode="CRM同步" data-state="同步失败" data-source="资料下载" data-search="周敏 海川医疗 制造业增长白皮书"><span><button class="link" data-detail="周敏">周敏</button><small>139****7782 · 2次提交</small></span><span>海川医疗<small>数字化负责人</small></span><span>资料下载<small>制造业增长白皮书</small></span><span>09-14 16:40</span><span><em class="route crm">CRM同步</em></span><span><b class="state exception">处理异常</b><small>同步失败</small></span><span>—</span><span class="danger">渠道未映射</span><span><button class="mini primary">处理并重试</button><button class="mini" data-detail="周敏">详情</button></span></div>
+          <div class="row" data-view="exception" data-mode="MK区域分派" data-state="分派异常" data-source="表单" data-search="孙悦 江南食品 产品咨询"><span><button class="link" data-detail="孙悦">孙悦</button><small>135****4106 · 首次提交</small></span><span>江南食品<small>运营负责人</small></span><span>表单<small>产品咨询</small></span><span>09-09 11:28</span><span><em class="route mk">MK区域分派</em><small>历史方式</small></span><span><b class="state exception">处理异常</b><small>分派异常</small></span><span>—</span><span class="danger">未配置接收组织</span><span><button class="mini primary">处理异常</button><button class="mini" data-detail="孙悦">详情</button></span></div>
+        </div>
+      </div>
+      <div class="empty" id="empty" hidden>没有符合条件的线索，请调整筛选条件。</div>
+      <footer><span>共 <b id="total">6</b> 条</span><button disabled>‹</button><button class="page">1</button><button disabled>›</button></footer>
+    </section>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-hidden="true"><div class="mask" data-close></div><section><header><div><small>线索详情</small><h2 id="drawerName">李丹丹</h2></div><button data-close>×</button></header><div class="drawer-mode"><span>本条线索流转方式</span><b id="drawerMode">CRM同步</b><small>流转方式在进入系统时确定，不随当前系统模式改变</small></div><nav><button class="active">基本信息</button><button>流转记录</button><button>历史提交</button></nav><dl><dt>手机号</dt><dd>166****1692</dd><dt>来源</dt><dd>表单 · 高级筛选优化调研</dd><dt>通用状态</dt><dd>待判断</dd><dt>处理说明</dt><dd>详情中保留MK分派字段与CRM同步字段的完整执行记录。</dd></dl></section></aside>
+  <script src="leads-unified.js"></script>
+</body>
+</html>
