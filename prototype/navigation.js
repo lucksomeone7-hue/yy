@@ -13,7 +13,7 @@
   const remembered={};
   const persist=()=>{try{localStorage.setItem('mk-nav-favorites',JSON.stringify(favorites));localStorage.setItem('mk-nav-recent',JSON.stringify(recent));}catch{}};
   function notice(message){get('mkNavNotice').textContent=message;get('mkNavNotice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>get('mkNavNotice').hidden=true,3200);}
-  function menuButton(item){return `<button class="mk-menu-item ${item.id===current?'selected':''}" data-mk-item="${item.id}" ${item.id===current?'aria-current="page"':''} ${available(item)?'':`aria-disabled="true" title="${esc(item.label)}：现有系统功能，本原型仅展示菜单"`}><span>${esc(item.label)}</span>${available(item)?'':'<small>仅菜单</small>'}</button>`;}
+  function menuButton(item){return `<button class="mk-menu-item ${item.id===current?'selected':''}" data-mk-item="${item.id}" ${item.id===current?'aria-current="page"':''} ${available(item)?'':`aria-disabled="true" title="${esc(item.label)}：当前原型暂未提供该功能页面"`}><span>${esc(item.label)}</span></button>`;}
   function renderMenu(){
     get('mkPrimary').innerHTML=groups.map(g=>`<button class="mk-primary-item ${g.id===activeGroup?'selected':''} ${g.id==='system'?'mk-settings-entry':''}" data-mk-group="${g.id}" aria-pressed="${g.id===activeGroup}" title="${g.label}"><span aria-hidden="true">${icon(g.id)}</span><b>${g.label}</b></button>`).join('');
     const group=groups.find(g=>g.id===activeGroup);get('mkModuleTitle').textContent=group.label;
@@ -66,7 +66,7 @@
   function search(){
     const query=get('mkSearchInput').value.trim().toLowerCase();
     const matching=query?items.filter(i=>(i.label+' '+(i.aliases||'')+' '+groups.find(g=>g.id===i.group).label).toLowerCase().includes(query)):recent.map(id=>items.find(i=>i.id===id));
-    get('mkSearchResults').innerHTML=`<p class="mk-search-caption">${query?'匹配功能':'最近访问'}</p>`+(matching.length?matching.map(item=>`<button class="mk-search-result" data-mk-result="${item.id}" ${available(item)?'':'aria-disabled="true"'}><span>${esc(item.label)}<small>${esc(groups.find(g=>g.id===item.group).label)}${item.section?' / '+esc(item.section):''}</small></span><em>${available(item)?'打开 →':'仅菜单'}</em></button>`).join(''):'<p class="mk-search-empty">没有匹配的功能，试试旧菜单名称。</p>');
+    get('mkSearchResults').innerHTML=`<p class="mk-search-caption">${query?'匹配功能':'最近访问'}</p>`+(matching.length?matching.map(item=>`<button class="mk-search-result" data-mk-result="${item.id}" ${available(item)?'':'aria-disabled="true"'}><span>${esc(item.label)}<small>${esc(groups.find(g=>g.id===item.group).label)}${item.section?' / '+esc(item.section):''}</small></span>${available(item)?'<em>打开 →</em>':''}</button>`).join(''):'<p class="mk-search-empty">没有匹配的功能，试试旧菜单名称。</p>');
   }
   function openSearch(){search();get('mkSearchDialog').showModal();get('mkSearchInput').focus();}
   get('mkSearchOpen').onclick=openSearch;get('mkSearchClose').onclick=()=>get('mkSearchDialog').close();get('mkSearchInput').oninput=search;

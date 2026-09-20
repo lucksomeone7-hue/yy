@@ -93,7 +93,7 @@
   contextDescription.id='mkPageDescription';contextActions.id='mkPageActions';contextActions.className='mk-page-actions';
   if(schemeC){
     contextCopy.classList.add('mk-context-copy');contextCopy.append(contextDescription);get('mkFavorite').hidden=true;contextActions.append(get('mkFavorite'));contextBar.append(contextActions);
-    const utilities=document.createElement('div');utilities.className='mk-header-utilities';utilities.innerHTML=`<details class="mk-utility-menu mk-language-menu"><summary aria-label="切换语言">◎ <span>简体中文</span></summary><div><button aria-current="true">简体中文</button><button data-mk-utility="英文版">English<small>仅菜单</small></button></div></details><details class="mk-utility-menu mk-account-menu"><summary><i aria-hidden="true">信</i><span>集团信息技术部</span></summary><div><button data-mk-utility="下载中心">⇩ 下载中心<small>仅菜单</small></button><button data-mk-utility="在线文档">? 在线文档<small>仅菜单</small></button><button data-mk-utility="建议反馈">▣ 建议反馈<small>仅菜单</small></button><button data-mk-utility="退出登录">⇥ 退出登录<small>仅菜单</small></button></div></details>`;
+    const utilities=document.createElement('div');utilities.className='mk-header-utilities';utilities.innerHTML=`<details class="mk-utility-menu mk-language-menu"><summary aria-label="切换语言">◎ <span>简体中文</span></summary><div><button aria-current="true">简体中文</button><button data-mk-utility="英文版">English</button></div></details><details class="mk-utility-menu mk-account-menu"><summary><i aria-hidden="true">信</i><span>集团信息技术部</span></summary><div><button data-mk-utility="下载中心">⇩ 下载中心</button><button data-mk-utility="在线文档">? 在线文档</button><button data-mk-utility="建议反馈">▣ 建议反馈</button><button data-mk-utility="退出登录">⇥ 退出登录</button></div></details>`;
     document.querySelector('.mk-org').replaceWith(utilities);
     utilities.addEventListener('click',event=>{const button=event.target.closest('[data-mk-utility]');if(!button)return;notice(`${button.dataset.mkUtility}：本版仅展示入口，暂无对应原型页面。`);button.closest('details').removeAttribute('open');});
     get('mkSearchDialog').classList.add('mk-search-popover');
@@ -210,7 +210,7 @@
     if(source){source.classList.add('mk-context-source');contextSources.push(source);}
     get('pageTitle').textContent=title||item.label;contextDescription.textContent=description;contextDescription.hidden=!description;
   }
-  function menuButton(item){return `<button class="mk-menu-item ${["短信营销","邮件营销","意向评分配置"].includes(item.section)?"mk-third-menu":""} ${item.id===current?'selected':''}" data-mk-item="${item.id}" ${item.id===current?'aria-current="page"':''} ${available(item)?'':`aria-disabled="true" title="${esc(item.label)}：现有系统功能，本原型仅展示菜单"`}><span>${esc(item.label)}</span>${available(item)?'':'<small>仅菜单</small>'}</button>`;}
+  function menuButton(item){return `<button class="mk-menu-item ${["短信营销","邮件营销","意向评分配置"].includes(item.section)?"mk-third-menu":""} ${item.id===current?'selected':''}" data-mk-item="${item.id}" ${item.id===current?'aria-current="page"':''} ${available(item)?'':`aria-disabled="true" title="${esc(item.label)}：当前原型暂未提供该功能页面"`}><span>${esc(item.label)}</span></button>`;}
   function schemeCEntries(group){
     if(!schemeC)return group.items;
     const active=items.find(item=>item.id===current);
@@ -303,7 +303,7 @@
     const globalNames={articles:'文章',resources:'资料',videos:'视频',posters:'海报',forms:'表单',landingPages:'落地页'};
     const globalLabel=item=>schemeD&&!query?(globalNames[item.parentId||item.id]||item.label):item.label;
     const buckets=new Map();for(const item of list){const title=query||['favorites','recent'].includes(panelGroup)?groups.find(g=>g.id===item.group).label:schemeD&&item.group==='content'?(contentBuckets[item.parentId||item.id]||item.section||'常用功能'):item.section||'常用功能';if(!buckets.has(title))buckets.set(title,[]);buckets.get(title).push(item);}
-    get('mkAllGrid').innerHTML=list.length?[...buckets].map(([title,entries])=>`<section class="mk-all-column"><h4>${esc(title)}</h4>${entries.map(item=>`<div class="mk-all-row"><button data-mk-destination="${item.id}" ${available(item)?'':'aria-disabled="true"'}>${esc(globalLabel(item))}${available(item)?'':'<small>仅菜单</small>'}</button>${available(item)?`<button class="mk-star" data-mk-star="${item.id}" aria-label="${favorites.includes(item.id)?'取消收藏':'收藏'}${esc(globalLabel(item))}" aria-pressed="${favorites.includes(item.id)}">${favorites.includes(item.id)?'★':'☆'}</button>`:''}</div>`).join('')}</section>`).join(''):`<p class="mk-all-empty">${query?'未找到匹配功能，请尝试其他名称。':panelGroup==='favorites'?'还没有收藏，点击功能右侧的星标即可添加。':'暂无最近访问。'}</p>`;
+    get('mkAllGrid').innerHTML=list.length?[...buckets].map(([title,entries])=>`<section class="mk-all-column"><h4>${esc(title)}</h4>${entries.map(item=>`<div class="mk-all-row"><button data-mk-destination="${item.id}" ${available(item)?'':'aria-disabled="true"'}>${esc(globalLabel(item))}</button>${available(item)?`<button class="mk-star" data-mk-star="${item.id}" aria-label="${favorites.includes(item.id)?'取消收藏':'收藏'}${esc(globalLabel(item))}" aria-pressed="${favorites.includes(item.id)}">${favorites.includes(item.id)?'★':'☆'}</button>`:''}</div>`).join('')}</section>`).join(''):`<p class="mk-all-empty">${query?'未找到匹配功能，请尝试其他名称。':panelGroup==='favorites'?'还没有收藏，点击功能右侧的星标即可添加。':'暂无最近访问。'}</p>`;
     get('mkAllNotice').textContent='';
   }
   function openAll(category){panelGroup=category||activeGroup;get('mkAllSearch').value='';renderAll();get('mkAllDialog').showModal();get('mkAllSearch').focus();}
@@ -331,7 +331,7 @@
   function search(){
     const query=get('mkSearchInput').value.trim().toLowerCase();
     const matching=query?items.filter(i=>!i.hiddenInMenu&&(i.label+' '+(i.aliases||'')+' '+(i.section||'')+' '+groups.find(g=>g.id===i.group).label).toLowerCase().includes(query)):recent.map(id=>items.find(i=>i.id===id)).filter(item=>item&&!item.hiddenInMenu);
-    get('mkSearchResults').innerHTML=`<p class="mk-search-caption">${query?'匹配功能':'最近访问'}</p>`+(matching.length?matching.map(item=>`<button class="mk-search-result" data-mk-result="${item.id}" ${available(item)?'':'aria-disabled="true"'}><span>${esc(item.label)}<small>${esc(groups.find(g=>g.id===item.group).label)}${item.section?' / '+esc(item.section):''}</small></span><em>${available(item)?'打开 →':'仅菜单'}</em></button>`).join(''):'<p class="mk-search-empty">没有匹配的功能，试试旧菜单名称。</p>');
+    get('mkSearchResults').innerHTML=`<p class="mk-search-caption">${query?'匹配功能':'最近访问'}</p>`+(matching.length?matching.map(item=>`<button class="mk-search-result" data-mk-result="${item.id}" ${available(item)?'':'aria-disabled="true"'}><span>${esc(item.label)}<small>${esc(groups.find(g=>g.id===item.group).label)}${item.section?' / '+esc(item.section):''}</small></span>${available(item)?'<em>打开 →</em>':''}</button>`).join(''):'<p class="mk-search-empty">没有匹配的功能，试试旧菜单名称。</p>');
   }
   function openSearch(){
     search();
