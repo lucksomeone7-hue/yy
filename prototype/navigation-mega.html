@@ -1037,6 +1037,8 @@
               <span>关键词</span>
               <span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="landingKeyword" type="search" placeholder="输入标题、页面地址或发布人" autocomplete="off" /></span>
             </label>
+            <label class="filter-field landing-common-filter"><span>页面分类</span><select id="landingCategory"><option value="">全部分类</option><option>通信云</option><option>体验式营销</option><option>招聘解决方案</option><option>产品发布</option><option>内容下载</option><option>活动报名</option></select></label>
+            <label class="filter-field landing-common-filter"><span>发布状态</span><select id="landingStatus"><option value="">全部状态</option><option>已上线</option><option>未上线</option></select></label>
             <div class="landing-filter-actions">
               <button class="primary-button" id="landingSearchButton">搜索</button>
               <button class="ghost-button landing-advanced-toggle" id="landingAdvancedButton" aria-expanded="false" aria-controls="landingAdvanced">高级筛选 <span aria-hidden="true">⌄</span></button>
@@ -1046,20 +1048,13 @@
           <div class="landing-advanced" id="landingAdvanced">
             <div class="landing-advanced-grid">
               <label class="filter-field"><span>所属组织</span><select id="landingOrg"><option value="">全部组织</option><option>云通信</option><option>高端BG</option><option>招聘云</option><option>人力事业部</option><option>市场部</option></select></label>
-              <label class="filter-field"><span>页面分类</span><select id="landingCategory"><option value="">全部分类</option><option>通信云</option><option>体验式营销</option><option>招聘解决方案</option><option>产品发布</option><option>内容下载</option><option>活动报名</option></select></label>
-              <label class="filter-field"><span>发布状态</span><select id="landingStatus"><option value="">全部状态</option><option>已上线</option><option>未上线</option></select></label>
               <label class="filter-field"><span>产品</span><select id="landingProduct"><option value="">全部产品</option><option>AI工作手机</option><option>YonBIP</option><option>YonHR</option><option>营销云</option></select></label>
               <label class="filter-field"><span>行业</span><select id="landingIndustry"><option value="">全部行业</option><option>通用</option><option>医药</option><option>制造</option></select></label>
               <label class="filter-field"><span>领域</span><select id="landingDomain"><option value="">全部领域</option><option>数智营销</option><option>数智人力</option><option>企业服务</option><option>市场活动</option></select></label>
-              <div class="landing-advanced-actions"><button class="landing-save-view" id="landingSaveView">☆ 保存为常用视图</button></div>
             </div>
           </div>
-          <div class="landing-chips" id="landingChips"></div>
+          <div class="landing-chips" id="landingChips" hidden></div>
         </section>
-
-        <div class="landing-toolbar">
-          <div><b id="landingCount">6</b> 个落地页 <span>包含本人、所在组织及其他组织的数据</span></div>
-        </div>
 
         <section class="landing-table-card">
           <div class="landing-table-scroll">
@@ -1128,18 +1123,18 @@
             <div class="activity-common-filters">
               <label class="activity-filter-field activity-keyword"><span>活动标题</span><span class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="activitySearch" type="search" placeholder="请输入活动标题" /></span></label>
               <label class="activity-filter-field"><span>活动形式</span><select id="activityFormFilter"><option value="">全部形式</option><option>线上</option><option>线下</option><option>线上/线下</option></select></label>
+              <label class="activity-filter-field"><span>活动状态</span><select id="activityStatusFilter"><option value="">全部状态</option><option>已发布</option><option>未发布</option><option>未开始</option><option>进行中</option><option>已结束</option></select></label>
+              <label class="activity-filter-field"><span>发布人</span><select id="activityPublisherFilter"><option value="">全部发布人</option><option>陈玉琴</option><option>李小琳</option><option>刘聪聪</option></select></label>
               <div class="activity-filter-actions"><button class="primary-button" id="activitySearchButton">搜索</button><button class="ghost-button" id="activityAdvancedButton" aria-expanded="false" aria-controls="activityAdvanced">高级筛选 <span aria-hidden="true">⌄</span></button><button class="ghost-button" id="activityReset">重置</button></div>
             </div>
             <div class="activity-advanced" id="activityAdvanced">
               <label class="activity-filter-field activity-date-filter"><span>创建时间</span><span class="activity-date-range"><input id="activityStartDate" type="date" aria-label="创建开始时间" /><i>至</i><input id="activityEndDate" type="date" aria-label="创建结束时间" /></span></label>
-              <label class="activity-filter-field"><span>活动状态</span><select id="activityStatusFilter"><option value="">全部状态</option><option>已发布</option><option>未发布</option><option>未开始</option><option>进行中</option><option>已结束</option></select></label>
-              <label class="activity-filter-field"><span>发布人</span><select id="activityPublisherFilter"><option value="">全部发布人</option><option>陈玉琴</option><option>李小琳</option><option>刘聪聪</option></select></label>
               <label class="activity-filter-field"><span>可见范围</span><select id="activityVisibilityFilter"><option value="">全部范围</option><option>公开</option><option>私有</option></select></label>
               <label class="activity-filter-field"><span>线索策略</span><select id="activityLeadFilter"><option value="">全部策略</option><option>进入线索</option><option>不进入</option></select></label>
               <label class="activity-filter-field"><span>审核状态</span><select id="activityAuditFilter"><option value="">全部审核状态</option><option>待审核</option><option>已审核</option></select></label>
               <div class="activity-filter-field activity-undertaker"><span>承办方</span><span><input id="activityUndertakeFilter" type="checkbox" /> <label for="activityUndertakeFilter">仅我承办</label></span></div>
             </div>
-            <div class="activity-applied" id="activityApplied" hidden><div id="activityAppliedChips"></div></div>
+            <div class="activity-applied" id="activityApplied" hidden aria-hidden="true"><div id="activityAppliedChips"></div></div>
           </div>
           <div class="activity-table">
             <div class="activity-row head"><span>活动</span><span>时间 / 形式</span><span>核心数据</span><span>线索策略</span><span>审核</span><span>状态</span><span>操作</span></div>

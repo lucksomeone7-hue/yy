@@ -301,6 +301,13 @@ document.getElementById("contentAdvancedToggle")?.addEventListener("click", (eve
   event.currentTarget.textContent = panel.hidden ? "高级筛选⌄" : "收起筛选⌃";
 });
 
+document.getElementById("contentSectionCreate")?.addEventListener("click", () => {
+  const title = document.getElementById("contentSectionTitle")?.textContent || "";
+  if (title === "表单管理") openCreationWorkspace("form");
+  else if (title === "问卷管理") openCreationWorkspace("survey");
+  else showLandingToast(`${document.getElementById("contentSectionCreate").textContent.replace("＋ ", "")}流程已打开`);
+});
+
 function applyContentListFilters() {
   const keyword = document.getElementById("contentKeywordFilter").value.trim().toLowerCase();
   const selects = [...document.querySelectorAll("#contentSectionFilter select:not([hidden])")];
@@ -441,24 +448,9 @@ let activityRange = "全部";
 let appliedActivityFilters = { keyword: "", status: "", publisher: "", form: "", startDate: "", endDate: "", visibility: "", lead: "", audit: "", undertake: false };
 
 function renderActivityAppliedFilters() {
-  const definitions = [
-    ["range", "发布范围", activityRange, "全部"],
-    ["keyword", "关键字", appliedActivityFilters.keyword, ""],
-    ["status", "活动状态", appliedActivityFilters.status, ""],
-    ["publisher", "发布人", appliedActivityFilters.publisher, ""],
-    ["form", "活动形式", appliedActivityFilters.form, ""],
-    ["startDate", "创建时间", appliedActivityFilters.startDate && appliedActivityFilters.endDate ? `${appliedActivityFilters.startDate} 至 ${appliedActivityFilters.endDate}` : appliedActivityFilters.startDate || appliedActivityFilters.endDate, ""],
-    ["visibility", "可见范围", appliedActivityFilters.visibility, ""],
-    ["lead", "线索策略", appliedActivityFilters.lead, ""],
-    ["audit", "审核状态", appliedActivityFilters.audit, ""],
-    ["undertake", "承办方", appliedActivityFilters.undertake ? "仅我承办" : "", ""],
-  ];
   const chips = document.getElementById("activityAppliedChips");
-  chips.innerHTML = definitions
-    .filter(([, , value, defaultValue]) => value && value !== defaultValue)
-    .map(([key, label, value]) => `<button class="activity-filter-chip" data-remove-activity-filter="${key}">${label}：${value}<i aria-hidden="true">×</i></button>`)
-    .join("");
-  document.getElementById("activityApplied").hidden = !chips.childElementCount;
+  if (chips) chips.replaceChildren();
+  document.getElementById("activityApplied").hidden = true;
 }
 
 function readActivityFilters() {
@@ -574,11 +566,7 @@ document.querySelectorAll("[data-activity-tab]").forEach((button) => {
     document.querySelector(`[data-activity-panel="${button.dataset.activityTab}"]`)?.classList.add("active");
   });
 });
-document.getElementById("createActivityButton")?.addEventListener("click", (event) => {
-  const original = event.currentTarget.textContent;
-  event.currentTarget.textContent = "发布流程待接入";
-  setTimeout(() => { event.currentTarget.textContent = original; }, 1400);
-});
+document.getElementById("createActivityButton")?.addEventListener("click", () => openCreationWorkspace("activity"));
 
 let leadMode = "none";
 let leadView = "all";
@@ -631,11 +619,9 @@ function readLeadFilters() {
 }
 
 function renderLeadFilterChips() {
-  const labels = { keyword: "手机号/标题", source: "线索来源", time: "提交时间", valid: "是否有效", channel: "渠道", code: "编码", crmStatus: "CRM状态", transfer: "传输状态", region: "地区" };
-  const displayValues = { today: "今天", "7d": "近7天", "30d": "近30天" };
   const chips = document.getElementById("leadFilterChips");
-  chips.innerHTML = Object.entries(leadAppliedFilters).filter(([, value]) => value).map(([key, value]) => `<button data-remove-lead-filter="${key}">${labels[key]}：${displayValues[value] || value}<i>×</i></button>`).join("");
-  document.getElementById("leadFilterSummary").hidden = !chips.childElementCount;
+  if (chips) chips.replaceChildren();
+  document.getElementById("leadFilterSummary").hidden = true;
 }
 
 function filterLeads() {
@@ -1372,35 +1358,11 @@ function showLandingToast(message) {
 }
 
 function renderLandingChips() {
-  const keyword = document.getElementById("landingKeyword").value.trim();
-  const typeLabel = document.getElementById("landingSearchType").selectedOptions[0].textContent;
-  const org = document.getElementById("landingOrg").value;
-  const category = document.getElementById("landingCategory").value;
-  const status = document.getElementById("landingStatus").value;
-  const product = document.getElementById("landingProduct").value;
-  const industry = document.getElementById("landingIndustry").value;
-  const domain = document.getElementById("landingDomain").value;
-  const chips = [
-    `发布范围：${landingCurrentScope}`,
-    keyword ? `${typeLabel}：${keyword}` : "",
-    org ? `组织：${org}` : "",
-    category ? `分类：${category}` : "",
-    status ? `状态：${status}` : "",
-    product ? `产品：${product}` : "",
-    industry ? `行业：${industry}` : "",
-    domain ? `领域：${domain}` : "",
-  ].filter(Boolean);
   const target = document.getElementById("landingChips");
-  target.replaceChildren();
-  const label = document.createElement("span");
-  label.textContent = "当前条件";
-  target.appendChild(label);
-  chips.forEach((value) => {
-    const chip = document.createElement("span");
-    chip.className = "landing-chip";
-    chip.textContent = value;
-    target.appendChild(chip);
-  });
+  if (target) {
+    target.replaceChildren();
+    target.hidden = true;
+  }
 }
 
 function updateLandingSelection() {
@@ -1444,7 +1406,8 @@ function applyLandingFilters() {
     if (match) shown += 1;
   });
 
-  document.getElementById("landingCount").textContent = shown;
+  const landingCount = document.getElementById("landingCount");
+  if (landingCount) landingCount.textContent = shown;
   document.getElementById("landingTable").style.display = shown ? "table" : "none";
   document.getElementById("landingEmpty").style.display = shown ? "none" : "block";
   renderLandingChips();
@@ -1510,8 +1473,8 @@ document.querySelectorAll("[data-copy]").forEach((button) => {
   });
 });
 
-document.getElementById("landingCreateButton").addEventListener("click", () => showLandingToast("进入新建落地页流程"));
-document.getElementById("landingSaveView").addEventListener("click", () => showLandingToast("已保存为「我的常用视图」"));
+document.getElementById("landingCreateButton").addEventListener("click", () => openCreationWorkspace("landing"));
+document.getElementById("landingSaveView")?.addEventListener("click", () => showLandingToast("已保存为「我的常用视图」"));
 
 const companyAdvancedButton = document.getElementById("companyAdvancedButton");
 companyAdvancedButton.addEventListener("click", () => {
@@ -1563,6 +1526,109 @@ document.querySelectorAll(".unified-reset").forEach((button) => {
 document.querySelectorAll("#landingBatch button").forEach((button) => button.addEventListener("click", () => showLandingToast(`${button.textContent.trim()}操作已触发`)));
 
 renderLandingChips();
+
+const creationWorkspaceConfig = {
+  landing: {
+    label: "落地页", title: "新建落地页", crumb: "内容与承接 / 落地页列表",
+    steps: ["选择模板", "编辑页面", "发布设置"], name: "未命名落地页",
+    tools: [["标题", "T"], ["图片", "▧"], ["按钮", "▭"], ["表单", "▤"], ["分栏", "▥"], ["留白", "↕"]],
+    preview: `<div class="creation-page-preview"><header><b>YOUR BRAND</b><span>首页　产品　案例　联系我们</span></header><section><em>企业增长新方案</em><h1>让每一次营销触达<br>更接近业务结果</h1><p>组合内容、表单与自动化能力，快速搭建高转化页面。</p><button>立即了解</button></section><footer><b>5000+</b><span>企业客户</span><b>95%</b><span>效率提升</span></footer></div>`,
+    settings: [["页面名称", "text", "请输入页面名称"], ["页面分类", "select", "活动报名|产品发布|内容下载"], ["页面地址", "text", "page.yonyou.com/"], ["SEO 描述", "textarea", "请输入页面摘要"]],
+  },
+  activity: {
+    label: "活动", title: "新建活动", crumb: "活动中心 / 活动管理",
+    steps: ["基础信息", "报名设置", "发布确认"], name: "未命名活动",
+    tools: [["活动介绍", "文"], ["封面图", "图"], ["日程", "历"], ["嘉宾", "人"], ["报名表", "表"], ["地点", "⌖"]],
+    preview: `<div class="creation-form-preview"><div class="creation-cover"><span>2026</span><h2>数智营销增长峰会</h2><p>连接洞察、内容与行动</p></div><h3>活动简介</h3><p>在此编辑活动介绍、议程和参会须知。右侧可完善活动的基础信息。</p><div class="creation-info-strip"><span><small>时间</small>2026-10-16 09:00</span><span><small>形式</small>线上 / 线下</span><span><small>地点</small>北京</span></div></div>`,
+    settings: [["活动标题", "text", "请输入活动标题"], ["活动类型", "select", "峰会|闭门会|直播|培训"], ["活动时间", "datetime-local", ""], ["活动形式", "select", "线上|线下|线上 / 线下"], ["举办地点", "text", "请输入详细地址"]],
+  },
+  form: {
+    label: "表单", title: "新建表单", crumb: "内容中心 / 表单 / 表单列表",
+    steps: ["设计表单", "表单设置", "发布表单"], name: "未命名表单",
+    tools: [["姓名", "Aa"], ["手机号", "#"], ["邮箱", "@"], ["公司", "企"], ["单选", "◉"], ["多选", "☑"], ["下拉框", "⌄"], ["多文本", "≡"]],
+    preview: `<div class="creation-form-preview"><h2>欢迎填写表单</h2><p>请留下您的信息，我们会尽快与您联系。</p><label>姓名 <i>*</i><input placeholder="请输入姓名"></label><label>手机号 <i>*</i><input placeholder="请输入手机号"></label><label>公司<input placeholder="请输入公司名称"></label><button>确认提交</button></div>`,
+    settings: [["表单名称", "text", "请输入表单名称"], ["提交按钮文案", "text", "确认提交"], ["提交后提示", "textarea", "提交成功，感谢您的参与"], ["线索策略", "select", "提交后生成线索|仅收集数据"]],
+  },
+  survey: {
+    label: "问卷", title: "新建问卷", crumb: "内容中心 / 调查问卷 / 问卷列表",
+    steps: ["问卷内容", "外观设置", "提交后", "发布"], name: "未命名问卷",
+    tools: [["单选题", "◉"], ["多选题", "☑"], ["填空题", "＿"], ["多文本", "≡"], ["下拉题", "⌄"], ["NPS", "10"]],
+    preview: `<div class="creation-form-preview survey"><h2>客户需求调研</h2><p>感谢参与，本问卷预计用时 2 分钟。</p><div class="creation-question"><b>1. 您当前最关注的业务方向？ <i>*</i></b><label><input type="radio" name="q1"> 获客增长</label><label><input type="radio" name="q1"> 客户运营</label><label><input type="radio" name="q1"> 数据分析</label></div><div class="creation-question"><b>2. 其他建议</b><textarea placeholder="请输入"></textarea></div></div>`,
+    settings: [["问卷名称", "text", "请输入问卷名称"], ["问卷副标题", "text", "请输入副标题"], ["问卷说明", "textarea", "感谢参与本次调研"], ["答题设置", "select", "每人限答一次|允许重复答题"]],
+  },
+};
+
+let activeCreationType = "";
+
+function ensureCreationWorkspace() {
+  if (document.getElementById("creationWorkspace")) return;
+  const page = document.createElement("section");
+  page.className = "page creation-workspace";
+  page.id = "creationWorkspace";
+  document.querySelector("main")?.appendChild(page);
+}
+
+function renderCreationSettings(config) {
+  return config.settings.map(([label, type, value], index) => {
+    const id = `creationSetting${index}`;
+    if (type === "select") return `<label><span>${label}${index === 0 ? " *" : ""}</span><select id="${id}">${value.split("|").map((item) => `<option>${item}</option>`).join("")}</select></label>`;
+    if (type === "textarea") return `<label><span>${label}</span><textarea id="${id}" placeholder="${value}"></textarea></label>`;
+    return `<label><span>${label}${index === 0 ? " *" : ""}</span><input id="${id}" type="${type}" placeholder="${value}"></label>`;
+  }).join("");
+}
+
+function openCreationWorkspace(type) {
+  const config = creationWorkspaceConfig[type];
+  if (!config) return;
+  activeCreationType = type;
+  ensureCreationWorkspace();
+  const page = document.getElementById("creationWorkspace");
+  page.innerHTML = `<header class="creation-header"><div class="creation-header-left"><button class="creation-back" id="creationBack">← 返回${config.label}列表</button><i></i><span><small>${config.crumb}</small><input id="creationName" value="${config.name}" aria-label="${config.label}名称"></span></div><nav>${config.steps.map((step, index) => `<button class="${index === 0 ? "active" : ""}" data-creation-step="${index}"><b>${index + 1}</b>${step}</button>`).join("")}</nav><div><button class="ghost-button" id="creationPreview">预览</button><button class="ghost-button" id="creationDraft">暂存</button><button class="primary-button" id="creationPublish">${type === "activity" ? "发布活动" : type === "landing" ? "确认发布" : "完成并发布"}</button></div></header><div class="creation-body"><aside class="creation-toolbox"><div><b>${type === "landing" ? "页面组件" : type === "activity" ? "活动模块" : type === "form" ? "表单组件" : "问卷题型"}</b><small>点击添加到中间编辑区</small></div><section>${config.tools.map(([label, icon]) => `<button data-creation-tool="${label}"><i>${icon}</i><span>${label}</span></button>`).join("")}</section></aside><main class="creation-canvas"><div class="creation-canvas-toolbar"><span>桌面端</span><button class="active">▱</button><button>▯</button><em>自动保存于刚刚</em></div><div class="creation-preview-shell" id="creationPreviewShell">${config.preview}</div></main><aside class="creation-settings"><div class="creation-settings-title"><b>编辑区域</b><span>基础设置</span></div><div class="creation-setting-fields">${renderCreationSettings(config)}</div><div class="creation-setting-tip"><b>操作提示</b><p>选择左侧组件可继续添加内容；所有变更会在本地原型中即时预览。</p></div></aside></div>`;
+  showPage("creationWorkspace");
+  document.getElementById("pageTitle").textContent = config.title;
+  bindCreationWorkspace();
+}
+
+function returnToCreationList(message = "") {
+  const type = activeCreationType;
+  if (type === "landing") showPage("landingPages");
+  else if (type === "activity") showPage("activities");
+  else {
+    showPage("contentCenter");
+    openContentSection(type === "form" ? "forms" : "surveys");
+  }
+  if (message) showLandingToast(message);
+}
+
+function bindCreationWorkspace() {
+  const page = document.getElementById("creationWorkspace");
+  page.querySelector("#creationBack").onclick = () => returnToCreationList();
+  page.querySelector("#creationDraft").onclick = () => returnToCreationList(`${creationWorkspaceConfig[activeCreationType].label}草稿已保存，已返回列表`);
+  page.querySelector("#creationPublish").onclick = () => {
+    const name = page.querySelector("#creationName").value.trim();
+    if (!name || name.startsWith("未命名")) {
+      page.querySelector("#creationName").focus();
+      page.querySelector("#creationName").classList.add("invalid");
+      showLandingToast(`请先填写${creationWorkspaceConfig[activeCreationType].label}名称`);
+      return;
+    }
+    returnToCreationList(`“${name}”已发布，已返回${creationWorkspaceConfig[activeCreationType].label}列表`);
+  };
+  page.querySelector("#creationPreview").onclick = () => page.classList.toggle("preview-mode");
+  page.querySelectorAll("[data-creation-step]").forEach((button) => button.onclick = () => {
+    page.querySelectorAll("[data-creation-step]").forEach((item) => item.classList.toggle("active", item === button));
+    page.querySelector(".creation-settings-title span").textContent = button.textContent.trim().replace(/^\d+/, "");
+  });
+  page.querySelectorAll("[data-creation-tool]").forEach((button) => button.onclick = () => {
+    const block = document.createElement("div");
+    block.className = "creation-added-block";
+    block.innerHTML = `<span>⋮⋮</span><b>${button.dataset.creationTool}</b><small>点击右侧设置内容与样式</small><button aria-label="删除组件">×</button>`;
+    block.querySelector("button").onclick = () => block.remove();
+    page.querySelector("#creationPreviewShell").appendChild(block);
+    showLandingToast(`已添加${button.dataset.creationTool}`);
+  });
+  page.querySelector("#creationName").oninput = (event) => event.currentTarget.classList.remove("invalid");
+}
 
 // 筛选统一：发布范围文案与数据值兼容，并保留查询按钮作为明确的执行入口。
 const landingSearchButton = document.getElementById("landingSearchButton");
