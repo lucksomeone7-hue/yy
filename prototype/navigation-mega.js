@@ -1,12 +1,19 @@
 (() => {
-  const schemeC=new URLSearchParams(location.search).get('scheme')==='c';
+  const schemeD=new URLSearchParams(location.search).get('scheme')==='d';
+  const schemeC=schemeD||new URLSearchParams(location.search).get('scheme')==='c';
   if(schemeC){document.body.classList.add('mk-scheme-c');document.title='Marketing Cloud 一期原型 · 精简导航方案 C';}
+  if(schemeD){document.body.classList.add('mk-scheme-d');document.title='Marketing Cloud 一期原型 · 管理员导航方案 D';}
   const groups = structuredClone(window.MK_NAVIGATION);
   if(schemeC){
     const systemItems=groups.find(group=>group.id==='system').items;
     systemItems.find(item=>item.id==='channels').aliases='渠道设置 渠道管理';
+    systemItems.find(item=>item.id==='channels').page='channels';
     systemItems.splice(systemItems.findIndex(item=>item.id==='channels')+1,0,{id:'channelCategories',label:'渠道分类',section:'渠道配置',aliases:'渠道类型'});
+    systemItems.find(item=>item.id==='channelCategories').page='channelCategories';
     systemItems.splice(systemItems.findIndex(item=>item.id==='organization')+1,0,{id:'accountManagement',label:'账号管理',section:'组织与权限',aliases:'组织账号 账户管理 系统账号'});
+    const organizationItem=systemItems.find(item=>item.id==='organization');organizationItem.id='organizationManagement';organizationItem.page='organizationManagement';organizationItem.label='组织管理';
+    const accountItem=systemItems.find(item=>item.id==='accountManagement');accountItem.page='accountManagement';
+    const roleItem=systemItems.find(item=>item.id==='settingsPermissions');roleItem.page='roleManagement';roleItem.label='角色管理';roleItem.aliases='角色权限 权限管理';
     systemItems.push(
       {id:'fieldConfiguration',label:'字段配置',section:'基础设置',aliases:'字段设置 基础配置 自定义字段'},
       {id:'wechatBinding',label:'绑定微信',section:'基础设置',aliases:'公众号绑定 微信公众号 微信绑定 基础配置'}
@@ -26,10 +33,34 @@
   ];
   const sms=groups.find(g=>g.id==='outreach').items;
   sms.splice(0,1,{id:'smsManagement',label:'短信任务',page:'smsManagement',section:'短信营销',aliases:'短信管理 短信营销'},{id:'smsTemplates',label:'短信模板',page:'smsTemplates',section:'短信营销'});
+  const emailIndex=sms.findIndex(item=>item.id==='email');
+  sms.splice(emailIndex,1,{id:'emailManagement',label:'邮件列表',page:'emailManagement',section:'邮件营销',aliases:'邮件管理 邮件任务'},{id:'emailTemplates',label:'邮件模板',page:'emailTemplates',section:'邮件营销',aliases:'页面模板 组件模板'});
+  const automationItem=sms.find(item=>item.id==='automation');
+  automationItem.page='automation';automationItem.aliases='自动化营销 自动化任务 营销任务';
+  const wechatItem=sms.find(item=>item.id==='wechat');
+  wechatItem.id='wechatMarketing';wechatItem.label='公众号管理';wechatItem.page='wechatMarketing';wechatItem.section='微信营销';wechatItem.aliases='微信营销 公众号 扫码授权';
+  const employeeIndex=sms.findIndex(item=>item.id==='employee');
+  sms.splice(employeeIndex,1,{id:'employeeMarketing',label:'活动列表',page:'employeeMarketing',section:'全员营销',aliases:'全员营销 邀请活动'},{id:'shareRanking',label:'分享排行',page:'shareRanking',section:'全员营销',aliases:'邀请人排行 分享明细'});
   const customerItems=groups.find(g=>g.id==='customers').items;
   customerItems.find(i=>i.id==='settings').section='意向评分配置';
   customerItems.find(i=>i.id==='settings').label='评分规则';
   customerItems.push({id:'settingsWeights',label:'行为权重',page:'settingsWeights',section:'意向评分配置'},{id:'settingsVersions',label:'规则版本',page:'settingsVersions',section:'意向评分配置'});
+  if(schemeD){
+    groups.find(group=>group.id==='customers').items.find(item=>item.id==='profileTags').hiddenInMenu=true;
+    const contentItems=groups.find(group=>group.id==='content').items;
+    const expandedContent=contentItems.flatMap(item=>{
+      const views=contentViewConfig[item.content];
+      if(!views||views.length<2)return [item];
+      return views.map(view=>({...item,parentId:item.id,id:view.id==='list'?item.id:item.id+'/'+view.id,label:item.id==='forms'&&view.id==='analytics'?'表单数据分析':view.label,section:item.id==='forms'?'表单与问卷':item.label,view:view.id,aliases:[item.aliases,item.label,view.label].filter(Boolean).join(' ')}));
+    });
+    groups.find(group=>group.id==='content').items=expandedContent;
+    const landing=expandedContent.find(item=>item.id==='landingPages');
+    landing.label='落地页列表';landing.section='落地页';
+    expandedContent.splice(expandedContent.indexOf(landing)+1,0,{id:'landingCategories',label:'落地页分类',page:'landingCategories',section:'落地页'});
+    expandedContent.find(item=>item.id==='moduleManagement').section='落地页';
+    const moduleIndex=expandedContent.findIndex(item=>item.id==='moduleManagement');
+    expandedContent.splice(expandedContent.indexOf(landing)+2,0,...expandedContent.splice(moduleIndex,1));
+  }
   let panelGroup='content';
   if(!schemeC){
     // Scheme B exposes independent management views as third-level menu items.
@@ -83,7 +114,7 @@
     node.open=willOpen;
     openedSections[activeGroup]=willOpen?node.dataset.menuSection:null;
   });
-  document.addEventListener('click',event=>{const button=event.target.closest('[data-lead-setting-tab], [data-open-route-setting]');if(button&&selectedPage==='leadSettings'){const view=document.querySelector('[data-lead-setting-tab].active')?.dataset.leadSettingTab||'overview';sync(view==='overview'?'leadSettings':'leadSettings/'+view,'leadSettings');}});
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-lead-setting-tab], [data-open-route-setting]');if(button&&selectedPage==='leadSettings'){const view=document.querySelector('[data-lead-setting-tab].active')?.dataset.leadSettingTab||'route';sync('leadSettings/'+view,'leadSettings');}});
   const persist=()=>{try{localStorage.setItem('mk-mega-favorites',JSON.stringify(favorites));localStorage.setItem('mk-mega-recent',JSON.stringify(recent));}catch{}};
   function notice(message){get('mkNavNotice').textContent=message;get('mkNavNotice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>get('mkNavNotice').hidden=true,3200);}
   const contentTools=document.createElement('div');
@@ -91,6 +122,7 @@
   if(schemeC)document.querySelector('.content-section-actions')?.prepend(contentTools);
   function renderContentTools(section){
     if(!schemeC)return;
+    if(schemeD){contentTools.hidden=true;contentTools.innerHTML='';return;}
     const views=(contentViewConfig[section]||[]).filter(view=>view.id!=='list');
     if(!views.length){contentTools.hidden=true;contentTools.innerHTML='';return;}
     const direct=views.find(view=>view.id==='categories')||views[0],more=views.filter(view=>view!==direct);
@@ -118,6 +150,7 @@
     const copy=heading.cloneNode(true);copy.querySelectorAll('span,small,em').forEach(node=>node.remove());return copy.textContent.trim();
   }
   function addLandingTools(page){
+    if(schemeD)return;
     if(!['landingPages','landingCategories','moduleManagement'].includes(page))return;
     const choices=page==='landingPages'
       ?{direct:['landingCategories','分类管理'],more:['moduleManagement','内容模块']}
@@ -145,6 +178,7 @@
       source=root.querySelector('.content-center-hero');title=item.label;description=source.querySelector('p')?.textContent.trim()||'';moveContextAction(source.querySelector('.content-create-wrap'));
     }else if(root){
       source=root.querySelector(':scope > .sms-header, :scope > .module-page-intro, :scope > .landing-page-hero, :scope > .activity-hero, :scope > .activity-detail-head, :scope > .lead-page-hero, :scope > .settings-hero, :scope > .weight-config-titlebar, :scope > .profile-tag-hero, :scope > .work-area > .group-toolbar');
+      if(schemeD&&!source)source=root.querySelector(':scope > .settings-subpage > .section-head');
       title=headingText(source)||pageTitles[selectedPage]||item.label;
       description=source?.querySelector('p,.module-scope')?.textContent.trim()||'';
       if(source)[...source.children].forEach(node=>{
@@ -159,7 +193,7 @@
       const repeatedHeading=document.querySelector(`[data-activity-panel="${activityTab}"] > .section-head h3`);
       if(repeatedHeading?.textContent.trim()===title){repeatedHeading.classList.add('mk-context-source');contextSources.push(repeatedHeading);}
     }
-    if(item.content&&contentViewState!=='list'){
+    if(!schemeD&&item.content&&contentViewState!=='list'){
       const back=document.createElement('button');back.className='ghost-button';back.textContent='← 返回'+item.label+'列表';
       back.addEventListener('click',()=>{contentViewState='list';setContentView(item.content,'list');renderContentTools(item.content);sync(item.id,item.page);});
       contextActions.prepend(back);
@@ -176,11 +210,12 @@
     if(source){source.classList.add('mk-context-source');contextSources.push(source);}
     get('pageTitle').textContent=title||item.label;contextDescription.textContent=description;contextDescription.hidden=!description;
   }
-  function menuButton(item){return `<button class="mk-menu-item ${["短信营销","意向评分配置"].includes(item.section)?"mk-third-menu":""} ${item.id===current?'selected':''}" data-mk-item="${item.id}" ${item.id===current?'aria-current="page"':''} ${available(item)?'':`aria-disabled="true" title="${esc(item.label)}：现有系统功能，本原型仅展示菜单"`}><span>${esc(item.label)}</span>${available(item)?'':'<small>仅菜单</small>'}</button>`;}
+  function menuButton(item){return `<button class="mk-menu-item ${["短信营销","邮件营销","意向评分配置"].includes(item.section)?"mk-third-menu":""} ${item.id===current?'selected':''}" data-mk-item="${item.id}" ${item.id===current?'aria-current="page"':''} ${available(item)?'':`aria-disabled="true" title="${esc(item.label)}：现有系统功能，本原型仅展示菜单"`}><span>${esc(item.label)}</span>${available(item)?'':'<small>仅菜单</small>'}</button>`;}
   function schemeCEntries(group){
     if(!schemeC)return group.items;
     const active=items.find(item=>item.id===current);
-    const eligible=group.items.filter(item=>item.id!=='moduleManagement');
+    const eligible=group.items.filter(item=>!item.hiddenInMenu&&(schemeD||item.id!=='moduleManagement'));
+    if(schemeD)return eligible;
     if(!active||active.group!==group.id)return eligible.filter(item=>!item.section);
     if(group.id==='content'&&(active.id==='contentCenter'||active.section==='内容素材'))return eligible.filter(item=>item.id==='contentCenter'||item.section==='内容素材');
     if(active.section)return eligible.filter(item=>item.section===active.section);
@@ -188,16 +223,20 @@
   }
   function renderMenu(){
     const group=groups.find(g=>g.id===activeGroup),active=items.find(item=>item.id===current);
-    get('mkModuleTitle').textContent=schemeC?(active?.section||(activeGroup==='content'?'内容素材':group.label)):group.label;
+    get('mkModuleTitle').textContent=schemeD?group.label:schemeC?(active?.section||(activeGroup==='content'?'内容素材':group.label)):group.label;
     document.body.classList.remove('mk-single-entry');
     get('mkExpand').hidden=!document.body.classList.contains('mk-nav-collapsed');
     let html='',lastSection;
-    if(activeGroup==='work'&&favorites.length)html='<p class="mk-section-label">我的收藏</p>'+favorites.map(id=>menuButton(items.find(i=>i.id===id))).join('')+'<p class="mk-section-label">工作台</p>';
+    if(activeGroup==='work'&&favorites.length){
+      const favoriteItems=favorites.map(id=>items.find(i=>i.id===id)).filter(Boolean),visibleFavorites=favoriteItems.slice(0,7),currentFavorite=favoriteItems.find(item=>item.id===current);
+      if(currentFavorite&&!visibleFavorites.some(item=>item.id===currentFavorite.id))visibleFavorites[6]=currentFavorite;
+      html='<p class="mk-section-label">我的收藏</p>'+visibleFavorites.map(menuButton).join('')+(favoriteItems.length>7?`<button class="mk-more-favorites" data-more-favorites>更多收藏 <small>${favoriteItems.length-7}</small><span>›</span></button>`:'')+'<p class="mk-section-label">工作台</p>';
+    }
     const sections=new Map();
     for(const item of schemeCEntries(group)){const key=item.section||'';if(!sections.has(key))sections.set(key,[]);sections.get(key).push(item);}
     for(const [section,entries] of sections){
       const nested=entries.some(i=>i.view||i.leadView)||['短信营销','意向评分配置','落地页'].includes(section);
-      if(nested&&!schemeC){
+      if((nested&&!schemeC)||(schemeD&&section)){
         if(openedSections[activeGroup]===undefined&&entries.some(i=>i.id===current))openedSections[activeGroup]=section;
         html+=`<details class="mk-menu-group" data-menu-section="${esc(section)}" ${openedSections[activeGroup]===section?'open':''}><summary>${esc(section)}</summary>${entries.map(menuButton).join('')}</details>`;
       }
@@ -214,16 +253,17 @@
     get('mkFavorite').setAttribute('aria-pressed',String(favorites.includes(current)));
     get('mkFavorite').textContent=favorites.includes(current)?'★ 已收藏':'☆ 收藏';
   }
-  const pageParents={account:'companies',customerProfile:'users',segmentCreate:'segment',activityDetail:'activities'};
+  const pageParents={account:'companies',customerProfile:'users',segmentCreate:'segment',activityDetail:'activities',roleManagement:'settingsPermissions'};
   if(schemeC){pageParents.landingCategories='landingPages';pageParents.moduleManagement='landingPages';}
   const tabSets={};
   let pendingHash=null;
   function sync(id,page){
     const item=items.find(i=>i.id===id);if(!item)return;
     current=id;selectedPage=page||item.page||'contentCenter';activeGroup=item.group;remembered[activeGroup]=id;
+    if(schemeD)openedSections[activeGroup]=item.section||null;
     if(item.section&&(item.view||item.leadView||['短信营销','意向评分配置','落地页'].includes(item.section)))openedSections[activeGroup]=item.section;
     const group=groups.find(g=>g.id===item.group);
-    const contentView=schemeC&&item.content&&(contentViewConfig[item.content]||[]).find(view=>view.id===contentViewState);
+    const contentView=schemeC&&item.content&&!item.view&&(contentViewConfig[item.content]||[]).find(view=>view.id===contentViewState);
     const childPageTitle=schemeC&&page==='landingCategories'?'落地页分类':pageTitles[page];
     get('mkBreadcrumb').textContent=[group.label,item.section,item.label,contentView&&contentView.id!=='list'&&(item.content==='forms'&&contentView.id==='analytics'?'表单数据分析':contentView.label),page&&page!==item.page&&childPageTitle].filter(Boolean).join(' / ');
     if(item.content)get('pageTitle').textContent=item.label;
@@ -232,13 +272,14 @@
     const tabs=tabSets[id];get('mkContextTabs').hidden=!tabs;
     get('mkContextTabs').innerHTML=tabs?tabs.map(([target,label])=>`<button data-mk-tab="${target}" ${target===selectedPage?'aria-current="page"':''}>${label}</button>`).join(''):'';
     recent=[id,...recent.filter(x=>x!==id)].slice(0,5);persist();renderMenu();
-    const contentHash=item.content?'content/'+item.id+(schemeC&&contentViewState!=='list'?'/'+contentViewState:''):'';
+    const contentBase=item.parentId||item.id;
+    const contentHash=item.content?'content/'+contentBase+(schemeC&&contentViewState!=='list'?'/'+contentViewState:''):'';
     const hash='#'+(selectedPage==='activityDetail'?'activityDetail/'+activityTab:item.content?contentHash:item.leadView?item.id:selectedPage);
     if(!restoring){pendingHash=hash;queueMicrotask(()=>{if(pendingHash&&location.hash!==pendingHash)history.pushState(null,'',pendingHash);pendingHash=null;});}
   }
   let lastContentSection;
   window.mkNavigation={syncPage(page){
-    if(!schemeC&&page==='leadSettings'){const view=document.querySelector('[data-lead-setting-tab].active')?.dataset.leadSettingTab||'overview';sync(view==='overview'?'leadSettings':'leadSettings/'+view,page);}
+    if(!schemeC&&page==='leadSettings'){const view=document.querySelector('[data-lead-setting-tab].active')?.dataset.leadSettingTab||'route';sync('leadSettings/'+view,page);}
     else sync(pageParents[page]||page,page);
   },syncContent(section){
     if(schemeC&&lastContentSection!==section){resetContentListFilters();lastContentSection=section;}
@@ -248,17 +289,21 @@
   function navigate(item){
     if(!available(item)){if(get('mkAllDialog').open){get('mkAllNotice').textContent=item.label+'：本版仅展示菜单，暂无原型页面。';return;}get('mkSearchDialog').close();notice(`${item.label}：本版仅展示菜单，暂无对应原型页面。`);return;}
     const oldRestoring=restoring;restoring=true;
-    if(item.content){showPage('contentCenter');openContentSection(item.content);if(item.view)setContentView(item.content,item.view);}else{showPage(item.page);if(item.page==='contentCenter')showContentOverview();if(item.leadView)document.querySelector(`[data-lead-setting-tab="${item.leadView}"]`).click();}
+    if(item.content){showPage('contentCenter');openContentSection(item.content);if(item.view){contentViewState=item.view;setContentView(item.content,item.view);}}else{showPage(item.page);if(item.page==='contentCenter')showContentOverview();if(item.leadView)document.querySelector(`[data-lead-setting-tab="${item.leadView}"]`).click();}
     restoring=oldRestoring;sync(schemeC&&item.id==='moduleManagement'?'landingPages':item.id,item.page);get('mkSearchDialog').close();get('mkAllDialog').close();
   }
   function renderAll(){
     const query=get('mkAllSearch').value.trim().toLowerCase();
     get('mkPrimary').innerHTML=[['favorites','☆','我的收藏'],['recent','◷','最近使用'],...groups.map(g=>[g.id,icon(g.id),g.label])].map(([id,glyph,label])=>`<button class="mk-all-category ${panelGroup===id&&!query?'selected':''}" data-mk-group="${id}" aria-pressed="${panelGroup===id&&!query}"><span aria-hidden="true">${glyph}</span>${label}</button>`).join('');
-    let list=query?items.filter(i=>(i.label+' '+(i.aliases||'')+' '+(i.section||'')+' '+groups.find(g=>g.id===i.group).label).toLowerCase().includes(query)):panelGroup==='favorites'?favorites.map(id=>items.find(i=>i.id===id)):panelGroup==='recent'?recent.map(id=>items.find(i=>i.id===id)):items.filter(i=>i.group===panelGroup);
+    let list=query?items.filter(i=>!i.hiddenInMenu&&(i.label+' '+(i.aliases||'')+' '+(i.section||'')+' '+groups.find(g=>g.id===i.group).label).toLowerCase().includes(query)):panelGroup==='favorites'?favorites.map(id=>items.find(i=>i.id===id)).filter(item=>item&&!item.hiddenInMenu):panelGroup==='recent'?recent.map(id=>items.find(i=>i.id===id)).filter(item=>item&&!item.hiddenInMenu):items.filter(i=>i.group===panelGroup&&!i.hiddenInMenu);
+    if(schemeD&&!query&&!['favorites','recent'].includes(panelGroup))list=list.filter(item=>(!item.parentId||item.view==='list')&&!['landingCategories','moduleManagement'].includes(item.id));
     get('mkAllCategoryTitle').textContent=query?'搜索结果':panelGroup==='favorites'?'我的收藏':panelGroup==='recent'?'最近使用':groups.find(g=>g.id===panelGroup).label;
     get('mkAllDescription').textContent=panelGroup==='events'&&!query?'活动运营、统计分析与回收站集中管理；报名、签到等入口在选择具体活动后展示。':'按业务场景查找功能，星标收藏常用入口。';
-    const buckets=new Map();for(const item of list){const title=query||['favorites','recent'].includes(panelGroup)?groups.find(g=>g.id===item.group).label:item.section||'常用功能';if(!buckets.has(title))buckets.set(title,[]);buckets.get(title).push(item);}
-    get('mkAllGrid').innerHTML=list.length?[...buckets].map(([title,entries])=>`<section class="mk-all-column"><h4>${esc(title)}</h4>${entries.map(item=>`<div class="mk-all-row"><button data-mk-destination="${item.id}" ${available(item)?'':'aria-disabled="true"'}>${esc(item.label)}${available(item)?'':'<small>仅菜单</small>'}</button>${available(item)?`<button class="mk-star" data-mk-star="${item.id}" aria-label="${favorites.includes(item.id)?'取消收藏':'收藏'}${esc(item.label)}" aria-pressed="${favorites.includes(item.id)}">${favorites.includes(item.id)?'★':'☆'}</button>`:''}</div>`).join('')}</section>`).join(''):`<p class="mk-all-empty">${query?'未找到匹配功能，请尝试其他名称。':panelGroup==='favorites'?'还没有收藏，点击功能右侧的星标即可添加。':'暂无最近访问。'}</p>`;
+    const contentBuckets={contentCenter:'常用功能',articles:'内容素材',resources:'内容素材',videos:'内容素材',posters:'内容素材',forms:'表单与问卷',surveys:'表单与问卷',landingPages:'页面与网站',aggregations:'页面与网站',website:'页面与网站',products:'产品与案例',solutions:'产品与案例',cases:'产品与案例',customerWall:'产品与案例'};
+    const globalNames={articles:'文章',resources:'资料',videos:'视频',posters:'海报',forms:'表单',landingPages:'落地页'};
+    const globalLabel=item=>schemeD&&!query?(globalNames[item.parentId||item.id]||item.label):item.label;
+    const buckets=new Map();for(const item of list){const title=query||['favorites','recent'].includes(panelGroup)?groups.find(g=>g.id===item.group).label:schemeD&&item.group==='content'?(contentBuckets[item.parentId||item.id]||item.section||'常用功能'):item.section||'常用功能';if(!buckets.has(title))buckets.set(title,[]);buckets.get(title).push(item);}
+    get('mkAllGrid').innerHTML=list.length?[...buckets].map(([title,entries])=>`<section class="mk-all-column"><h4>${esc(title)}</h4>${entries.map(item=>`<div class="mk-all-row"><button data-mk-destination="${item.id}" ${available(item)?'':'aria-disabled="true"'}>${esc(globalLabel(item))}${available(item)?'':'<small>仅菜单</small>'}</button>${available(item)?`<button class="mk-star" data-mk-star="${item.id}" aria-label="${favorites.includes(item.id)?'取消收藏':'收藏'}${esc(globalLabel(item))}" aria-pressed="${favorites.includes(item.id)}">${favorites.includes(item.id)?'★':'☆'}</button>`:''}</div>`).join('')}</section>`).join(''):`<p class="mk-all-empty">${query?'未找到匹配功能，请尝试其他名称。':panelGroup==='favorites'?'还没有收藏，点击功能右侧的星标即可添加。':'暂无最近访问。'}</p>`;
     get('mkAllNotice').textContent='';
   }
   function openAll(category){panelGroup=category||activeGroup;get('mkAllSearch').value='';renderAll();get('mkAllDialog').showModal();get('mkAllSearch').focus();}
@@ -268,12 +313,16 @@
     get('mkModuleTitle').onclick=()=>openAll(activeGroup);
     get('mkModuleTitle').onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openAll(activeGroup);}};
   }
+  if(schemeD){
+    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航';
+    get('mkModuleTitle').removeAttribute('role');get('mkModuleTitle').removeAttribute('tabindex');get('mkModuleTitle').removeAttribute('title');get('mkModuleTitle').onclick=null;get('mkModuleTitle').onkeydown=null;
+  }
   get('mkAllOpen').onclick=()=>openAll();get('mkAllClose').onclick=()=>get('mkAllDialog').close();get('mkAllSearch').oninput=renderAll;
   get('mkPrimary').onclick=event=>{const button=event.target.closest('[data-mk-group]');if(button){panelGroup=button.dataset.mkGroup;get('mkAllSearch').value='';renderAll();}};
   get('mkAllGrid').onclick=event=>{const star=event.target.closest('[data-mk-star]');if(star){const id=star.dataset.mkStar;favorites=favorites.includes(id)?favorites.filter(i=>i!==id):[...favorites,id];persist();renderAll();renderMenu();return;}const button=event.target.closest('[data-mk-destination]');if(button)navigate(items.find(i=>i.id===button.dataset.mkDestination));};
   get('mkAllDialog').addEventListener('click',event=>{if(event.target===get('mkAllDialog')){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)event.currentTarget.close();}});
   get('mkSecondary').addEventListener('click',event=>{const button=event.target.closest('[data-mk-activity]');if(button){activityTab=button.dataset.mkActivity;document.querySelector(`[data-activity-tab="${activityTab}"]`).click();sync('activities','activityDetail');}});
-  get('mkSecondary').addEventListener('click',event=>{const button=event.target.closest('[data-mk-item]');if(button)navigate(items.find(i=>i.id===button.dataset.mkItem));});
+  get('mkSecondary').addEventListener('click',event=>{const more=event.target.closest('[data-more-favorites]');if(more){openAll('favorites');return;}const button=event.target.closest('[data-mk-item]');if(button)navigate(items.find(i=>i.id===button.dataset.mkItem));});
   get('mkContextTabs').addEventListener('click',event=>{const button=event.target.closest('[data-mk-tab]');if(button)showPage(button.dataset.mkTab);});
   get('mkFavorite').onclick=()=>{favorites=favorites.includes(current)?favorites.filter(id=>id!==current):[...favorites,current];persist();renderMenu();};
   function collapse(value){document.body.classList.toggle('mk-nav-collapsed',value);get('mkCollapse').setAttribute('aria-expanded',String(!value));get('mkExpand').hidden=!value;try{localStorage.setItem('mk-mega-collapsed',String(value));}catch{}}
@@ -281,7 +330,7 @@
   try{collapse(localStorage.getItem('mk-mega-collapsed')==='true');}catch{}
   function search(){
     const query=get('mkSearchInput').value.trim().toLowerCase();
-    const matching=query?items.filter(i=>(i.label+' '+(i.aliases||'')+' '+(i.section||'')+' '+groups.find(g=>g.id===i.group).label).toLowerCase().includes(query)):recent.map(id=>items.find(i=>i.id===id));
+    const matching=query?items.filter(i=>!i.hiddenInMenu&&(i.label+' '+(i.aliases||'')+' '+(i.section||'')+' '+groups.find(g=>g.id===i.group).label).toLowerCase().includes(query)):recent.map(id=>items.find(i=>i.id===id)).filter(item=>item&&!item.hiddenInMenu);
     get('mkSearchResults').innerHTML=`<p class="mk-search-caption">${query?'匹配功能':'最近访问'}</p>`+(matching.length?matching.map(item=>`<button class="mk-search-result" data-mk-result="${item.id}" ${available(item)?'':'aria-disabled="true"'}><span>${esc(item.label)}<small>${esc(groups.find(g=>g.id===item.group).label)}${item.section?' / '+esc(item.section):''}</small></span><em>${available(item)?'打开 →':'仅菜单'}</em></button>`).join(''):'<p class="mk-search-empty">没有匹配的功能，试试旧菜单名称。</p>');
   }
   function openSearch(){
@@ -303,7 +352,7 @@
     else if(key.startsWith('content/')){
       if(schemeC){
         const [id,requestedView='list']=key.slice(8).split('/'),item=items.find(i=>i.id===id&&i.content);
-        if(item){navigate(item);const valid=(contentViewConfig[item.content]||[]).some(view=>view.id===requestedView);contentViewState=valid?requestedView:'list';setContentView(item.content,contentViewState);renderContentTools(item.content);sync(item.id,item.page);}
+        if(item){navigate(item);const valid=(contentViewConfig[item.content]||[]).some(view=>view.id===requestedView);contentViewState=valid?requestedView:'list';setContentView(item.content,contentViewState);renderContentTools(item.content);const destination=schemeD?items.find(entry=>entry.parentId===id&&entry.view===contentViewState)||item:item;sync(destination.id,destination.page);}
         else navigate(items.find(i=>i.id==='contentCenter'));
       }else{
         const item=items.find(i=>i.id===key.slice(8)&&i.content);navigate(item||items.find(i=>i.id==='contentCenter'));

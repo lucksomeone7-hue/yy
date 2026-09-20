@@ -19,6 +19,7 @@ body.mk-mega-layout.mk-nav-collapsed{--mk-secondary-width:0px}
 .mk-mega-layout #mkContextTabs,.mk-mega-layout .activity-detail-tabs{display:none!important}
 .mk-mega-layout .mk-third-menu{padding-left:24px}
 .mk-mega-layout .mk-section-label{font-size:13px;color:#4c5664;font-weight:600;margin-top:22px}
+.mk-more-favorites{display:flex;align-items:center;width:100%;min-height:36px;padding:7px 10px;border:0;background:transparent;color:#6d7682;font-size:12px;text-align:left;cursor:pointer}.mk-more-favorites:hover{background:#f5f6f8;color:#c90018}.mk-more-favorites small{min-width:20px;margin-left:6px;padding:1px 6px;border-radius:10px;background:#f0f2f5;color:#7d8590;text-align:center}.mk-more-favorites>span{margin-left:auto;font-size:16px}
 .mk-activity-context{margin:18px 7px 8px;padding:14px 10px;background:#f7f8fa;border:1px solid #e7e9ed;border-radius:6px}
 .mk-activity-context small{display:block;color:#77818f;font-size:12px;margin-bottom:7px}
 .mk-activity-context strong{font-size:14px;line-height:1.6;display:block;color:#353f4e}
@@ -43,6 +44,7 @@ body.mk-mega-layout.mk-nav-collapsed{--mk-secondary-width:0px}
 .mk-all-row>button:first-child{flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:7px;border:0;background:transparent;color:#636e7c;text-align:left;padding:10px 8px;font-size:14px;line-height:1.5}
 .mk-all-row>button:first-child:hover{color:#ce001c}.mk-all-row small{font-size:12px;border:1px solid #e0e4eb;border-radius:3px;padding:0 4px;color:#8b939f;font-weight:400}
 .mk-star{background:transparent;border:0;font-size:19px;color:#a6adb7;padding:7px;width:34px;flex:none}.mk-star[aria-pressed=true]{color:#dd8400}.mk-star:hover{color:#dd8400}
+.mk-all-row .mk-star{opacity:0;pointer-events:none;transition:opacity .15s ease}.mk-all-row:hover .mk-star,.mk-all-row:focus-within .mk-star,.mk-all-row .mk-star[aria-pressed=true]{opacity:1;pointer-events:auto}
 .mk-all-empty{grid-column:1/-1;padding:40px 0;color:#86909c;font-size:14px}
 #mkAllNotice{color:#9c5d00;font-size:14px;margin-top:24px;min-height:20px}
 .mk-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -113,3 +115,21 @@ body.mk-mega-layout.mk-nav-collapsed{--mk-secondary-width:0px}
 .mk-scheme-c .mk-page-actions .content-section-actions,.mk-scheme-c .mk-content-tools{flex-wrap:wrap}
 .mk-scheme-c .mk-page-actions button,.mk-scheme-c .mk-content-tools summary{white-space:nowrap}
 .mk-scheme-c .content-article-advanced{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+
+/* Administrator navigation: global module switcher and one focused module menu. */
+body.mk-scheme-d{--mk-primary-width:0px;--mk-secondary-width:224px}
+body.mk-scheme-d.mk-nav-collapsed{--mk-secondary-width:0px}
+.mk-scheme-d .mk-secondary-head h2{font-size:15px}
+.mk-scheme-d .mk-menu-group{margin:6px 0;border-top:1px solid #f0f2f5}
+.mk-scheme-d .mk-menu-group summary{padding:13px 10px;font-size:13px;list-style-position:inside}
+.mk-scheme-d .mk-menu-group[open] summary{color:#313c4b}
+.mk-scheme-d .mk-menu-group .mk-menu-item{padding-left:22px}
+.mk-scheme-d .mk-menu-item small{font-size:10px;white-space:nowrap}
+
+/* 新增管理原型最终字号覆盖，加载顺序位于各业务样式之后。 */
+.mk-scheme-d :is(.email-table,.automation-table,.wechat-table,.employee-table,.rank-list,.share-detail,.channel-table,.category-table,.organization-table,.account-table,.role-table)>b{font-size:13px;font-weight:500}
+.mk-scheme-d :is(.email-table,.automation-table,.wechat-table,.employee-table,.rank-list,.share-detail,.channel-table,.category-table,.organization-table,.account-table,.role-table)>span{font-size:13px;line-height:1.55}
+.mk-scheme-d :is(.email-actions,.automation-actions,.wechat-table,.employee-table,.channel-table,.category-table,.admin-actions) button,
+.mk-scheme-d .admin-actions summary{font-size:12px}
+@media(max-width:900px){body.mk-scheme-d{--mk-secondary-width:190px}.mk-scheme-d .mk-context-copy{min-width:0}}
+@media(max-width:600px){body.mk-scheme-d{--mk-secondary-width:168px}}
