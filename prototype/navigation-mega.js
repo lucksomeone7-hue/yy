@@ -299,13 +299,14 @@
     if(schemeD&&!query&&!['favorites','recent'].includes(panelGroup))list=list.filter(item=>(!item.parentId||item.view==='list')&&!['landingCategories','moduleManagement'].includes(item.id));
     get('mkAllCategoryTitle').textContent=query?'搜索结果':panelGroup==='favorites'?'我的收藏':panelGroup==='recent'?'最近使用':groups.find(g=>g.id===panelGroup).label;
     get('mkAllDescription').textContent=panelGroup==='events'&&!query?'活动运营、统计分析与回收站集中管理；报名、签到等入口在选择具体活动后展示。':'按业务场景查找功能，星标收藏常用入口。';
-    const contentBuckets={contentCenter:'内容概览',articles:'内容素材',resources:'内容素材',videos:'内容素材',posters:'内容素材',forms:'表单与问卷',surveys:'表单与问卷',landingPages:'页面与网站',aggregations:'页面与网站',website:'页面与网站',products:'产品与案例',solutions:'产品与案例',cases:'产品与案例',customerWall:'产品与案例'};
+    const groupBuckets={work:'经营监控与待办',customers:'客户经营',leads:'线索处理与流转'};
+    const contentBuckets={contentCenter:'内容运营总览',articles:'内容素材',resources:'内容素材',videos:'内容素材',posters:'内容素材',forms:'表单与问卷',surveys:'表单与问卷',landingPages:'页面与网站',aggregations:'页面与网站',website:'页面与网站',products:'产品与案例',solutions:'产品与案例',cases:'产品与案例',customerWall:'产品与案例'};
     const globalNames={articles:'文章',resources:'资料',videos:'视频',posters:'海报',forms:'表单',landingPages:'落地页'};
     const globalLabel=item=>schemeD&&!query?(globalNames[item.parentId||item.id]||item.label):item.label;
     const buckets=new Map();
     for(const item of list){
       const groupLabel=groups.find(g=>g.id===item.group).label;
-      const title=query||['favorites','recent'].includes(panelGroup)?groupLabel:schemeD&&item.group==='content'?(contentBuckets[item.parentId||item.id]||item.section||groupLabel):item.section||groupLabel;
+      const title=query||['favorites','recent'].includes(panelGroup)?groupLabel:schemeD&&item.group==='content'?(contentBuckets[item.parentId||item.id]||item.section||groupLabel):item.section||groupBuckets[item.group]||groupLabel;
       if(!buckets.has(title))buckets.set(title,[]);
       buckets.get(title).push(item);
     }
