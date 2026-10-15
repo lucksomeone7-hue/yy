@@ -1,8 +1,8 @@
 {
-  "version": "2.0.0",
-  "name": "Marketing Cloud 一期原型 · 管理员导航方案 D 稳定版",
+  "version": "2.0.1",
+  "name": "Marketing Cloud 一期原型 · 高级筛选统一版",
   "channel": "stable",
   "sourceBranch": "main",
   "previewPath": "/mk/navigation-admin.html",
-  "updatedAt": "2026-09-20"
+  "updatedAt": "2026-10-15"
 }
