@@ -1,0 +1,14 @@
+#account .am-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:16px 0}
+#account .am-toolbar>div,.am-actions{display:flex;gap:8px;flex-wrap:wrap}
+#account .am-note{font-size:12px;color:#788397;line-height:1.8;margin:10px 0}
+#account .am-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+#account .am-metrics article{background:#f6f8fc;border:1px solid #e7ebf2;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:8px}
+#account .am-metrics strong{font-size:28px;color:#25324b}#account .am-metrics small{color:#67758b}
+#account .am-interest{display:grid;gap:14px;margin:16px 0}#account .am-interest>div{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:12px}
+#account .am-bar{height:8px;background:#edf0f7;border-radius:6px;overflow:hidden}#account .am-bar i{display:block;height:100%;background:#6675e8;border-radius:6px}
+#account .am-contact-wrap{overflow:auto}#account .am-contact{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}#account .am-contact th,#account .am-contact td{padding:15px 12px;text-align:left;border-bottom:1px solid #edf0f5}#account .am-contact th{background:#f8f9fc;color:#67758b;font-weight:500}
+#account .am-contact small{display:block;color:#8490a2;margin-top:5px}#account .am-recommend{border-left:3px solid #7280e8;padding:2px 16px;margin:16px 0}#account .am-recommend p{line-height:1.8;color:#59677e}
+#account details.work-area summary{cursor:pointer;font-size:16px;font-weight:600}#account details .profile-grid{margin-top:20px}
+#account .work-area{margin-bottom:18px}#account .am-history{display:grid;gap:12px;margin:16px 0}#account .am-history article{display:flex;gap:16px;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid #edf0f5}#account .am-history small{color:#788397}
+.am-dialog{border:0;border-radius:14px;width:min(620px,90vw);padding:26px;color:#26334a;box-shadow:0 24px 80px #18244533}.am-dialog::backdrop{background:#19243c66}.am-dialog header,.am-dialog footer{display:flex;justify-content:space-between;gap:12px;align-items:center}.am-dialog footer{justify-content:flex-end;margin-top:24px}.am-dialog p{line-height:1.8;color:#647187}.am-dialog label{display:block;margin:14px 0}.am-dialog input[type=text],.am-dialog select{width:100%;padding:10px;border:1px solid #dce1eb;border-radius:6px;margin-top:8px}.am-dialog ul{padding-left:22px;line-height:2}.am-feedback{color:#397558;background:#f0faf4;padding:12px;border-radius:8px}
+@media(max-width:900px){#account .am-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#account .account-grid{grid-template-columns:1fr}#account .am-interest>div{grid-template-columns:90px 1fr auto}}
