@@ -1,0 +1,52 @@
+/* 全站高级筛选：与落地页列表共用三列、浅灰底及标签上置规范。 */
+body.mk-mega-layout .mk-standard-advanced{
+ padding:16px 18px 18px!important;background:#fafafb!important;
+ border-top:1px solid #eeeeef!important;border-radius:0;box-shadow:none;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:14px!important;align-items:end!important;
+}
+body.mk-mega-layout .mk-standard-advanced>.unified-filter-fields,
+body.mk-mega-layout .mk-standard-advanced>.landing-advanced-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:14px!important;align-items:end!important;padding:0!important;margin:0;
+ background:transparent;border:0;
+}
+body.mk-mega-layout .mk-standard-advanced :is(.filter-field,.unified-filter-field,.activity-filter-field,.lead-filter-field),
+body.mk-mega-layout .content-article-advanced>label{
+ display:grid!important;gap:7px!important;min-width:0;margin:0;padding:0;align-content:start;
+ grid-column:auto!important;
+}
+body.mk-mega-layout .mk-standard-advanced :is(label,.activity-filter-field)>span:first-child{
+ position:static!important;width:auto!important;height:auto!important;
+ padding:0!important;margin:0!important;overflow:visible!important;clip:auto!important;
+ clip-path:none!important;white-space:normal!important;border:0;
+ font-size:14px!important;line-height:22px!important;font-weight:400!important;color:#696c72;
+}
+body.mk-mega-layout .mk-standard-advanced :is(select,input:not([type="checkbox"]):not([type="radio"])){
+ width:100%;min-width:0;height:40px!important;min-height:40px!important;
+ box-sizing:border-box;border:1px solid #dedfe2;border-radius:5px!important;
+ background:#fff;padding:8px 12px;font-size:14px!important;line-height:22px!important;color:#303133;
+}
+body.mk-mega-layout .mk-standard-advanced select{padding-right:30px}
+body.mk-mega-layout .mk-standard-advanced :is(.activity-date-range,.content-date-range){
+ display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;min-width:0;
+}
+body.mk-mega-layout .mk-standard-advanced :is(.activity-date-range,.content-date-range) i{font-size:14px;color:#909399;font-style:normal}
+body.mk-mega-layout .mk-standard-advanced .activity-undertaker>span:last-child{height:40px;display:flex;align-items:center;gap:8px}
+body.mk-mega-layout .mk-standard-advanced input:is([type="checkbox"],[type="radio"]){width:16px;height:16px;min-height:0;padding:0;accent-color:#ee2233}
+body.mk-mega-layout .mk-standard-advanced[hidden]{display:none!important}
+body.mk-mega-layout :is(.landing-advanced-toggle,.unified-advanced-toggle,#activityAdvancedButton,#leadAdvancedButton,#contentAdvancedToggle){
+ min-height:40px;padding:8px 12px;border:1px solid #dedfe2;border-radius:5px;background:#fff;
+ font-size:14px!important;line-height:22px;font-weight:400;color:#606266;white-space:nowrap;
+}
+body.mk-mega-layout :is(.landing-advanced-toggle,.unified-advanced-toggle,#activityAdvancedButton,#leadAdvancedButton,#contentAdvancedToggle)[aria-expanded="true"]{color:var(--red,#ee2233);border-color:#efc4c7;background:#fffafa}
+@media(max-width:1100px){
+ body.mk-mega-layout .mk-standard-advanced,
+ body.mk-mega-layout .mk-standard-advanced>.unified-filter-fields,
+ body.mk-mega-layout .mk-standard-advanced>.landing-advanced-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:700px){
+ body.mk-mega-layout .mk-standard-advanced,
+ body.mk-mega-layout .mk-standard-advanced>.unified-filter-fields,
+ body.mk-mega-layout .mk-standard-advanced>.landing-advanced-grid{grid-template-columns:minmax(0,1fr)!important}
+}

@@ -13,6 +13,8 @@
       <link rel="stylesheet" href="./customer-expression.css" />
     <link rel="stylesheet" href="./navigation.css" />
     <link rel="stylesheet" href="./navigation-mega.css" />
+    <link rel="stylesheet" href="./typography-standard.css" />
+    <link rel="stylesheet" href="./advanced-filters.css" />
     <link rel="stylesheet" href="./account-marketing.css" />
     <link rel="stylesheet" href="./profile-evidence.css" />
   </head>
@@ -102,7 +104,7 @@
         <section class="work-area content-section-panel" id="contentSectionPanel" hidden>
           <div class="content-section-head"><button class="back-button" id="backToContentOverview">← 返回内容工作台</button><div><nav class="content-breadcrumb" aria-label="面包屑"><span>内容中心</span><i>/</i><span id="contentSectionGroup">内容资产</span><i>/</i><strong id="contentSectionCrumb">文章</strong></nav><h3 id="contentSectionTitle">文章管理</h3><p id="contentSectionDescription">统一创建、发布和复用营销文章。</p></div><div class="content-section-actions"><button class="ghost-button article-ai-create" id="articleAiCreate" hidden>AI ✦ 生成文章</button><button class="primary-button" id="contentSectionCreate">＋ 新建文章</button></div></div>
           <nav class="content-view-tabs" id="contentViewTabs" aria-label="模块管理视图"></nav>
-          <div class="content-section-filter" id="contentSectionFilter"><div id="contentPublishScope" role="group" aria-label="发布范围"><span>发布范围</span><button class="active">全部</button><button>本人发布</button><button>所在组织发布</button><button>其他组织发布</button></div><div id="contentSearchRow"><label class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="contentKeywordFilter" type="search" placeholder="请输入关键字" /></label><select data-content-filter-field="category"><option>全部分类</option><option>行业洞察</option><option>产品动态</option><option>品牌资讯</option></select><select data-content-filter-field="status"><option>全部状态</option><option>已上架</option><option>未上架</option><option>草稿</option></select><select data-content-filter-field="type" hidden><option>全部类型</option><option>SEO</option><option>GEO</option></select><button class="primary-button">搜索</button><button class="ghost-button" id="contentAdvancedToggle" data-content-filter-field="advanced" aria-expanded="false">高级筛选⌄</button><button class="ghost-button" data-content-filter-field="reset">重置</button></div><div class="content-article-advanced" id="contentArticleAdvanced" hidden><label><span>行业</span><select><option>全部行业</option><option>制造</option><option>消费品</option><option>企业服务</option></select></label><label><span>领域</span><select><option>全部领域</option><option>数智营销</option><option>财务</option><option>人力</option></select></label><label><span>上架官网</span><select><option>全部</option><option>已上架</option><option>未上架</option></select></label><label><span>来源</span><select><option>全部来源</option><option>AI</option><option>人工</option></select></label><label><span>创建时间</span><span class="content-date-range"><input type="date" /><i>至</i><input type="date" /></span></label></div></div>
+          <div class="content-section-filter" id="contentSectionFilter"><div id="contentPublishScope" role="group" aria-label="发布范围"><span>发布范围</span><button class="active">全部</button><button>本人发布</button><button>所在组织发布</button><button>其他组织发布</button></div><div id="contentSearchRow"><label class="search-input-wrap"><i aria-hidden="true">⌕</i><input id="contentKeywordFilter" type="search" placeholder="请输入关键字" /></label><select data-content-filter-field="category"><option>全部分类</option><option>行业洞察</option><option>产品动态</option><option>品牌资讯</option></select><select data-content-filter-field="status"><option>全部状态</option><option>已上架</option><option>未上架</option><option>草稿</option></select><select data-content-filter-field="type" hidden><option>全部类型</option><option>SEO</option><option>GEO</option></select><button class="primary-button">搜索</button><button class="ghost-button" id="contentAdvancedToggle" data-content-filter-field="advanced" aria-expanded="false">高级筛选⌄</button><button class="ghost-button" data-content-filter-field="reset">重置</button></div><div class="content-article-advanced mk-standard-advanced" id="contentArticleAdvanced" hidden><label><span>行业</span><select><option>全部行业</option><option>制造</option><option>消费品</option><option>企业服务</option></select></label><label><span>领域</span><select><option>全部领域</option><option>数智营销</option><option>财务</option><option>人力</option></select></label><label><span>上架官网</span><select><option>全部</option><option>已上架</option><option>未上架</option></select></label><label><span>来源</span><select><option>全部来源</option><option>AI</option><option>人工</option></select></label><label><span>创建时间</span><span class="content-date-range"><input type="date" /><i>至</i><input type="date" /></span></label></div></div>
           <div class="content-list-head" id="contentListHead"><span>标题</span><span>类型 / 状态</span><span>发布人</span><span>更新时间</span><span>操作</span></div>
           <div class="content-list" id="contentSectionList"></div>
         </section>
@@ -542,7 +544,7 @@
               <button class="ghost-button unified-reset">重置</button>
             </div>
           </div>
-          <div class="unified-filter-advanced" id="intentAdvancedFilters"><div class="unified-filter-fields intent-advanced-grid"><label class="unified-filter-field"><span>地区</span><select id="intentRegionFilter"><option value="">全部地区</option><option>华东</option><option>华南</option><option>华北</option></select></label><label class="unified-filter-field"><span>行为时间</span><select id="intentRangeFilter"><option value="">不限时间</option><option value="7">最近 7 天</option><option value="30">最近 30 天</option><option value="90">最近 90 天</option></select></label></div></div>
+          <div class="unified-filter-advanced mk-standard-advanced" id="intentAdvancedFilters"><div class="unified-filter-fields intent-advanced-grid"><label class="unified-filter-field"><span>地区</span><select id="intentRegionFilter"><option value="">全部地区</option><option>华东</option><option>华南</option><option>华北</option></select></label><label class="unified-filter-field"><span>行为时间</span><select id="intentRangeFilter"><option value="">不限时间</option><option value="7">最近 7 天</option><option value="30">最近 30 天</option><option value="90">最近 90 天</option></select></label></div></div>
         </section>
 
         <div class="intent-level-overview" aria-label="客户意向等级">
@@ -592,7 +594,7 @@
                 <button class="ghost-button unified-reset" id="userResetButton">重置</button>
               </div>
             </div>
-            <div class="unified-filter-advanced" id="userAdvancedFilters">
+            <div class="unified-filter-advanced mk-standard-advanced" id="userAdvancedFilters">
               <div class="unified-filter-fields user-advanced-grid">
                 <label class="unified-filter-field"><span>性别</span><select id="userGenderFilter"><option value="">全部性别</option><option>男</option><option>女</option><option>未知</option></select></label>
                 <label class="unified-filter-field"><span>行业</span><select id="userIndustryFilter"><option value="">全部行业</option><option>制造业</option><option>医疗</option><option>数字科技</option></select></label>
@@ -631,7 +633,7 @@
                 <button class="ghost-button unified-reset">重置</button>
               </div>
             </div>
-            <div class="unified-filter-advanced" id="companyAdvancedFilters">
+            <div class="unified-filter-advanced mk-standard-advanced" id="companyAdvancedFilters">
               <div class="unified-filter-fields two-columns">
                 <label class="unified-filter-field"><span>企业状态</span><select id="companyStatusFilter"><option value="">全部状态</option><option>高意向</option><option>升温</option><option>培育</option><option>低活跃</option></select></label>
                 <label class="unified-filter-field"><span>CRM 状态</span><select id="companyCrmFilter"><option value="">全部状态</option><option>已建档</option><option>未建档</option><option>部分同步</option></select></label>
@@ -1047,7 +1049,7 @@
               <button class="ghost-button" id="landingResetButton">重置</button>
             </div>
           </div>
-          <div class="landing-advanced" id="landingAdvanced">
+          <div class="landing-advanced mk-standard-advanced" id="landingAdvanced">
             <div class="landing-advanced-grid">
               <label class="filter-field"><span>所属组织</span><select id="landingOrg"><option value="">全部组织</option><option>云通信</option><option>高端BG</option><option>招聘云</option><option>人力事业部</option><option>市场部</option></select></label>
               <label class="filter-field"><span>产品</span><select id="landingProduct"><option value="">全部产品</option><option>AI工作手机</option><option>YonBIP</option><option>YonHR</option><option>营销云</option></select></label>
@@ -1129,7 +1131,7 @@
               <label class="activity-filter-field"><span>发布人</span><select id="activityPublisherFilter"><option value="">全部发布人</option><option>陈玉琴</option><option>李小琳</option><option>刘聪聪</option></select></label>
               <div class="activity-filter-actions"><button class="primary-button" id="activitySearchButton">搜索</button><button class="ghost-button" id="activityAdvancedButton" aria-expanded="false" aria-controls="activityAdvanced">高级筛选 <span aria-hidden="true">⌄</span></button><button class="ghost-button" id="activityReset">重置</button></div>
             </div>
-            <div class="activity-advanced" id="activityAdvanced">
+            <div class="activity-advanced mk-standard-advanced" id="activityAdvanced">
               <label class="activity-filter-field activity-date-filter"><span>创建时间</span><span class="activity-date-range"><input id="activityStartDate" type="date" aria-label="创建开始时间" /><i>至</i><input id="activityEndDate" type="date" aria-label="创建结束时间" /></span></label>
               <label class="activity-filter-field"><span>可见范围</span><select id="activityVisibilityFilter"><option value="">全部范围</option><option>公开</option><option>私有</option></select></label>
               <label class="activity-filter-field"><span>线索策略</span><select id="activityLeadFilter"><option value="">全部策略</option><option>进入线索</option><option>不进入</option></select></label>
@@ -1227,7 +1229,7 @@
               <label class="lead-filter-field"><span>是否有效</span><select id="leadValidFilter"><option value="">全部</option><option>有效</option><option>待判断</option><option>无效</option></select></label>
               <div class="lead-filter-actions"><button class="primary-button" id="leadSearchButton">搜索</button><button class="ghost-button" id="leadAdvancedButton" aria-expanded="false">高级筛选 <span>⌄</span></button><button class="ghost-button" id="leadResetButton">重置</button></div>
             </div>
-            <div class="lead-advanced" id="leadAdvanced">
+            <div class="lead-advanced mk-standard-advanced" id="leadAdvanced">
               <label class="lead-filter-field"><span>提交时间</span><select id="leadTimeFilter"><option value="">不限时间</option><option value="today">今天</option><option value="7d">近7天</option><option value="30d">近30天</option></select></label>
               <label class="lead-filter-field"><span>渠道分类 / 名称</span><input id="leadChannelFilter" type="search" placeholder="输入渠道分类或渠道名称" /></label>
               <label class="lead-filter-field"><span>编码</span><input id="leadCodeFilter" type="search" placeholder="输入 CRM 或 CC 编码" /></label>
@@ -1707,7 +1709,7 @@
                 <button class="ghost-button unified-reset" id="groupResetButton">重置</button>
               </div>
             </div>
-            <div class="unified-filter-advanced" id="groupAdvancedFilters">
+            <div class="unified-filter-advanced mk-standard-advanced" id="groupAdvancedFilters">
               <div class="unified-filter-fields group-advanced-grid">
                 <label class="unified-filter-field"><span>分组类型</span><select id="groupTypeFilter"><option value="">全部类型</option><option>固定组</option><option>条件组</option></select></label>
                 <label class="unified-filter-field"><span>创建方式</span><select id="groupCreateFilter"><option value="">全部方式</option><option>手动创建</option><option>AI 生成</option></select></label>

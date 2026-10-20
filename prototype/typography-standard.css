@@ -1,0 +1,24 @@
+/* MK 字体及空间规范：在业务样式之后加载 */
+:root{--mk-font:"PingFang SC","Microsoft YaHei","Noto Sans SC",Arial,sans-serif;--mk-text:#303133;--mk-secondary:#606266;--mk-muted:#909399}
+body.mk-mega-layout{font-family:var(--mk-font);font-size:14px;line-height:1.5;color:var(--mk-text);-webkit-font-smoothing:antialiased}
+body.mk-mega-layout :is(button,input,select,textarea){font-family:var(--mk-font);font-size:14px;line-height:1.5}
+body.mk-mega-layout #pageTitle{font-size:22px;line-height:32px;font-weight:600}
+body.mk-mega-layout :is(.section-head h3,.panel-head h3,.card-head h3){font-size:18px;line-height:26px;font-weight:600}
+body.mk-mega-layout :is([role="tab"],[class$="-tabs"]>button,[class$="-tabs"]>a,.lead-subtabs button){font-size:16px;line-height:24px;min-height:48px;padding:12px 18px;font-weight:400;white-space:nowrap}
+body.mk-mega-layout :is([role="tab"][aria-selected="true"],[class$="-tabs"]>button.active,[class$="-tabs"]>a.active){font-weight:600}
+body.mk-mega-layout :is([class*="filter"] label,[class*="filter"] input,[class*="filter"] select,[class*="filter"] button,[class*="filter"] summary,.filter-label,.filter-field>span:first-child,[class$="-filter-field"]>span,[class$="-filter-field"]>label,.content-section-filter>div:first-child>span){font-size:14px;line-height:22px;font-weight:400}
+body.mk-mega-layout :is([class*="filter"] input,[class*="filter"] select){min-height:36px;padding:6px 12px;border-radius:6px;box-sizing:border-box}
+body.mk-mega-layout :is(.filter-field,.activity-filter-field,.lead-filter-field,.unified-filter-field){gap:8px;min-width:0}
+body.mk-mega-layout :is(.landing-filter-fields,.unified-filter-fields){column-gap:24px;row-gap:16px}
+body.mk-mega-layout :is(.landing-filter-card,.activity-filter-panel,.lead-filter-panel){padding:20px 24px}
+body.mk-mega-layout :is(table th,table td){font-size:14px;line-height:22px;padding-top:14px;padding-bottom:14px}
+body.mk-mega-layout table th{font-weight:500;color:#606266;background:#f7f8fa}
+body.mk-mega-layout :is(.email-table,.automation-table,.wechat-table,.employee-table,.rank-list,.share-detail,.channel-table,.category-table,.organization-table,.account-table,.role-table)>:is(b,span){font-size:14px;line-height:22px}
+body.mk-mega-layout :is(.email-actions,.automation-actions,.admin-actions) :is(button,summary){font-size:14px}
+body.mk-mega-layout :is(.metric span,.content-metrics span){font-size:14px;line-height:22px;color:#606266}
+body.mk-mega-layout :is(.metric strong,.content-metrics strong){font-size:28px;line-height:36px;font-weight:600;font-variant-numeric:tabular-nums}
+body.mk-mega-layout :is(.metric em,.metric small,.landing-table td>small,.content-recent time,#mkPageDescription){font-size:12px;line-height:18px;color:#909399}
+body.mk-mega-layout :is(.mk-menu-item,.mk-menu-group summary){font-size:14px;line-height:22px}
+body.mk-mega-layout .mk-secondary-head h2{font-size:16px;line-height:24px;font-weight:600}
+body.mk-mega-layout :is(button,input,select,textarea):focus-visible{outline:2px solid #ee2233;outline-offset:2px}
+@media(max-width:768px){body.mk-mega-layout :is(.landing-filter-fields,.unified-filter-fields){column-gap:16px}body.mk-mega-layout :is(.landing-filter-card,.activity-filter-panel,.lead-filter-panel){padding:16px}}
