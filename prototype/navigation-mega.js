@@ -321,7 +321,7 @@
     get('mkModuleTitle').onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openAll(activeGroup);}};
   }
   if(schemeD){
-    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航 · v2.0.1';
+    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航 · v2.1.0';
     get('mkModuleTitle').removeAttribute('role');get('mkModuleTitle').removeAttribute('tabindex');get('mkModuleTitle').removeAttribute('title');get('mkModuleTitle').onclick=null;get('mkModuleTitle').onkeydown=null;
   }
   get('mkAllOpen').onclick=()=>openAll();get('mkAllClose').onclick=()=>get('mkAllDialog').close();get('mkAllSearch').oninput=renderAll;
