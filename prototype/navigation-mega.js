@@ -21,7 +21,7 @@
   }
   groups.find(g=>g.id==='events').items=[
     {id:'eventTopics',label:'活动专题',section:'活动运营'},
-    {id:'activities',label:'活动列表',page:'activities',section:'活动运营',aliases:'活动中心 报名 参会人员 签到 直播 邀请通知'},
+    {id:'activities',label:'活动列表',page:'activities',section:'活动运营',aliases:'活动中心 报名 参会人员 签到 互动抽奖 奖项 大屏 直播 邀请通知'},
     {id:'eventCategories',label:'活动分类',section:'活动运营'},
     {id:'eventSessionAnalysis',label:'场次分析',section:'统计分析',aliases:'活动统计'},
     {id:'eventAudienceAnalysis',label:'人数分析',section:'统计分析',aliases:'活动统计'},
@@ -81,7 +81,7 @@
     const leadViews=[...document.querySelectorAll('[data-lead-setting-tab]')].map(button=>({id:button.dataset.leadSettingTab,label:button.textContent}));
     leadItems.splice(leadItems.findIndex(i=>i.id==='leadSettings'),1,...leadViews.map(view=>({id:view.id==='overview'?'leadSettings':'leadSettings/'+view.id,label:view.label,page:'leadSettings',leadView:view.id,section:'流转配置'})));
   }
-  const activityTabs=[['activityPage','活动页面'],['registration','报名设置'],['attendees','参会人员'],['checkin','签到与互动'],['live','直播'],['outreach','邀请与通知'],['activityLeads','线索与跟进'],['activityAnalytics','数据分析']];
+  const activityTabs=[['activityPage','活动页面'],['registration','报名设置'],['attendees','参会人员'],['checkin','签到与互动'],['lottery','互动抽奖'],['live','直播'],['outreach','邀请与通知'],['activityLeads','线索与跟进'],['activityAnalytics','数据分析']];
   let activityTab='activityPage';
   const icons={work:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',customers:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5"/>',content:'<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h6"/>',events:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/>',outreach:'<path d="m3 11 18-8-8 18-2-8zM11 13 21 3"/>',leads:'<path d="M3 4h18l-7 9v6l-4 2v-8z"/>',system:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor"/><circle cx="15" cy="17" r="3" fill="currentColor"/>'};
   const icon=id=>`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icons[id]}</svg>`;
@@ -190,6 +190,7 @@
     if(selectedPage==='activityDetail'){
       title=activityTabs.find(([key])=>key===activityTab)[1];
       description=[headingText(source),description].filter(Boolean).join(' · ');
+      if(activityTab==='lottery')description='设置奖项、管理抽奖池，开启现场大屏互动。';
       const repeatedHeading=document.querySelector(`[data-activity-panel="${activityTab}"] > .section-head h3`);
       if(repeatedHeading?.textContent.trim()===title){repeatedHeading.classList.add('mk-context-source');contextSources.push(repeatedHeading);}
     }
