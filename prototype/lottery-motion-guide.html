@@ -67,6 +67,12 @@
     .state p { color:var(--muted); font-size:10px; line-height:1.8; }
     .state.commit { border-color:#e8b6c0; background:var(--accent-soft); }
     .state.commit span { color:var(--accent); }
+    .setup-flow { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .theme-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:15px; }
+    .theme-card { padding:14px; border:1px solid var(--line); border-radius:7px; background:#fcfcfd; }
+    .theme-card strong { display:block; font-size:12px; }
+    .theme-card small { display:block; margin-top:6px; color:var(--muted); font-size:10px; }
+    .subheading { margin-top:27px; }
     .callout { padding:15px 17px; border:1px solid #ead4ac; border-radius:7px; background:#fffbf1; color:#795d28; font-size:12px; }
     .semantics { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:17px; }
     .semantics article { padding:17px; border:1px solid var(--line); border-radius:7px; }
@@ -86,7 +92,7 @@
     .footer a { font-size:11px; }
     kbd { display:inline-block; min-width:22px; padding:0 5px; border:1px solid #d9dee6; border-bottom-width:2px; border-radius:4px; background:#fff; color:#586273; text-align:center; font-size:10px; line-height:1.8; }
     @media (max-width:1000px) { .layout { grid-template-columns:135px minmax(0,1fr); gap:20px; } .section { padding:24px; } .state-flow { gap:14px; } .state { padding:14px 10px; } .state:not(:last-child)::after { right:-13px; } }
-    @media (max-width:760px) { .topbar-inner { padding:13px 18px; } .brand small,.toplinks>a:not(.button-link) { display:none; } .layout { display:block; padding:29px 18px 45px; } .side-nav { position:static; flex-direction:row; flex-wrap:wrap; gap:4px; margin-bottom:26px; } .side-nav p { display:none; } .side-nav a { padding:5px 8px; border:1px solid var(--line); border-radius:5px; background:#fff; font-size:10px; } .hero { margin-bottom:26px; } .section { margin-top:19px; padding:22px 18px; } .section-heading { gap:10px; } h2 { font-size:19px; } .api-grid,.semantics,.checklist { grid-template-columns:1fr; } .state-flow { grid-template-columns:1fr 1fr; gap:12px; } .state:not(:last-child)::after { content:none; } .state { min-height:126px; } pre { margin-left:-5px; margin-right:-5px; padding:16px; font-size:10px; } .footer { align-items:flex-start; flex-direction:column; } }
+    @media (max-width:760px) { .topbar-inner { padding:13px 18px; } .brand small,.toplinks>a:not(.button-link) { display:none; } .layout { display:block; padding:29px 18px 45px; } .side-nav { position:static; flex-direction:row; flex-wrap:wrap; gap:4px; margin-bottom:26px; } .side-nav p { display:none; } .side-nav a { padding:5px 8px; border:1px solid var(--line); border-radius:5px; background:#fff; font-size:10px; } .hero { margin-bottom:26px; } .section { margin-top:19px; padding:22px 18px; } .section-heading { gap:10px; } h2 { font-size:19px; } .api-grid,.semantics,.checklist,.setup-flow { grid-template-columns:1fr; } .state-flow:not(.setup-flow) { grid-template-columns:1fr 1fr; gap:12px; } .theme-grid { grid-template-columns:1fr 1fr; } .state:not(:last-child)::after { content:none; } .state { min-height:126px; } .setup-flow .state { min-height:0; } pre { margin-left:-5px; margin-right:-5px; padding:16px; font-size:10px; } .footer { align-items:flex-start; flex-direction:column; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
     @media print { .topbar,.side-nav,.button-link { display:none; } .layout { display:block; max-width:none; padding:0; } .section { break-inside:avoid; box-shadow:none; } body { background:#fff; } a { color:inherit; } pre { white-space:pre-wrap; } }
   </style>
@@ -106,22 +112,49 @@
   <div class="layout">
     <nav class="side-nav" aria-label="本文目录">
       <p>DEVELOPMENT GUIDE</p>
-      <a href="#timing">01 · 形式与时序</a>
-      <a href="#states">02 · 状态与提交</a>
-      <a href="#api">03 · 展示引擎接口</a>
-      <a href="#backend">04 · 生产接入</a>
-      <a href="#acceptance">05 · 验收要点</a>
+      <a href="#workflow">01 · 后台准备与人数</a>
+      <a href="#timing">02 · 形式与时序</a>
+      <a href="#states">03 · 状态与提交</a>
+      <a href="#results">04 · 结果与主题</a>
+      <a href="#api">05 · 展示引擎接口</a>
+      <a href="#backend">06 · 生产接入</a>
+      <a href="#acceptance">07 · 验收要点</a>
     </nav>
     <main id="main">
       <div class="hero">
         <div class="eyebrow">LOTTERY / INTERACTION SPECIFICATION</div>
         <h1>互动抽奖<br>动效与研发说明</h1>
-        <p>五种参考抽奖形式已加入原型，并保留名单与球形展示。这里集中说明可点击流程、动效节奏、结果提交边界与研发接口，便于设计、前端、后端和测试对齐。</p>
-        <div class="hero-meta"><span class="tag is-accent">7 种形式 · 共用一份结果</span><span class="tag">本地演示数据</span><span class="tag">支持减少动态效果</span></div>
+        <p>从创建大屏、奖项和名单准备，到选择形式、主题与本轮人数，再进入舞台。这里集中说明可点击流程、动效节奏、大批量结果和研发接口，便于设计、前端、后端与测试对齐。</p>
+        <div class="hero-meta"><span class="tag is-accent">7 种形式 · 6 套主题</span><span class="tag">最多每轮 50 人 · 结果分页</span><span class="tag">本地演示数据</span><span class="tag">减少动态效果</span></div>
       </div>
 
+      <section class="section" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-heading"><span class="section-number">01</span><h2 id="workflow-title">后台准备与人数配置</h2></div>
+        <p class="lead">新建大屏后，按详情顶部三步引导完成准备。奖项、名单可分别保存；没有可抽人员或剩余名额时，启动入口不可用。</p>
+        <div class="state-flow setup-flow" role="list" aria-label="后台三步准备流程">
+          <article class="state" role="listitem"><span>01 / 奖项</span><strong>设置数量与节奏</strong><p>添加奖品、总中奖名额、每轮默认人数。总名额控制累计发出的数量。</p></article>
+          <article class="state" role="listitem"><span>02 / 名单</span><strong>准备参与人员</strong><p>按 CSV 模板导入姓名、公司、手机号；已中奖人员自动排除后续抽取。</p></article>
+          <article class="state" role="listitem"><span>03 / 启动设置</span><strong>选择形式与主题</strong><p>确认奖项、本轮人数、形式、主题，预览摘要后进入舞台。</p></article>
+        </div>
+        <div class="callout"><strong>进入舞台只预览，不抽取。</strong> 点击“开始”才循环，点击“停止”才确定本轮结果。舞台准备与已揭晓时可返回设置，并保留配置；循环和减速期间锁定设置。</div>
+        <h3 class="subheading">总名额、每轮默认、本轮人数是三个字段</h3>
+        <p class="lead"><code>prize.total</code> 为累计总名额，范围 1–10,000；<code>prize.batchSize</code> 为每轮默认人数，范围 <code>1–min(50, total)</code>；<code>quantity</code> 为本轮实际人数。旧记录可缺少 <code>batchSize</code>，按下表推导。</p>
+        <div class="table-scroll">
+          <table>
+            <caption>推荐默认值可修改；实际本轮上限仍受形式、剩余名额和可抽人数共同约束。</caption>
+            <thead><tr><th scope="col">总中奖名额</th><th scope="col">推荐每轮默认人数</th><th scope="col">节奏建议</th></tr></thead>
+            <tbody>
+              <tr><td>1–5 人</td><td>1 人</td><td>少量奖项逐位揭晓</td></tr>
+              <tr><td>6–20 人</td><td>5 人</td><td>分轮抽取，保持现场节奏</td></tr>
+              <tr><td>21 人及以上</td><td>10 人</td><td>批量可按需调整至 10–20 人，每轮最多 50 人</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">例如共 100 个名额、每轮默认 10 人，按默认预计 10 轮。切换转盘后本轮上限为 1 人，或只剩 3 个名额时本轮受限，均只调整本轮，不把奖项默认值写回成 1 或 3。设置页显示约束原因和本轮结束后的剩余名额。</p>
+      </section>
+
       <section class="section" id="timing" aria-labelledby="timing-title">
-        <div class="section-heading"><span class="section-number">01</span><h2 id="timing-title">形式与动效时序</h2></div>
+        <div class="section-heading"><span class="section-number">02</span><h2 id="timing-title">形式与动效时序</h2></div>
         <p class="lead">以停止确认结果、写入记录并调用 <code>reveal()</code> 为 <code>t = 0</code>。每轮人数还受奖项剩余名额与可抽人数限制；切换样式不会重新抽取历史结果。</p>
         <div class="table-scroll">
           <table class="timing-table">
@@ -134,7 +167,7 @@
               <tr><td><strong>砸金蛋</strong><small><code>eggs</code></small></td><td>1 人</td><td class="duration">1150ms</td><td>锤击 260 → 摇动 240 →<br>裂纹 250 → 开蛋 400ms</td><td>开始后选择 4 枚中的任意金蛋，或点击停止。蛋的选择只触发表现；未选时默认第 3 枚。</td></tr>
               <tr><td><strong>幸运老虎机</strong><small><code>slots</code></small></td><td>3 人</td><td class="duration">1800 / 2200 /<br>2600ms</td><td><code>easeOutQuint</code><small>1 − (1 − t)⁵</small></td><td>拉杆或统一按钮开始 / 停止。列数等于本轮人数，1–3 列并行减速，从左至右停靠。</td></tr>
               <tr><td><strong>名单滚动</strong><small><code>list</code></small></td><td>50 人</td><td class="duration">1200ms</td><td><code>easeOutCubic</code><small>驱动 12 次高亮步进</small></td><td>开始 / 停止按钮。约每 90ms 切换临时高亮，最终统一强调全部本轮获奖人。</td></tr>
-              <tr><td><strong>3D 球形</strong><small><code>sphere</code></small></td><td>50 人</td><td class="duration">1200ms</td><td><code>easeOutCubic</code><small>Y 轴旋转减速归正</small></td><td>开始 / 停止按钮。约 25°/s 旋转，停止后前 5 位向前聚合，全部结果显示于结果区。</td></tr>
+              <tr><td><strong>3D 球形</strong><small><code>sphere</code></small></td><td>50 人</td><td class="duration">1200ms</td><td><code>easeOutCubic</code><small>Y 轴旋转减速归正</small></td><td>开始 / 停止按钮。约 25°/s 旋转，少量结果向前聚合；超过 5 人切换本轮名单主画面。</td></tr>
             </tbody>
           </table>
         </div>
@@ -143,7 +176,7 @@
       </section>
 
       <section class="section" id="states" aria-labelledby="states-title">
-        <div class="section-heading"><span class="section-number">02</span><h2 id="states-title">四阶段状态与提交边界</h2></div>
+        <div class="section-heading"><span class="section-number">03</span><h2 id="states-title">四阶段状态与提交边界</h2></div>
         <p class="lead">业务状态由控制器管理；展示引擎对应阶段为 <code>idle → running → revealing → complete</code>。</p>
         <div class="state-flow" role="list" aria-label="抽奖四阶段流程">
           <article class="state" role="listitem"><span>01 / IDLE</span><strong>准备就绪</strong><p>选择样式、主题、奖项与人数。此时没有本轮结果。</p></article>
@@ -159,8 +192,35 @@
         <p class="note">本地保存失败时，结果仍在当前页面内存中生效，必须提示及时导出。不要把“动画已结束”等同于“结果已持久化”。同一大屏的中奖人从后续所有奖项中排除。</p>
       </section>
 
+      <section class="section" id="results" aria-labelledby="results-title">
+        <div class="section-heading"><span class="section-number">04</span><h2 id="results-title">本轮结果与六套主题</h2></div>
+        <p class="lead">引擎冻结本轮已提交人员及顺序。所有形式使用同一套结果规则；这里的“本轮中奖名单”与后台全部历史中奖记录分别展示。</p>
+        <div class="table-scroll">
+          <table>
+            <caption>分页为纯展示操作，不能触发开始、停止、抽取或写入记录。</caption>
+            <thead><tr><th scope="col">本轮人数</th><th scope="col">结果布局</th><th scope="col">展示与操作</th></tr></thead>
+            <tbody>
+              <tr><td>1–5 人</td><td><code>hero</code> 大头像卡</td><td>保留抽奖停靠画面，完整展示本轮人员，无分页。</td></tr>
+              <tr><td>6–10 人</td><td><code>compact</code> 紧凑主结果</td><td>隐藏停靠场景，主画面突出中奖名单，无分页。</td></tr>
+              <tr><td>11–50 人</td><td><code>paged</code> 每页 10 人</td><td>显示上一页、下一页、展示范围和本轮总人数；50 人固定 5 页。</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">50 人结果第一页展示 1–10 / 50 人，第五页为 41–50 / 50 人；往返翻页保持顺序、轮次和名额。事件为 <code>lottery:effect-state</code>，附 <code>{ reason: 'result-page', resultPage, pageCount, winnerCount }</code>，展示阶段仍为 <code>complete</code>。已提交记录始终可在后台筛选和导出。</p>
+        <h3 class="subheading">6 套系统主题，与 7 种形式自由组合</h3>
+        <div class="theme-grid">
+          <article class="theme-card"><strong>红金盛典</strong><small><code>festival</code> · 系统渐层</small></article>
+          <article class="theme-card"><strong>深蓝星光</strong><small><code>midnight</code> · 系统渐层</small></article>
+          <article class="theme-card"><strong>霓虹律动</strong><small><code>neon</code> · 图片背景</small></article>
+          <article class="theme-card"><strong>冰蓝会场</strong><small><code>ice</code> · 图片背景 · 浅底深字</small></article>
+          <article class="theme-card"><strong>红色庆典</strong><small><code>celebration</code> · 图片背景</small></article>
+          <article class="theme-card"><strong>曙光会场</strong><small><code>dawn</code> · 图片背景 · 浅底深字</small></article>
+        </div>
+        <p class="note">四张原始图片均为 1920 × 1080，未缩放或重新压缩，合计约 3.61 MiB，存放于 <code>assets/lottery/themes/</code>。主题配套文字、卡片和焦点配色；当前不提供自定义背景上传，也未增加奖品图或人员照片上传。主题只改变视觉，不影响抽取结果。</p>
+      </section>
+
       <section class="section" id="api" aria-labelledby="api-title">
-        <div class="section-heading"><span class="section-number">03</span><h2 id="api-title">展示引擎接口</h2></div>
+        <div class="section-heading"><span class="section-number">05</span><h2 id="api-title">展示引擎接口</h2></div>
         <p class="lead"><code>activity-lottery.js</code> 管理结果与本地存储，<code>activity-lottery-effects.js</code> 只负责表现，样式位于对应 CSS 文件。以下是接口调用顺序示意，<code>controller</code> 与 <code>confirmedRound</code> 由接入方提供。</p>
         <pre><code><span class="code-keyword">const</span> engine = window.MKLotteryEffects.create({
   host, mode, people, history, prize, quantity, reducedMotion,
@@ -178,18 +238,18 @@ engine.start();
 <span class="code-comment">// 关闭：清理 RAF / 定时器，结束未完成的 reveal 等待。</span>
 engine.destroy();</code></pre>
         <div class="api-grid">
-          <div class="api-item"><h3><code>create(options)</code></h3><p>创建指定形式。主题由容器 <code>data-theme</code> 控制；两套主题为红金 <code>festival</code>、深蓝 <code>midnight</code>。</p></div>
+          <div class="api-item"><h3><code>create(options)</code></h3><p>创建指定形式。主题由容器 <code>data-theme</code> 控制；六套预置元信息见 <code>MKLotteryThemes.items</code>。</p></div>
           <div class="api-item"><h3><code>reset(next)</code></h3><p>取消旧任务，更新可抽名单、奖项、历史和人数快照，回到准备态；不改中奖记录。</p></div>
           <div class="api-item"><h3><code>reveal(winners) → Promise</code></h3><p>仅展示已确认结果。重复调用复用同一未完成 Promise；完成不代表再次提交。</p></div>
           <div class="api-item"><h3><code>destroy()</code></h3><p>取消 RAF、计时器并结束等待。调用后的回调仍须检查会话是否已经关闭或被替换。</p></div>
         </div>
         <p class="note">控制器向大屏派发 <code>lottery:round-state</code>：<code>{ phase, mode, roundId }</code>；引擎派发 <code>lottery:effect-state</code> 供观察展示阶段。事件只用于调试和测试，不能触发结果写入。</p>
-        <p class="note">“查看原型”会直接进入抽奖舞台。在管理原型已路由到互动抽奖时，也可调用 <code>window.mkLottery.openDraw()</code> 打开大屏。</p>
+        <p class="note">普通后台先用 <code>window.mkLottery.openSetup()</code> 打开启动设置，再确认进入舞台；<code>window.mkLottery.openDraw()</code> 保留直接进入能力。本页“查看原型”也直接进入舞台，便于演示效果。</p>
         <p class="note">RAF 减速采用“名义时长 + 5000ms”看门狗。后台暂停后，仍有效的会话会直接到达同一固定结果的精确终点，避免已提交轮次悬挂。</p>
       </section>
 
       <section class="section" id="backend" aria-labelledby="backend-title">
-        <div class="section-heading"><span class="section-number">04</span><h2 id="backend-title">生产环境：服务端确定结果</h2></div>
+        <div class="section-heading"><span class="section-number">06</span><h2 id="backend-title">生产环境：服务端确定结果</h2></div>
         <p class="lead">原型使用 <code>crypto.getRandomValues</code> 本地不放回演示。生产需要服务端完成权限、名单版本、奖项配额和跨奖项去重校验，并在事务中提交结果。前端的高亮、转盘角度与点击哪一颗金蛋，都不决定真实中奖身份。</p>
         <div class="table-scroll">
           <table>
@@ -219,7 +279,7 @@ engine.destroy();</code></pre>
       </section>
 
       <section class="section" id="acceptance" aria-labelledby="acceptance-title">
-        <div class="section-heading"><span class="section-number">05</span><h2 id="acceptance-title">操作与验收要点</h2></div>
+        <div class="section-heading"><span class="section-number">07</span><h2 id="acceptance-title">操作与验收要点</h2></div>
         <p class="lead"><kbd>Space</kbd> 在舞台普通区域开始 / 停止；控件聚焦时保留原生行为。<kbd>F</kbd> 切换全屏，<kbd>Esc</kbd> 退出 / 返回；浏览器全屏下先遵循浏览器的退出逻辑。控制区可收起，结果仍持续展示。</p>
         <ul class="checklist">
           <li>七种形式均可开始、停止、揭晓；画面与记录的获奖人完全一致。</li>
@@ -228,7 +288,14 @@ engine.destroy();</code></pre>
           <li>循环时关闭不提交；减速时关闭保留结果；重开不受旧回调影响。</li>
           <li>标准与减少动态效果使用相同结果路径；无持续旋转、滚动和碎片。</li>
           <li>全屏进入 / 退出与控制区收起，不改变进度或遮挡关键操作。</li>
+          <li>创建大屏、配置奖项、导入名单、选择形式主题后，进入舞台仍未抽取。</li>
+          <li>默认人数缺省兼容旧数据；切换形式或剩余人数不足不改写奖项默认。</li>
+          <li>分别验证 5 / 6 / 10 / 11 / 50 人；50 人结果为 5 页，每页 10 人。</li>
+          <li>往返翻页没有遗漏、重复或顺序变化；记录数、名额与轮次保持不变。</li>
+          <li>六套主题均可搭配七种形式；浅色背景姓名及分页按钮清晰可读。</li>
+          <li>仅准备与已揭晓时可返回设置，草稿保留；循环和减速期间锁定。</li>
         </ul>
+        <p class="note">全屏实际对大屏内部的 <code>.lottery-modal-form</code> 调用 <code>requestFullscreen()</code>，包含舞台与控制台。上述条目为验收清单，具体浏览器验证记录以交付说明为准。</p>
         <p class="note">默认演示使用虚构人员。旧浏览器记录会保留；“补齐内置示例人员”只合并缺失人员，保留已导入的名单，合并总数可以超过 64 人，不会重置已中奖状态。</p>
       </section>
       <footer class="footer">

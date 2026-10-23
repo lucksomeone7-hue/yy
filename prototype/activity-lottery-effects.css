@@ -180,6 +180,105 @@
 .lottery-fx-winner .lottery-fx-name { font-size: 15px; }
 .lottery-fx[data-phase="complete"] .lottery-fx-winner { animation: lottery-fx-reveal .5s both; }
 
+/* Completed rounds keep a fixed ordered snapshot. Large rounds replace the
+   animated scene with ten readable cards, rather than growing a winner wall. */
+.lottery-effect-host .lottery-fx.has-round-results { overflow: auto; scrollbar-width: thin; scrollbar-color: #e1ba79 #790e25; }
+.lottery-effect-host .lottery-fx.has-round-results > .lottery-fx-result {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  margin-top: 20px;
+  overflow: visible;
+  text-align: left;
+}
+.lottery-effect-host .lottery-fx.has-round-results[data-phase="complete"]:is([data-result-layout="compact"],[data-result-layout="paged"]) > .lottery-fx-scene { display: none; }
+.lottery-effect-host .lottery-fx.has-round-results:is([data-result-layout="compact"],[data-result-layout="paged"]) > .lottery-fx-result {
+  flex: 1 0 auto;
+  justify-content: center;
+  width: 100%;
+  min-height: 340px;
+  margin: 0 auto;
+  padding: 16px 0;
+}
+.lottery-fx-result-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; max-width: 1120px; margin: 0 auto; }
+.lottery-fx-result-kicker { display: block; margin-bottom: 5px; color: var(--lottery-fx-gold); font-size: 11px; letter-spacing: .16em; }
+.lottery-fx-result-heading h4 { color: var(--lottery-fx-pale); font-size: clamp(17px,1.6vw,24px); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.lottery-fx-result .lottery-fx-result-total { flex: 0 0 auto; max-width: none; color: var(--lottery-fx-muted); font-size: 12px; white-space: nowrap; }
+.lottery-fx-result-total strong { margin: 0 3px; color: var(--lottery-fx-pale); font-size: 22px; font-variant-numeric: tabular-nums; }
+.lottery-fx.has-round-results .lottery-fx-winners {
+  display: grid;
+  grid-template-columns: repeat(var(--fx-result-columns,5),minmax(0,1fr));
+  align-items: stretch;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+.lottery-fx.has-round-results .lottery-fx-winner {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  border-color: #ffe0a16b;
+  overflow-wrap: anywhere;
+}
+.lottery-fx-winner-index { position: absolute; top: 8px; left: 10px; color: var(--lottery-fx-gold); opacity: .65; font-size: 10px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.lottery-fx-winner-copy { min-width: 0; max-width: 100%; }
+.lottery-fx.has-round-results .lottery-fx-winner .lottery-fx-name { margin: 0; color: var(--lottery-fx-pale); font-size: 16px; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
+.lottery-fx.has-round-results .lottery-fx-winner .lottery-fx-company { margin-top: 5px; color: var(--lottery-fx-muted); font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.lottery-fx-winners--hero .lottery-fx-winner { flex-direction: column; justify-content: center; gap: 12px; min-height: 192px; padding: 25px 14px 20px; border-radius: 12px; background: linear-gradient(145deg,#ffdf9530,#ffd5830e); text-align: center; }
+.lottery-fx.has-round-results .lottery-fx-winners--hero .lottery-fx-avatar { width: 88px; height: 88px; border: 2px solid #fff0ca; box-shadow: 0 0 0 5px #ffdf9b14,0 5px 24px #49001524; }
+.lottery-fx.has-round-results .lottery-fx-winners--hero .lottery-fx-name { font-size: 21px; }
+.lottery-fx[data-result-count="1"] .lottery-fx-winners--hero { max-width: 340px; }
+.lottery-fx[data-result-count="2"] .lottery-fx-winners--hero { max-width: 680px; }
+.lottery-fx[data-result-count="3"] .lottery-fx-winners--hero { max-width: 900px; }
+.lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; }
+.lottery-fx-winners--compact .lottery-fx-winner, .lottery-fx-winners--paged .lottery-fx-winner { align-items: center; gap: 10px; min-height: 104px; padding: 22px 10px 15px; border-radius: 10px; }
+.lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) .lottery-fx-avatar { width: 46px; height: 46px; border-width: 1px; }
+.lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) .lottery-fx-company { display: none; }
+.lottery-fx-result-pagination { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; max-width: 1120px; margin: 0 auto; padding: 10px 0 0; border-top: 1px solid var(--lottery-fx-line); }
+.lottery-fx-result-pagination > div { display: flex; align-items: center; gap: 12px; }
+.lottery-fx-result-range, .lottery-fx-result-page-label { color: var(--lottery-fx-muted); font-size: 12px; line-height: 1.6; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lottery-fx-result-page-label { min-width: 62px; text-align: center; }
+.lottery-fx .lottery-fx-result-page-button { min-height: 38px; padding: 7px 15px; border: 1px solid #f5cf8e85; border-radius: 7px; background: #ffdc8a12; color: var(--lottery-fx-pale); font-size: 12px; line-height: 1.5; transition: background .15s,border-color .15s; }
+.lottery-fx-result-page-button:hover:not(:disabled) { border-color: var(--lottery-fx-gold); background: #ffdc8a28; }
+.lottery-fx-result-page-button:disabled { border-color: #f5cf8e27; opacity: .38; }
+
+@container lottery-effect (max-width: 850px) {
+  .lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) .lottery-fx-winner { flex-direction: column; justify-content: center; gap: 8px; min-height: 118px; padding: 22px 8px 12px; text-align: center; }
+  .lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) .lottery-fx-name { font-size: 14px; }
+  .lottery-fx.has-round-results .lottery-fx-winners--hero .lottery-fx-avatar { width: 72px; height: 72px; }
+  .lottery-fx-winners--hero .lottery-fx-winner { min-height: 172px; padding-right: 10px; padding-left: 10px; }
+  .lottery-fx.has-round-results .lottery-fx-winners--hero .lottery-fx-name { font-size: 18px; }
+}
+@container lottery-effect (max-width: 650px) {
+  .lottery-fx.has-round-results .lottery-fx-winners--hero { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .lottery-fx[data-result-count="1"] .lottery-fx-winners--hero { grid-template-columns: minmax(0,1fr); }
+  .lottery-fx[data-result-count="2"] .lottery-fx-winners--hero { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+  .lottery-fx-result-heading { align-items: flex-start; gap: 10px; }
+  .lottery-fx-result-heading h4 { font-size: 17px; }
+  .lottery-fx-result .lottery-fx-result-total { font-size: 11px; }
+  .lottery-fx-result-total strong { font-size: 19px; }
+  .lottery-fx-result-pagination { flex-wrap: wrap; justify-content: center; gap: 9px; }
+  .lottery-fx-result-range { width: 100%; text-align: center; }
+}
+@container lottery-effect (max-width: 420px) {
+  .lottery-fx.has-round-results .lottery-fx-winners--hero, .lottery-fx.has-round-results :is(.lottery-fx-winners--compact,.lottery-fx-winners--paged) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .lottery-fx[data-result-count="1"] .lottery-fx-winners--hero { grid-template-columns: minmax(0,1fr); }
+  .lottery-fx-result-heading { flex-direction: column; align-items: center; text-align: center; }
+  .lottery-fx-result-pagination > div { gap: 8px; }
+  .lottery-fx .lottery-fx-result-page-button { padding-right: 12px; padding-left: 12px; }
+}
+
 /* Wheel: SVG rotation and its final landing angle are controlled entirely by JS. */
 .lottery-fx.lottery-fx-wheel .lottery-fx-scene { min-height: 414px; padding: 10px 0 0; }
 .lottery-fx-wheel-wrap { position: relative; width: min(390px, 88%); aspect-ratio: 1; margin: 4px auto 0; }

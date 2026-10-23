@@ -39,6 +39,8 @@
     let destroyed = false, phase = 'idle', generation = 0, loopFrame = null, loopPrevious = 0;
     let pendingReveal = null, requestPending = false, selectedEgg = -1, wheelAngle = 0, sphereAngle = 0;
     let visiblePeople = [], wheelGroups = [], slotLanes = [], refs = {};
+    let roundWinners = Object.freeze([]), roundPrize = '', resultPage = 1;
+    const RESULT_PAGE_SIZE = 10;
     const frameIDs = new Set(), waits = new Map();
     const element = document.createElement('section');
     element.className = `lottery-fx lottery-fx-${mode}`;
@@ -129,6 +131,23 @@
     function winnersMarkup(winners) {
       return `<p class="lottery-fx-result-caption">恭喜获得 ${esc(prizeText())}</p><div class="lottery-fx-winners">${winners.map(person => `<div class="lottery-fx-winner">${avatar(person, 40)}<strong>${esc(person.name)}</strong></div>`).join('')}</div>`;
     }
+    function clearRoundResults() {
+      roundWinners = Object.freeze([]); roundPrize = ''; resultPage = 1;
+      element.classList.remove('has-round-results');
+      element.dataset.resultLayout = ''; element.dataset.resultCount = '0'; element.dataset.resultPage = '1';
+    }
+    function renderRoundResults() {
+      if (!roundWinners.length || destroyed) return;
+      const total = roundWinners.length, paged = total > RESULT_PAGE_SIZE;
+      const pages = paged ? Math.ceil(total / RESULT_PAGE_SIZE) : 1;
+      resultPage = Math.min(pages, Math.max(1, resultPage));
+      const from = paged ? (resultPage - 1) * RESULT_PAGE_SIZE : 0;
+      const people = roundWinners.slice(from, paged ? from + RESULT_PAGE_SIZE : total);
+      const layout = total <= 5 ? 'hero' : paged ? 'paged' : 'compact';
+      element.classList.add('has-round-results');
+      element.dataset.resultLayout = layout; element.dataset.resultCount = String(total); element.dataset.resultPage = String(resultPage);
+      refs.result.innerHTML = `<div class="lottery-fx-result-heading"><div><span class="lottery-fx-result-kicker">本轮中奖名单</span><h4>恭喜获得 ${esc(roundPrize)}</h4></div><p class="lottery-fx-result-total">共 <strong>${total}</strong> 位幸运嘉宾</p></div><ol class="lottery-fx-winners lottery-fx-winners--${layout}" aria-label="本轮中奖名单${paged ? `，第 ${resultPage} 页` : ''}" start="${from + 1}" style="--fx-result-columns:${Math.min(5, total)}">${people.map((person, index) => `<li class="lottery-fx-winner" data-winner-id="${esc(identity(person))}" data-winner-order="${from + index + 1}"><span class="lottery-fx-winner-index" aria-hidden="true">${String(from + index + 1).padStart(2, '0')}</span>${avatar(person, layout === 'hero' ? 88 : 52)}<div class="lottery-fx-winner-copy"><strong class="lottery-fx-name">${esc(person.name)}</strong><span class="lottery-fx-company">${esc(person.company || '现场嘉宾')}</span></div></li>`).join('')}</ol>${paged ? `<nav class="lottery-fx-result-pagination" aria-label="本轮中奖名单分页" tabindex="-1"><span class="lottery-fx-result-range">展示 ${from + 1}–${from + people.length} / ${total} 人</span><div><button type="button" class="lottery-fx-result-page-button" data-fx-result-page="${resultPage - 1}" data-fx-page-direction="previous" aria-label="上一页中奖名单" ${resultPage === 1 ? 'disabled' : ''}>上一页</button><span class="lottery-fx-result-page-label" aria-live="polite">第 ${resultPage} / ${pages} 页</span><button type="button" class="lottery-fx-result-page-button" data-fx-result-page="${resultPage + 1}" data-fx-page-direction="next" aria-label="下一页中奖名单" ${resultPage === pages ? 'disabled' : ''}>下一页</button></div></nav>` : ''}`;
+    }
     function showWinner(person, index, count) {
       refs.result.innerHTML = winnersMarkup([person]);
       if (count > 1) refs.result.insertAdjacentHTML('beforeend', `<p class="lottery-fx-batch-label">第 ${index + 1} / ${count} 位幸运嘉宾</p>`);
@@ -162,6 +181,7 @@
       if (lever) { lever.classList.toggle('is-pulled', phase === 'running'); lever.setAttribute('aria-label', phase === 'running' ? '拉动拉杆，停止并揭晓' : '拉动拉杆，开始抽奖'); }
     }
     function baseRender() {
+      clearRoundResults();
       setPreview();
       element.classList.toggle('is-reduced-motion', config.reducedMotion);
       refs.head.innerHTML = `<span class="lottery-fx-demo">演示模式</span><h3>${esc(modes.find(item => item.id === mode).label)}</h3><p>${esc(prizeText())}</p>`;
@@ -352,6 +372,9 @@
       if (pendingReveal) return pendingReveal.promise;
       const winners = normalizeWinners(inputWinners);
       if (!winners.length) { stopLoop(); emit('idle'); syncControls(); return Promise.resolve(); }
+      // This is a presentation snapshot of the controller's committed order.
+      // Paging never calls the draw callbacks, mutates the pool, or resamples.
+      roundWinners = Object.freeze(winners.map(person => Object.freeze({...person}))); roundPrize = prizeText(); resultPage = 1;
       stopLoop(); requestPending = false; const token = ++generation;
       emit('revealing', {winnerCount: winners.length}); syncControls();
       let resolvePromise;
@@ -365,9 +388,9 @@
           else if (mode === 'eggs') await revealEggs(winners, token);
           else if (mode === 'slots') await revealSlots(winners, token);
           else await revealPeople(winners, token);
-          if (isCurrent(token)) { refs.result.innerHTML = winnersMarkup(winners); emit('complete', {winnerCount: winners.length, winnerIds: winners.map(identity)}); syncControls(); }
+          if (isCurrent(token)) { renderRoundResults(); emit('complete', {winnerCount: winners.length, winnerIds: winners.map(identity)}); syncControls(); }
         } catch (error) {
-          if (isCurrent(token)) { refs.result.innerHTML = winnersMarkup(winners); emit('complete', {winnerCount: winners.length, presentationFallback: true}); syncControls(); }
+          if (isCurrent(token)) { renderRoundResults(); emit('complete', {winnerCount: winners.length, presentationFallback: true}); syncControls(); }
           if (globalThis.console) console.error('Lottery presentation fallback:', error);
         } finally { if (pendingReveal === pending) pendingReveal = null; pending.resolve(); }
       })();
@@ -396,10 +419,29 @@
       catch (_) { requestPending = false; }
     }
     element.addEventListener('click', event => {
+      const pageButton = event.target.closest('[data-fx-result-page]');
+      if (pageButton) {
+        event.preventDefault(); event.stopPropagation();
+        if (phase !== 'complete' || pageButton.disabled || !roundWinners.length) return;
+        const page = Number(pageButton.dataset.fxResultPage), pages = Math.ceil(roundWinners.length / RESULT_PAGE_SIZE);
+        if (!Number.isInteger(page) || page < 1 || page > pages) return;
+        const direction = pageButton.dataset.fxPageDirection;
+        resultPage = page; renderRoundResults();
+        const nextFocus = refs.result.querySelector(`[data-fx-page-direction="${direction}"]`);
+        if (nextFocus && !nextFocus.disabled) nextFocus.focus?.({preventScroll: true});
+        else refs.result.querySelector('.lottery-fx-result-pagination')?.focus?.({preventScroll: true});
+        host.dispatchEvent(new CustomEvent('lottery:effect-state', {bubbles: true, detail: {mode, phase, reason: 'result-page', resultPage, pageCount: pages, winnerCount: roundWinners.length}}));
+        return;
+      }
       const egg = event.target.closest('[data-fx-egg]');
       if (egg && phase === 'running' && !requestPending) { selectEgg(Number(egg.dataset.fxEgg)); request('stop'); return; }
       const trigger = event.target.closest('[data-fx-action="toggle"]');
       if (trigger && !trigger.disabled) request(phase === 'running' ? 'stop' : 'start');
+    });
+    element.addEventListener('keydown', event => {
+      // Native buttons still handle Enter/Space. Prevent the parent controller's
+      // global Space shortcut from starting a new draw while the user pages.
+      if (event.target.closest('.lottery-fx-result') && (event.code === 'Space' || event.key === 'Enter')) event.stopPropagation();
     });
     function destroy() {
       if (destroyed) return;
