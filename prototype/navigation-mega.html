@@ -17,6 +17,11 @@
     <link rel="stylesheet" href="./advanced-filters.css" />
     <link rel="stylesheet" href="./account-marketing.css" />
     <link rel="stylesheet" href="./profile-evidence.css" />
+    <link rel="stylesheet" href="./activity-lottery.css" />
+    <link rel="stylesheet" href="./activity-lottery-effects.css" />
+    <link rel="stylesheet" href="./activity-lottery-presentation.css" />
+    <link rel="stylesheet" href="./activity-lottery-themes.css" />
+    <link rel="stylesheet" href="./activity-lottery-workflow.css" />
   </head>
   <body class="mk-mega-layout">
     <header class="mk-global-header">
@@ -1191,6 +1196,7 @@
           <button data-activity-tab="registration">报名设置</button>
           <button data-activity-tab="attendees">参会人员 <b>862</b></button>
           <button data-activity-tab="checkin">签到与互动</button>
+          <button data-activity-tab="lottery">互动抽奖</button>
           <button data-activity-tab="live">直播</button>
           <button data-activity-tab="outreach">邀请与通知</button>
           <button data-activity-tab="activityLeads">线索与跟进 <b>184</b></button>
@@ -1203,7 +1209,8 @@
         </section>
         <section class="work-area activity-tab-panel" data-activity-panel="registration"><div class="section-head"><div><h3>报名设置</h3><span class="module-scope">报名资格、审核方式、字段与成功反馈。</span></div><button class="primary-button">编辑报名设置</button></div><div class="activity-setting-cards"><article><span>报名方式</span><strong>审核报名</strong><small>通过后发送参会凭证</small></article><article><span>人数上限</span><strong>1,000 人</strong><small>当前报名 862 人</small></article><article><span>线索策略</span><strong>签到后生成线索</strong><small>按区域自动分派</small></article></div></section>
         <section class="work-area activity-tab-panel" data-activity-panel="attendees"><div class="section-head"><div><h3>参会人员</h3><span class="module-scope">报名、审核、签到与线索状态使用同一人员记录。</span></div><button class="ghost-button">导出当前视图</button></div><div class="activity-simple-table"><b>姓名</b><b>公司 / 职务</b><b>报名状态</b><b>签到状态</b><b>线索状态</b><span>张晨</span><span>远航自动化 / 市场总监</span><span>已通过</span><span>已签到</span><span>高意向 · 已分派</span><span>周敏</span><span>海川医疗 / 信息总监</span><span>已通过</span><span>未签到</span><span>中意向 · 培育中</span></div></section>
-        <section class="work-area activity-tab-panel" data-activity-panel="checkin"><div class="section-head"><div><h3>签到与互动</h3><span class="module-scope">现场签到、直播互动和资料下载共同进入用户行为时间线。</span></div></div><div class="activity-setting-cards"><article><span>签到率</span><strong>59.9%</strong><small>516 / 862</small></article><article><span>互动人数</span><strong>328</strong><small>问答、投票、资料下载</small></article><article><span>待处理</span><strong>18</strong><small>重复签到与身份待确认</small></article></div></section>
+        <section class="work-area activity-tab-panel" data-activity-panel="checkin"><div class="section-head"><div><h3>签到与互动</h3><span class="module-scope">现场签到、直播互动和资料下载共同进入用户行为时间线。</span></div><a class="lottery-entry-link" href="#activityDetail/lottery">管理互动抽奖 →</a></div><div class="activity-setting-cards"><article><span>签到率</span><strong>59.9%</strong><small>516 / 862</small></article><article><span>互动人数</span><strong>328</strong><small>问答、投票、资料下载</small></article><article><span>待处理</span><strong>18</strong><small>重复签到与身份待确认</small></article></div></section>
+        <section class="work-area activity-tab-panel lottery-panel" data-activity-panel="lottery" aria-label="互动抽奖管理"><div id="activityLotteryRoot"></div></section>
         <section class="work-area activity-tab-panel" data-activity-panel="live"><div class="section-head"><div><h3>直播</h3><span class="module-scope">直播状态、观看数据和回放发布。</span></div><button class="ghost-button">进入直播控制台</button></div><div class="activity-live-state"><b>直播中</b><span>当前在线 326 人 · 峰值 412 人 · 平均观看 38 分钟</span><button>查看直播 ↗</button></div></section>
         <section class="work-area activity-tab-panel" data-activity-panel="outreach"><div class="section-head"><div><h3>邀请与通知</h3><span class="module-scope">活动中心配置触发时机，实际消息由营销中心发送。</span></div><button class="primary-button">新建触达任务</button></div><div class="activity-simple-table outreach"><b>触达任务</b><b>触发时机</b><b>渠道</b><b>状态</b><b>结果</b><span>报名成功通知</span><span>审核通过后</span><span>短信</span><span>执行中</span><span>送达 98.6%</span><span>活动开始提醒</span><span>开始前 2 小时</span><span>短信＋邮件</span><span>待执行</span><span>预计 862 人</span></div></section>
         <section class="work-area activity-tab-panel" data-activity-panel="activityLeads"><div class="section-head"><div><h3>线索与跟进</h3><span class="module-scope">当前策略：签到后生成线索，按区域自动分派。</span></div><button class="ghost-button">查看线索中心</button></div><div class="activity-setting-cards"><article><span>已生成线索</span><strong>184</strong><small>有效线索 152</small></article><article><span>已分派</span><strong>171</strong><small>待分派 13</small></article><article class="warning"><span>同步异常</span><strong>2</strong><small>渠道映射待处理</small></article></div></section>
@@ -2042,6 +2049,9 @@
     <script src="./channels.js"></script>
     <script src="./admin.js"></script>
     <script src="./navigation-mega.js"></script>
+    <script src="./activity-lottery-effects.js"></script>
+    <script src="./activity-lottery-themes.js"></script>
+    <script src="./activity-lottery.js"></script>
     <script src="./account-marketing.js"></script>
     <script src="./profile-evidence.js"></script>
   </body>
