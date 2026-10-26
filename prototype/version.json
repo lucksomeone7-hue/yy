@@ -1,8 +1,8 @@
 {
-  "version": "2.1.0",
-  "name": "Marketing Cloud 一期原型 · 企业营销与画像数据场景评审版",
+  "version": "2.2.0",
+  "name": "Marketing Cloud 一期原型 · 互动抽奖流程与舞台动效评审版",
   "channel": "stable",
   "sourceBranch": "main",
   "previewPath": "/mk/navigation-admin.html",
-  "updatedAt": "2026-10-20"
+  "updatedAt": "2026-10-26"
 }
