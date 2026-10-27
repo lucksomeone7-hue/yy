@@ -291,7 +291,7 @@
     if(!available(item)){if(get('mkAllDialog').open){get('mkAllNotice').textContent=item.label+'：本版仅展示菜单，暂无原型页面。';return;}get('mkSearchDialog').close();notice(`${item.label}：本版仅展示菜单，暂无对应原型页面。`);return;}
     const oldRestoring=restoring;restoring=true;
     if(item.content){showPage('contentCenter');openContentSection(item.content);if(item.view){contentViewState=item.view;setContentView(item.content,item.view);}}else{showPage(item.page);if(item.page==='contentCenter')showContentOverview();if(item.leadView)document.querySelector(`[data-lead-setting-tab="${item.leadView}"]`).click();}
-    restoring=oldRestoring;sync(schemeC&&item.id==='moduleManagement'?'landingPages':item.id,item.page);get('mkSearchDialog').close();get('mkAllDialog').close();
+    restoring=oldRestoring;sync(schemeC&&item.id==='moduleManagement'?'landingPages':item.id,item.page);get('mkSearchDialog').close();closeAll();
   }
   function renderAll(){
     const query=get('mkAllSearch').value.trim().toLowerCase();
@@ -314,7 +314,8 @@
     get('mkAllGrid').innerHTML=list.length?[...buckets].map(([title,entries])=>`<section class="mk-all-column"><h4>${esc(title)}</h4>${entries.map(item=>`<div class="mk-all-row"><button data-mk-destination="${item.id}" ${available(item)?'':'aria-disabled="true"'}>${esc(globalLabel(item))}</button>${available(item)?`<button class="mk-star" data-mk-star="${item.id}" aria-label="${favorites.includes(item.id)?'取消收藏':'收藏'}${esc(globalLabel(item))}" aria-pressed="${favorites.includes(item.id)}">${favorites.includes(item.id)?'★':'☆'}</button>`:''}</div>`).join('')}</section>`).join(''):`<p class="mk-all-empty">${query?'未找到匹配功能，请尝试其他名称。':panelGroup==='favorites'?'还没有收藏，点击功能右侧的星标即可添加。':'暂无最近访问。'}</p>`;
     get('mkAllNotice').textContent='';
   }
-  function openAll(category){panelGroup=category||activeGroup;get('mkAllSearch').value='';renderAll();get('mkAllDialog').showModal();get('mkAllSearch').focus();}
+  function closeAll(){if(schemeD&&window.mkAllMenuMotion)window.mkAllMenuMotion.close();else get('mkAllDialog').close();}
+  function openAll(category){panelGroup=category||activeGroup;get('mkAllSearch').value='';renderAll();if(schemeD&&window.mkAllMenuMotion)window.mkAllMenuMotion.open();else get('mkAllDialog').showModal();get('mkAllSearch').focus();}
   if(schemeC){
     document.querySelector('.mk-nav-foot span:first-child').textContent='方案 C · 场景导航';
     get('mkModuleTitle').setAttribute('role','button');get('mkModuleTitle').setAttribute('tabindex','0');get('mkModuleTitle').title='切换业务模块';
@@ -322,13 +323,13 @@
     get('mkModuleTitle').onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openAll(activeGroup);}};
   }
   if(schemeD){
-    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航 · v2.2.1';
+    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航 · v2.2.2';
     get('mkModuleTitle').removeAttribute('role');get('mkModuleTitle').removeAttribute('tabindex');get('mkModuleTitle').removeAttribute('title');get('mkModuleTitle').onclick=null;get('mkModuleTitle').onkeydown=null;
   }
-  get('mkAllOpen').onclick=()=>openAll();get('mkAllClose').onclick=()=>get('mkAllDialog').close();get('mkAllSearch').oninput=renderAll;
+  get('mkAllOpen').onclick=()=>openAll();get('mkAllClose').onclick=closeAll;get('mkAllSearch').oninput=renderAll;
   get('mkPrimary').onclick=event=>{const button=event.target.closest('[data-mk-group]');if(button){panelGroup=button.dataset.mkGroup;get('mkAllSearch').value='';renderAll();}};
   get('mkAllGrid').onclick=event=>{const star=event.target.closest('[data-mk-star]');if(star){const id=star.dataset.mkStar;favorites=favorites.includes(id)?favorites.filter(i=>i!==id):[...favorites,id];persist();renderAll();renderMenu();return;}const button=event.target.closest('[data-mk-destination]');if(button)navigate(items.find(i=>i.id===button.dataset.mkDestination));};
-  get('mkAllDialog').addEventListener('click',event=>{if(event.target===get('mkAllDialog')){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)event.currentTarget.close();}});
+  get('mkAllDialog').addEventListener('click',event=>{if(event.target===get('mkAllDialog')){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeAll();}});
   get('mkSecondary').addEventListener('click',event=>{const button=event.target.closest('[data-mk-activity]');if(button){activityTab=button.dataset.mkActivity;document.querySelector(`[data-activity-tab="${activityTab}"]`).click();sync('activities','activityDetail');}});
   get('mkSecondary').addEventListener('click',event=>{const more=event.target.closest('[data-more-favorites]');if(more){openAll('favorites');return;}const button=event.target.closest('[data-mk-item]');if(button)navigate(items.find(i=>i.id===button.dataset.mkItem));});
   get('mkContextTabs').addEventListener('click',event=>{const button=event.target.closest('[data-mk-tab]');if(button)showPage(button.dataset.mkTab);});

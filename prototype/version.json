@@ -1,6 +1,6 @@
 {
-  "version": "2.2.1",
-  "name": "Marketing Cloud 一期原型 · 菜单使用指引修订版",
+  "version": "2.2.2",
+  "name": "Marketing Cloud 一期原型 · 菜单移入与弹窗动效修订版",
   "channel": "stable",
   "sourceBranch": "main",
   "previewPath": "/mk/navigation-admin.html",

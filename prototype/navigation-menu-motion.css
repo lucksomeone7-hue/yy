@@ -1,0 +1,119 @@
+/* Motion belongs to the D navigation shell; business views stay independent. */
+body.mk-scheme-d #mkAllOpen {
+  transition:background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+body.mk-scheme-d #mkAllOpen>span,
+body.mk-scheme-d #mkAllOpen>span::before,
+body.mk-scheme-d #mkAllOpen>span::after {
+  transition:transform 140ms ease, background-color 140ms ease;
+}
+body.mk-scheme-d #mkAllOpen:is(:hover,:focus-visible,[aria-expanded="true"]) {
+  background:#fff0f2;
+  color:#c90018;
+  box-shadow:inset 0 -2px #e60012;
+}
+body.mk-scheme-d #mkAllOpen:active { background:#ffe4e8; }
+body.mk-scheme-d #mkAllOpen[aria-expanded="true"]>span { background:transparent; }
+body.mk-scheme-d #mkAllOpen[aria-expanded="true"]>span::before {
+  transform:translateY(6px) rotate(45deg);
+}
+body.mk-scheme-d #mkAllOpen[aria-expanded="true"]>span::after {
+  transform:translateY(-6px) rotate(-45deg);
+}
+body.mk-scheme-d #mkPrimary { overflow-x:hidden; }
+
+body.mk-scheme-d .mk-all-category,
+body.mk-scheme-d .mk-all-row,
+body.mk-scheme-d .mk-all-row>button:first-child,
+body.mk-scheme-d .mk-menu-item {
+  transition:background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+body.mk-scheme-d .mk-all-category:is(:hover,:focus-visible),
+body.mk-scheme-d .mk-menu-item:not([aria-disabled="true"]):is(:hover,:focus-visible) {
+  background:#fff0f2;
+  color:#c90018;
+}
+body.mk-scheme-d .mk-all-row:is(:hover,:focus-within) { background:#fff4f5; }
+body.mk-scheme-d .mk-all-row>button:first-child:not([aria-disabled="true"]):is(:hover,:focus-visible) {
+  color:#c90018;
+}
+body.mk-scheme-d .mk-all-row:has(>button[aria-disabled="true"]):is(:hover,:focus-within) {
+  background:transparent;
+}
+body.mk-scheme-d .mk-all-row>button[aria-disabled="true"]:is(:hover,:focus-visible),
+body.mk-scheme-d .mk-menu-item[aria-disabled="true"]:is(:hover,:focus-visible) {
+  background:transparent;
+  color:#747b86;
+  transform:none;
+}
+body.mk-scheme-d .mk-menu-item:focus-visible {
+  outline:2px solid #c90018;
+  outline-offset:-2px;
+}
+@media(hover:hover) and (pointer:fine) {
+  body.mk-scheme-d #mkAllOpen:not([aria-expanded="true"]):hover>span::before {
+    transform:translateX(2px);
+  }
+  body.mk-scheme-d #mkAllOpen:not([aria-expanded="true"]):hover>span::after {
+    transform:translateX(-2px);
+  }
+  body.mk-scheme-d .mk-all-category:hover,
+  body.mk-scheme-d .mk-all-row>button:first-child:not([aria-disabled="true"]):hover,
+  body.mk-scheme-d .mk-menu-item:not([aria-disabled="true"]):hover {
+    transform:translateX(2px);
+  }
+}
+
+/* Keep the dialog untransformed: its guide uses viewport-fixed coordinates. */
+body.mk-scheme-d #mkAllDialog.mk-menu-entering {
+  animation:mk-menu-surface-in 180ms cubic-bezier(.2,.7,.2,1) both;
+}
+body.mk-scheme-d #mkAllDialog.mk-menu-entering::backdrop {
+  animation:mk-menu-surface-in 180ms ease-out both;
+}
+body.mk-scheme-d #mkAllDialog.mk-menu-entering>.mk-all-header,
+body.mk-scheme-d #mkAllDialog.mk-menu-entering>.mk-all-body {
+  animation:mk-menu-content-in 180ms cubic-bezier(.2,.7,.2,1) both;
+}
+body.mk-scheme-d #mkAllDialog.mk-menu-leaving {
+  animation:mk-menu-surface-out 140ms ease-in both;
+}
+body.mk-scheme-d #mkAllDialog.mk-menu-leaving::backdrop {
+  animation:mk-menu-surface-out 140ms ease-in both;
+}
+body.mk-scheme-d #mkAllDialog.mk-menu-leaving>.mk-all-header,
+body.mk-scheme-d #mkAllDialog.mk-menu-leaving>.mk-all-body {
+  animation:mk-menu-content-out 140ms ease-in both;
+}
+@keyframes mk-menu-surface-in { from { opacity:0; } to { opacity:1; } }
+@keyframes mk-menu-surface-out { from { opacity:1; } to { opacity:0; } }
+@keyframes mk-menu-content-in {
+  from { transform:translateY(-6px); }
+  to { transform:translateY(0); }
+}
+@keyframes mk-menu-content-out {
+  from { transform:translateY(0); }
+  to { transform:translateY(-4px); }
+}
+@media(prefers-reduced-motion:reduce) {
+  body.mk-scheme-d #mkAllOpen,
+  body.mk-scheme-d #mkAllOpen>span,
+  body.mk-scheme-d #mkAllOpen>span::before,
+  body.mk-scheme-d #mkAllOpen>span::after,
+  body.mk-scheme-d .mk-all-category,
+  body.mk-scheme-d .mk-all-row,
+  body.mk-scheme-d .mk-star,
+  body.mk-scheme-d .mk-all-row>button:first-child,
+  body.mk-scheme-d .mk-menu-item { transition:none; }
+  body.mk-scheme-d .mk-all-category:hover,
+  body.mk-scheme-d .mk-all-row>button:first-child:hover,
+  body.mk-scheme-d .mk-menu-item:hover { transform:none; }
+  body.mk-scheme-d #mkAllDialog.mk-menu-entering,
+  body.mk-scheme-d #mkAllDialog.mk-menu-leaving,
+  body.mk-scheme-d #mkAllDialog.mk-menu-entering::backdrop,
+  body.mk-scheme-d #mkAllDialog.mk-menu-leaving::backdrop,
+  body.mk-scheme-d #mkAllDialog.mk-menu-entering>.mk-all-header,
+  body.mk-scheme-d #mkAllDialog.mk-menu-entering>.mk-all-body,
+  body.mk-scheme-d #mkAllDialog.mk-menu-leaving>.mk-all-header,
+  body.mk-scheme-d #mkAllDialog.mk-menu-leaving>.mk-all-body { animation:none; }
+}
