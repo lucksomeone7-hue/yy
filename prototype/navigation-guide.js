@@ -148,9 +148,10 @@
     if (step && menu.open) show(2);
   });
   menu.addEventListener('close', () => {
+    if (menu.open) return;
     if (step === 2) {
       finish('dismissed', false);
-      entry.focus({ preventScroll: true });
+      if (!document.querySelector('dialog[open]')) entry.focus({ preventScroll: true });
     }
   });
   menu.addEventListener('click', event => {
@@ -175,8 +176,11 @@
     const closeMenu = step === 2 && menu.open;
     finish('dismissed', !closeMenu);
     if (closeMenu) {
-      menu.close();
-      entry.focus({ preventScroll: true });
+      if (window.mkAllMenuMotion) window.mkAllMenuMotion.close();
+      else {
+        menu.close();
+        entry.focus({ preventScroll: true });
+      }
     }
   }, true);
   document.addEventListener('click', event => {
