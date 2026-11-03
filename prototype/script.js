@@ -242,7 +242,7 @@ function configureContentFilters(section, viewId) {
     category.hidden = true;
     status.innerHTML = "<option>全部状态</option><option>未发布</option><option>收集中</option><option>已结束</option>";
     type.hidden = true;
-    reset.hidden = true;
+    reset.hidden = false;
   } else if (["resources", "videos", "posters"].includes(section) && viewId === "list") {
     const labels = { resources: "资料", videos: "视频", posters: "海报" };
     keyword.placeholder = `请输入${labels[section]}名称`;
@@ -278,7 +278,7 @@ function setContentView(section, viewId) {
   const surveyMode = section === "surveys" && viewId === "list";
   configureContentFilters(section, viewId);
   document.querySelector('[data-content-filter-field="type"]').hidden = !(articleMode || formMode);
-  document.querySelector('[data-content-filter-field="advanced"]').hidden = !articleMode;
+  document.querySelector('[data-content-filter-field="advanced"]').hidden = false;
   if (publicPool) document.querySelectorAll("[data-content-filter-field]").forEach((field) => { field.hidden = true; });
   document.getElementById("articleAiCreate").hidden = !articleMode;
   document.getElementById("contentArticleAdvanced").hidden = true;
@@ -311,7 +311,7 @@ document.getElementById("contentSectionCreate")?.addEventListener("click", () =>
 
 function applyContentListFilters() {
   const keyword = document.getElementById("contentKeywordFilter").value.trim().toLowerCase();
-  const selects = [...document.querySelectorAll("#contentSectionFilter select:not([hidden])")];
+  const selects = [...document.querySelectorAll("#contentSectionFilter label:not(.scope-dropdown) select:not([hidden])")];
   const activeValues = selects.map((select) => select.value).filter((value) => value && !value.startsWith("全部"));
   const rows = [...document.querySelectorAll("#contentSectionList > div:not(#contentListEmpty)")];
   let shown = 0;
