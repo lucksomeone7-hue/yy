@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Marketing Cloud 一期原型 · 导航修订版</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=2.3.0" />
     <link rel="stylesheet" href="./sms.css" />
       <link rel="stylesheet" href="./customer-expression.css" />
     <link rel="stylesheet" href="./navigation.css" />
@@ -21,7 +21,7 @@
       <section class="mk-secondary" aria-label="当前模块功能">
         <div class="mk-secondary-head"><h2 id="mkModuleTitle">工作台</h2><button id="mkCollapse" aria-label="收起功能导航" aria-expanded="true" title="收起功能导航">‹</button></div>
         <div id="mkSecondary"></div>
-        <div class="mk-nav-foot"><span>v2.2.2</span></div>
+        <div class="mk-nav-foot"><span>v2.3.0</span></div>
       </section>
     </aside>
     <button class="mk-expand" id="mkExpand" aria-label="展开功能导航" hidden>›</button>
@@ -1679,7 +1679,7 @@
               <span class="module-scope">AI 创建只是新的创建方式，最终仍保存为现有用户分组。</span>
             </div>
             <div class="button-row">
-              <button class="ghost-button" title="沿用现有手动建组流程">手动创建分组</button>
+              <button class="ghost-button" data-jump="segmentManual">手动创建分组</button>
               <button class="primary-button" data-jump="segmentCreate" data-create-mode="ai">AI 创建分组</button>
             </div>
           </div>
@@ -1802,31 +1802,34 @@
           <div>
             <span class="eyebrow">用户中心 · 用户分组</span>
             <h3>AI 创建分组</h3>
-            <p>先确认人群与 CRM 经营状态，再生成可编辑的分群规则和后续动作。</p>
+            <p>描述经营目标，检查 AI 圈选规则和预计人数，确认后保存为现有条件组。</p>
           </div>
-          <div class="create-steps"><span class="done"><b>1</b>定义人群</span><span class="done"><b>2</b>确认状态</span><span><b>3</b>配置动作</span><span><b>4</b>创建发布</span></div>
+            <div class="create-steps"><span class="current"><b>1</b>描述目标</span><span><b>2</b>确认规则</span><span><b>3</b>保存分组</span></div>
         </div>
 
         <div class="ai-create-top-grid">
           <section class="work-area ai-prompt-panel">
             <div class="section-head"><div><h3>从模板开始，或描述你想找的人</h3><span class="module-scope">AI 只生成可编辑规则</span></div></div>
             <textarea id="segmentInput">帮我找出最近 30 天活跃下降，但曾经参加过活动的制造业客户</textarea>
-            <div class="button-row"><button class="primary-button" id="parseButton">AI 解析条件</button><button class="ghost-button" id="clearSegmentButton">清空</button></div>
+            <div class="button-row"><button class="primary-button" id="parseButton">生成圈选规则</button><button class="ghost-button" id="clearSegmentButton">清空</button><span class="module-scope">可直接描述时间范围、行为、意向和排除对象</span></div>
             <div class="ai-template-list">
-              <button class="active" data-ai-template="silent">活动后沉默客户召回<small>先内容召回，再转销售</small></button>
-              <button data-ai-template="high">高意向未进入 CRM<small>优先创建线索</small></button>
-              <button data-ai-template="page">方案页高频访问未留资<small>进入内容培育</small></button>
-              <button data-ai-template="noshow">活动报名未签到<small>活动回访</small></button>
+              <button class="active" data-ai-template="silent">制造业活动沉默客户召回<small>先内容召回，活跃后达到门槛再转销售</small></button>
+              <button data-ai-template="high">高意向未进入 CRM 客户<small>优先创建线索</small></button>
+              <button data-ai-template="page">方案页高频访问未留资客户<small>进入内容培育</small></button>
+              <button data-ai-template="noshow">活动报名未签到客户回访<small>活动回访</small></button>
+              <button data-ai-template="dormant">沉默高意向客户<small>内容召回后再评估销售跟进</small></button>
+              <button data-ai-template="multi">多人活跃企业<small>识别企业级协同兴趣</small></button>
             </div>
           </section>
-          <section class="work-area ai-result-panel">
+          <section class="work-area ai-result-panel progressive-hidden">
             <div class="section-head"><div><h3>AI 解析与待确认项</h3><div class="rule-chips" id="ruleChips"><span>行业 = 制造业</span><span>近 30 天活跃下降</span><span>历史参加活动</span><span>意向分 &gt; 40</span></div></div><span class="matched-count" id="segmentTopEstimate">预估 3,428 人</span></div>
             <div class="ai-statement" id="segmentStatement">识别“活动后沉默的制造业客户”，建议先通过内容或活动召回，再将重新升温的高意向客户交由销售跟进。</div>
-            <div class="ai-question"><b>待确认</b><span>“参加活动”包含报名未签到吗？</span><button data-activity-answer="报名或签到">报名或签到</button><button data-activity-answer="仅签到">仅签到</button></div>
+            <div class="ai-question progressive-hidden"><b>请确认</b><span id="segmentQuestionText"></span><button data-activity-answer="报名或签到">报名或签到</button><button data-activity-answer="仅签到">仅签到</button></div>
+            <div class="button-row segment-step-actions"><button class="primary-button" id="confirmSegmentRulesButton">确认规则并继续</button></div>
           </section>
         </div>
 
-        <div class="ai-create-main-grid">
+        <div class="ai-create-main-grid progressive-hidden" id="segmentRulesStep">
           <div>
             <section class="work-area ai-definition-card">
               <div class="section-head"><div><h3>分组定义</h3><span class="module-scope">AI 已预填，可按实际运营策略调整。</span></div><span class="status-pill">AI 已预填</span></div>
@@ -1839,15 +1842,16 @@
             </section>
 
             <section class="work-area ai-rules-card">
-              <div class="section-head"><div><h3>圈选条件</h3><span class="module-scope">所有 AI 解析条件均可编辑；默认排除避免重复触达。</span></div><button class="ghost-button">添加条件</button></div>
+              <div class="section-head"><div><h3>圈选条件</h3><span class="module-scope">当前模板条件已同步，可逐项调整；默认排除员工和不可经营用户。</span></div><button class="ghost-button" id="addSegmentRuleButton">添加条件</button></div>
               <div class="condition-builder">
                 <div class="condition-group"><div class="condition-head"><strong>客户属性</strong><span>满足全部条件</span></div><div class="condition-row"><select><option>行业</option></select><select><option>等于</option></select><select><option>制造业</option></select><button class="icon-button" aria-label="删除条件">×</button></div><div class="condition-row"><select><option>意向分</option></select><select><option>大于</option></select><input value="40" /><button class="icon-button" aria-label="删除条件">×</button></div></div>
                 <div class="condition-group"><div class="condition-head"><strong>行为条件</strong><span>满足全部条件</span></div><div class="condition-row"><select><option>最近活跃趋势</option></select><select><option>等于</option></select><select><option>最近 30 天下降</option></select><button class="icon-button" aria-label="删除条件">×</button></div><div class="condition-row"><select><option>历史活动行为</option></select><select><option>包含</option></select><select id="activityValue"><option>报名或签到</option><option>仅签到</option></select><button class="icon-button" aria-label="删除条件">×</button></div></div>
                 <div class="condition-group"><div class="condition-head"><strong>默认排除条件</strong><span>避免重复触达</span></div><div class="condition-row"><select><option>CRM 状态</option></select><select><option>不属于</option></select><select><option>明确拒绝、黑名单</option></select><button class="icon-button" aria-label="删除条件">×</button></div></div>
               </div>
+              <div class="segment-sample-toggle-row"><button class="text-button" id="toggleSegmentSamplesButton" aria-expanded="false" aria-controls="segmentSamplePanel">查看 CRM 状态与样本名单 <span aria-hidden="true">⌄</span></button></div>
             </section>
 
-            <section class="work-area ai-crm-card">
+            <section class="work-area ai-crm-card progressive-hidden" id="segmentSamplePanel">
               <div class="section-head"><div><h3>CRM 经营状态与样本名单</h3><span class="module-scope">匹配既有 Lead、Contact 与 Account 后按状态分流，不重复创建线索。</span></div><button class="ghost-button" id="refreshSegmentButton">刷新预估</button></div>
               <div class="crm-status-tabs"><button class="active" data-crm-status="all"><small>全部客户</small><b>3,428</b></button><button data-crm-status="new"><small>未进入 CRM</small><b>2,126</b></button><button data-crm-status="working"><small>销售跟进中</small><b>480</b></button><button data-crm-status="invalid"><small>暂时无效</small><b>240</b></button><button data-crm-status="converted"><small>已转化</small><b>273</b></button></div>
               <div class="table crm-sample-table" id="crmSampleTable">
@@ -1858,8 +1862,8 @@
               </div>
             </section>
 
-            <section class="work-area action-config ai-action-config">
-              <div class="section-head"><div><h3>创建后动作</h3><span class="module-scope">按 CRM 状态自动分流，外部触达均先生成草稿或待确认名单。</span></div><span class="matched-count">建议：先内容召回，再转销售</span></div>
+            <section class="work-area action-config ai-action-config progressive-hidden" id="segmentActionsPanel">
+              <div class="section-head"><div><h3>创建后建议动作（可选）</h3><span class="module-scope">这里只记录经营建议；创建分组不会触达客户或写入 CRM。需要时再到经营动作中单独确认。</span></div><span class="matched-count">建议：先内容召回，再转销售</span></div>
               <div class="ai-action-grid">
                 <label class="selected"><input type="checkbox" checked /><span><strong>内容召回包</strong><small>为沉默客户生成内容或活动召回草稿，市场确认后发布。</small></span></label>
                 <label class="selected"><input type="checkbox" checked /><span><strong>创建新线索</strong><small>仅未进入 CRM 且意向分达到 60 的客户进入待创建名单。</small></span></label>
@@ -1868,15 +1872,56 @@
                 <label class="selected"><input type="checkbox" checked /><span><strong>更新已转化客户动态</strong><small>更新 Contact/Account 行为摘要，不重复新建 Lead。</small></span></label>
                 <label class="selected"><input type="checkbox" checked /><span><strong>建立效果追踪</strong><small>追踪触达、再活跃、线索创建、销售跟进与转化。</small></span></label>
               </div>
-              <div class="button-row action-footer"><span class="publish-guidance">发布后按实际计算人数执行，CRM 写入遵循去重和权限规则。</span><button class="ghost-button" data-jump="segment">返回用户分组</button><button class="ghost-button">保存草稿</button><button class="primary-button" id="publishSegmentButton">创建并发布</button><span class="success-note" id="publishNote">已创建分组：制造业活动沉默客户召回</span></div>
+            </section>
+            <section class="work-area segment-create-footer">
+              <div><strong>预计 <span id="segmentFooterEstimate">3,428</span> 人</strong><span class="publish-guidance">请核对规则、排除条件和预估人数。保存后作为条件组每日更新，不会自动触达或写入 CRM。</span></div>
+              <label class="segment-result-confirm"><input id="confirmSegmentResult" type="checkbox"><span>我已确认筛选规则和预计人数</span></label>
+              <div class="button-row"><button class="ghost-button" data-jump="segment">取消</button><button class="ghost-button" id="saveSegmentDraftButton">保存草稿</button><button class="primary-button" id="publishSegmentButton" disabled>确认筛选结果并创建分组</button></div>
+              <span class="success-note" id="publishNote" role="status">已创建分组：制造业活动沉默客户召回</span>
             </section>
           </div>
 
-          <aside class="work-area ai-segment-summary">
+          <aside class="work-area ai-segment-summary progressive-hidden" id="segmentSummaryPanel">
             <span class="eyebrow">预计人群</span><strong id="segmentMainEstimate">3,428</strong><p>基于当前规则的预估人数。</p>
-            <div class="mini-breakdown"><div><span>高意向客户</span><b>486</b></div><div><span>近 7 天仍有活跃</span><b>21%</b></div></div>
-            <div class="crm-distribution"><h3>CRM 状态分布</h3><div><span>未进入 CRM</span><b>62%</b><i style="width:62%"></i></div><div><span>销售跟进中</span><b>14%</b><i style="width:14%"></i></div><div><span>培育中</span><b>9%</b><i style="width:9%"></i></div><div><span>暂时无效</span><b>7%</b><i style="width:7%"></i></div><div><span>已转化</span><b>8%</b><i style="width:8%"></i></div></div>
-            <div class="crm-legend">“暂时无效”默认不重新指派销售；需满足再激活门槛后进入复核。</div>
+            <div class="mini-breakdown"><div><span>圈选条件</span><b id="segmentRuleCount">—</b></div><div><span>分组对象</span><b id="segmentAudienceType">联系人</b></div></div>
+            <div class="crm-legend">默认排除内部员工、测试/无效用户及不可经营推荐用户。</div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="segmentManual">
+        <div class="ai-create-title-row">
+          <div><span class="eyebrow">用户中心 · 用户分组</span><h3>手动创建分组</h3><p>选择分组类型和系统字段，实时检查条件与预计人数后保存。</p></div>
+          <div class="create-steps"><span class="current"><b>1</b>设置分组</span><span><b>2</b>确认人群</span><span><b>3</b>保存分组</span></div>
+        </div>
+        <div class="manual-segment-layout">
+          <div>
+            <section class="work-area manual-segment-card">
+              <div class="section-head"><div><h3>分组信息</h3><span class="module-scope">手动创建仍保存到现有用户分组中。</span></div></div>
+              <div class="form-grid">
+                <label><span>分组名称 <b class="required-mark">*</b></span><input id="manualSegmentName" placeholder="例如：制造业高意向未留资客户"></label>
+                <label><span>分组类型</span><select id="manualSegmentType"><option value="condition">条件组 · 按规则动态更新</option><option value="fixed">固定组 · 手动维护名单</option></select></label>
+                <label><span>更新频率</span><select id="manualSegmentFrequency"><option>每天自动更新</option><option>每周自动更新</option><option>仅本次计算</option></select></label>
+                <label><span>负责人</span><select><option>市场运营 - 林浩</option><option>市场运营 - 王洁</option></select></label>
+              </div>
+            </section>
+            <section class="work-area manual-segment-card" id="manualRulePanel">
+              <div class="section-head"><div><h3>圈选条件</h3><span class="module-scope">使用系统标准字段；员工和明确排除人群默认剔除。</span></div><button class="ghost-button" id="addManualConditionButton">＋ 添加条件</button></div>
+              <div class="manual-condition-list" id="manualConditionList">
+                <div class="manual-condition-row"><label><span>字段</span><select class="manual-field"><option value="intent_score">意向分</option><option value="intent_level">意向层级</option><option value="recency_days">最近活跃天数</option><option value="behavior_tags">行为标签</option><option value="interest_tags">兴趣标签</option><option value="crm_customer_stage">CRM 客户阶段</option></select></label><label><span>条件</span><select class="manual-operator"><option>大于等于</option><option>大于</option><option>等于</option><option>小于</option></select></label><label class="manual-value-field"><span>字段值</span><input class="manual-value" type="number" min="0" max="100" value="60"></label><button class="icon-button remove-manual-condition" aria-label="删除条件">×</button></div>
+              </div>
+              <details class="manual-exclusion-details"><summary>默认排除规则 <span>默认启用</span></summary><div class="manual-exclusion-list"><label><input type="checkbox" checked disabled>排除内部员工</label><label><input type="checkbox" checked>排除无效、测试及明确拒绝用户</label><label><input type="checkbox" checked>排除不允许经营推荐的用户</label></div></details>
+              <div class="manual-and-or"><span>条件关系</span><label><input type="radio" name="manualLogic" value="and" checked>全部满足</label><label><input type="radio" name="manualLogic" value="or">任一满足</label></div>
+            </section>
+            <section class="work-area manual-fixed-panel progressive-hidden" id="manualFixedPanel"><div class="section-head"><div><h3>固定名单</h3><span class="module-scope">固定组不按条件自动更新，可搜索并选择联系人。</span></div></div><label class="manual-search-label">搜索联系人或企业<input id="manualContactSearch" type="search" placeholder="姓名、邮箱或企业名称"></label><div class="manual-contact-options"><label><input type="checkbox" checked><span><b>李敏</b><small>华东装备 · 最近活跃 3 天前</small></span></label><label><input type="checkbox"><span><b>赵强</b><small>南方智造 · 意向分 84</small></span></label><label><input type="checkbox"><span><b>王宇</b><small>远航自动化 · 活动报名未签到</small></span></label></div></section>
+          </div>
+          <aside class="work-area manual-preview-card">
+            <span class="eyebrow">人群预览</span><strong id="manualEstimate">—</strong><p id="manualPreviewCopy">填写条件后，点击“预览人群”查看预计人数。</p>
+            <div class="manual-preview-breakdown"><span>当前条件</span><b id="manualConditionCount">2 条</b></div>
+            <button class="primary-button" id="previewManualSegmentButton">预览人群</button>
+            <label class="manual-result-confirm progressive-hidden" id="manualResultConfirmRow"><input id="confirmManualResult" type="checkbox"><span>我已确认条件、排除规则和预计人数</span></label>
+            <div class="manual-save-actions"><button class="ghost-button" data-jump="segment">取消</button><button class="ghost-button" id="saveManualDraftButton">保存草稿</button><button class="primary-button" id="saveManualSegmentButton" disabled>确认并创建分组</button></div>
+            <span class="success-note" id="manualSegmentSuccess" role="status"></span>
           </aside>
         </div>
       </section>
@@ -2012,7 +2057,7 @@
     </dialog>
     <div class="mk-toast" id="mkNavNotice" role="status" hidden></div>
     <script src="./navigation-data.js"></script>
-    <script src="./script.js"></script>
+    <script src="./script.js?v=2.3.0"></script>
       <script src="./customer-expression.js"></script>
     <script src="./sms.js"></script>
     <script src="./navigation.js"></script>
