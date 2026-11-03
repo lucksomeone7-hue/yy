@@ -1,8 +1,8 @@
 {
-  "version": "2.3.0",
-  "name": "Marketing Cloud 一期原型 · AI 与手动分组交互版",
-  "channel": "stable",
-  "sourceBranch": "main",
+  "version": "2.3.1",
+  "name": "Marketing Cloud 一期原型 · 列表筛选与状态操作优化版",
+  "channel": "preview",
+  "sourceBranch": "codex/list-filters-actions-v2.3.1",
   "previewPath": "/mk/navigation-admin.html",
   "updatedAt": "2026-11-03"
 }
