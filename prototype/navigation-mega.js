@@ -254,7 +254,7 @@
     get('mkFavorite').setAttribute('aria-pressed',String(favorites.includes(current)));
     get('mkFavorite').textContent=favorites.includes(current)?'★ 已收藏':'☆ 收藏';
   }
-  const pageParents={account:'companies',customerProfile:'users',segmentCreate:'segment',activityDetail:'activities',roleManagement:'settingsPermissions'};
+  const pageParents={account:'companies',customerProfile:'users',segmentCreate:'segment',segmentManual:'segment',activityDetail:'activities',roleManagement:'settingsPermissions'};
   if(schemeC){pageParents.landingCategories='landingPages';pageParents.moduleManagement='landingPages';}
   const tabSets={};
   let pendingHash=null;
@@ -323,7 +323,7 @@
     get('mkModuleTitle').onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openAll(activeGroup);}};
   }
   if(schemeD){
-    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航 · v2.2.2';
+    document.querySelector('.mk-nav-foot span:first-child').textContent='方案 D · 管理员导航 · v2.3.0';
     get('mkModuleTitle').removeAttribute('role');get('mkModuleTitle').removeAttribute('tabindex');get('mkModuleTitle').removeAttribute('title');get('mkModuleTitle').onclick=null;get('mkModuleTitle').onkeydown=null;
   }
   get('mkAllOpen').onclick=()=>openAll();get('mkAllClose').onclick=closeAll;get('mkAllSearch').oninput=renderAll;

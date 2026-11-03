@@ -30,6 +30,7 @@ const pageTitles = {
   profileTags: "画像与标签",
   segment: "人群分组",
   segmentCreate: "AI 创建分组",
+  segmentManual: "手动创建分组",
   settings: "意向评分配置",
   settingsWeights: "行为权重",
   settingsPermissions: "角色权限",
@@ -1089,23 +1090,527 @@ document.querySelectorAll("[data-action-filter]").forEach((button) => button.add
   document.querySelectorAll(".action-queue-row").forEach((row) => row.classList.toggle("hidden", button.dataset.actionFilter !== "all" && row.dataset.actionStatus !== button.dataset.actionFilter));
 }));
 
+let activeSegmentTemplate = null;
+const segmentFieldNames = [
+  "所属企业行业", "客户意向分", "客户意向层级", "近 7 天行为次数", "近 30 天活跃趋势", "距最近一次活跃天数",
+  "历史活动行为", "活动报名状态", "活动签到状态", "近 7 天方案页访问次数", "近 7 天有效表单提交次数",
+  "CRM 客户阶段", "所属企业近 7 天活跃联系人数（去重）", "所属企业近 7 天产品/方案页访问次数", "所属企业意向分", "用户类型", "经营排除状态",
+];
+const segmentCategoryFields = {
+  "客户属性": ["所属企业行业", "客户意向分", "客户意向层级", "CRM 客户阶段", "所属企业意向分", "用户类型", "经营排除状态"],
+  "行为条件": ["近 7 天行为次数", "近 30 天活跃趋势", "距最近一次活跃天数", "历史活动行为", "活动报名状态", "活动签到状态", "近 7 天方案页访问次数", "近 7 天有效表单提交次数", "所属企业近 7 天活跃联系人数（去重）", "所属企业近 7 天产品/方案页访问次数"],
+};
+const segmentNumericFields = new Set([
+  "客户意向分", "近 7 天行为次数", "距最近一次活跃天数", "近 7 天方案页访问次数", "近 7 天有效表单提交次数",
+  "所属企业近 7 天活跃联系人数（去重）", "所属企业近 7 天产品/方案页访问次数", "所属企业意向分",
+]);
+
+function renderSegmentConditions(groups) {
+  const builder = document.querySelector("#segmentRulesStep .condition-builder");
+  if (!builder) return;
+  const normalizedGroups = [];
+  groups.forEach((group) => group.rules.forEach((rule) => {
+    const category = segmentCategoryFields["客户属性"].includes(rule.field) ? "客户属性" : "行为条件";
+    let target = normalizedGroups.find((item) => item.category === category);
+    if (!target) normalizedGroups.push(target = { category, rules: [] });
+    target.rules.push(rule);
+  }));
+  const allGroups = [...normalizedGroups, { category: "默认排除条件", rules: [
+    { field: "用户类型", operator: "不等于", value: "内部员工" },
+    { field: "经营排除状态", operator: "等于", value: "可经营" },
+  ] }];
+  builder.replaceChildren(...allGroups.map((group) => {
+    const section = document.createElement("div");
+    section.className = "condition-group";
+    const head = document.createElement("div");
+    head.className = "condition-head";
+    const title = document.createElement("strong");
+    title.textContent = group.category;
+    const logic = document.createElement("span");
+    logic.textContent = group.category === "默认排除条件" ? "系统默认" : "满足全部条件";
+    head.append(title, logic);
+    section.append(head);
+    group.rules.forEach((rule) => {
+      const row = document.createElement("div");
+      row.className = "condition-row";
+      const field = document.createElement("select");
+      field.className = "segment-rule-field";
+      const fieldOptions = segmentCategoryFields[group.category] || segmentFieldNames;
+      [...new Set([...fieldOptions, rule.field])].forEach((name) => field.add(new Option(name, name)));
+      field.value = rule.field;
+      field.disabled = group.category === "默认排除条件";
+      const operator = document.createElement("select");
+      operator.className = "segment-rule-operator";
+      const operatorOptions = segmentNumericFields.has(rule.field)
+        ? ["等于", "不等于", "大于", "大于等于", "小于", "小于等于"]
+        : ["等于", "不等于", "包含", "不包含"];
+      [...new Set([rule.operator, ...operatorOptions])].forEach((value) => operator.add(new Option(value, value)));
+      operator.value = rule.operator;
+      operator.disabled = group.category === "默认排除条件";
+      const value = document.createElement("input");
+      value.className = "segment-rule-value";
+      value.value = rule.value;
+      if (segmentNumericFields.has(rule.field)) {
+        value.type = "number";
+        value.min = "0";
+        value.step = "1";
+        if (rule.field.includes("意向分")) value.max = "100";
+      }
+      value.setAttribute("aria-label", `${rule.field}的字段值`);
+      value.disabled = group.category === "默认排除条件";
+      const remove = document.createElement("button");
+      remove.className = "icon-button segment-rule-remove";
+      remove.type = "button";
+      remove.setAttribute("aria-label", "删除条件");
+      remove.textContent = "×";
+      remove.disabled = group.category === "默认排除条件";
+      row.append(field, operator, value, remove);
+      section.append(row);
+    });
+    return section;
+  }));
+  updateSegmentRuleChips();
+}
+
+function updateSegmentRuleChips() {
+  const rows = [...document.querySelectorAll("#segmentRulesStep .condition-row")];
+  const rules = rows.map((row) => {
+    const field = row.querySelector(".segment-rule-field")?.value;
+    const operator = row.querySelector(".segment-rule-operator")?.value;
+    const value = row.querySelector(".segment-rule-value")?.value;
+    return field && value ? `${field} ${operator} ${value}` : null;
+  }).filter(Boolean);
+  const chips = document.getElementById("ruleChips");
+  if (chips && rules.length) chips.replaceChildren(...rules.map((value) => {
+    const chip = document.createElement("span");
+    chip.textContent = value;
+    return chip;
+  }));
+  const count = document.getElementById("segmentRuleCount");
+  if (count) count.textContent = `${Math.max(0, rows.length - 2)} 条`;
+  const audience = document.getElementById("segmentAudienceType");
+  if (audience) audience.textContent = activeSegmentTemplate === "multi" ? "按企业聚合" : "联系人";
+}
+
+function onSegmentRuleEdited() {
+  document.querySelectorAll("#segmentRulesStep .condition-row").forEach((row) => {
+    const field = row.querySelector(".segment-rule-field")?.value;
+    const operator = row.querySelector(".segment-rule-operator");
+    const value = row.querySelector(".segment-rule-value");
+    if (!field || !operator || !value || row.closest(".condition-group")?.querySelector(".condition-head strong")?.textContent === "默认排除条件") return;
+    const choices = segmentNumericFields.has(field)
+      ? ["等于", "不等于", "大于", "大于等于", "小于", "小于等于"]
+      : ["等于", "不等于", "包含", "不包含"];
+    const currentOperator = choices.includes(operator.value) ? operator.value : "等于";
+    operator.replaceChildren(...choices.map((choice) => new Option(choice, choice)));
+    operator.value = currentOperator;
+    value.type = segmentNumericFields.has(field) ? "number" : "text";
+    value.setAttribute("aria-label", `${field}的字段值`);
+    value.removeAttribute("min");
+    value.removeAttribute("max");
+    value.removeAttribute("step");
+    if (segmentNumericFields.has(field)) {
+      value.min = "0";
+      value.step = "1";
+      if (field.includes("意向分")) value.max = "100";
+    }
+  });
+  updateSegmentRuleChips();
+  const confirmation = document.getElementById("confirmSegmentResult");
+  if (confirmation) confirmation.checked = false;
+  const createButton = document.getElementById("publishSegmentButton");
+  if (createButton) createButton.disabled = true;
+  const estimate = document.getElementById("segmentTopEstimate");
+  if (estimate && !estimate.textContent.includes("示例")) estimate.textContent = estimate.textContent.replace("预估", "示例预估");
+}
+document.querySelector("#segmentRulesStep .condition-builder")?.addEventListener("input", onSegmentRuleEdited);
+document.querySelector("#segmentRulesStep .condition-builder")?.addEventListener("change", onSegmentRuleEdited);
+document.getElementById("addSegmentRuleButton")?.addEventListener("click", () => {
+  const groups = document.querySelectorAll("#segmentRulesStep .condition-group");
+  const target = groups[groups.length - 2];
+  if (!target) return;
+  const row = target.querySelector(".condition-row")?.cloneNode(true);
+  if (!row) return;
+  const category = target.querySelector(".condition-head strong")?.textContent;
+  const defaultField = segmentCategoryFields[category]?.[0] || "客户意向分";
+  row.querySelector(".segment-rule-field").value = defaultField;
+  row.querySelector(".segment-rule-operator").value = "大于等于";
+  row.querySelector(".segment-rule-value").type = segmentNumericFields.has(defaultField) ? "number" : "text";
+  row.querySelector(".segment-rule-value").value = defaultField === "所属企业行业" ? "制造业" : "60";
+  target.append(row);
+  onSegmentRuleEdited();
+});
+
+document.getElementById("segmentRulesStep")?.addEventListener("click", (event) => {
+  const remove = event.target.closest(".segment-rule-remove");
+  if (!remove) return;
+  const group = remove.closest(".condition-group");
+  if (group.querySelectorAll(".condition-row").length <= 1) return;
+  remove.closest(".condition-row").remove();
+  onSegmentRuleEdited();
+});
+
 document.getElementById("parseButton").addEventListener("click", () => {
-  const input = document.getElementById("segmentInput").value;
-  const chips = [];
+  const input = document.getElementById("segmentInput").value.trim();
+  if (!input) {
+    document.getElementById("segmentStatement").textContent = "请先描述希望圈选的人群，例如“近 7 天访问方案页 2 次以上、但未提交表单的客户”。";
+    document.getElementById("segmentInput").focus();
+    return;
+  }
+  const resultConfirmation = document.getElementById("confirmSegmentResult");
+  if (resultConfirmation) resultConfirmation.checked = false;
+  const createButton = document.getElementById("publishSegmentButton");
+  if (createButton) {
+    createButton.disabled = true;
+    createButton.textContent = "确认筛选结果并创建分组";
+  }
+  document.getElementById("publishNote")?.classList.remove("visible");
+  document.getElementById("segmentRulesStep")?.classList.add("progressive-hidden");
+  document.getElementById("segmentSummaryPanel")?.classList.add("progressive-hidden");
+  document.getElementById("segmentActionsPanel")?.classList.add("progressive-hidden");
+  const selectedTemplate = activeSegmentTemplate && input === segmentTemplates[activeSegmentTemplate]?.prompt
+    ? segmentTemplates[activeSegmentTemplate]
+    : null;
+  const questionPanel = document.querySelector(".ai-question");
+  if (selectedTemplate) {
+    renderSegmentConditions(selectedTemplate.conditions);
+    document.getElementById("segmentStatement").textContent = selectedTemplate.statement;
+    document.getElementById("segmentTopEstimate").textContent = `示例预估 ${selectedTemplate.estimate} 人`;
+    document.getElementById("segmentMainEstimate").textContent = selectedTemplate.estimate;
+    const footerEstimate = document.getElementById("segmentFooterEstimate");
+    if (footerEstimate) footerEstimate.textContent = selectedTemplate.estimate;
+    questionPanel.classList.toggle("progressive-hidden", !selectedTemplate.question);
+    const questionText = document.getElementById("segmentQuestionText");
+    if (selectedTemplate.question && questionText) questionText.textContent = selectedTemplate.question;
+  } else {
+    const groups = [];
+    const attributes = [];
+    const behaviors = [];
+    if (/制造/.test(input)) attributes.push({ field: "所属企业行业", operator: "等于", value: "制造业" });
+    const score = input.match(/意向分\s*(?:达到|超过|大于|≥|>)\s*(\d+)/);
+    if (score) attributes.push({ field: "客户意向分", operator: "大于等于", value: score[1] });
+    if (attributes.length) groups.push({ category: "客户属性", rules: attributes });
+    const days = input.match(/(?:近|最近)\s*(\d+)\s*天/);
+    if (days && /未活跃|沉默/.test(input)) behaviors.push({ field: "距最近一次活跃天数", operator: "大于", value: days[1] });
+    else if (days && /活跃下降/.test(input)) behaviors.push({ field: `近 ${days[1]} 天活跃趋势`, operator: "等于", value: "下降" });
+    if (/方案页/.test(input)) {
+      const visits = input.match(/(?:访问|浏览).*?(\d+)\s*次/);
+      behaviors.push({ field: "近 7 天方案页访问次数", operator: "大于等于", value: visits?.[1] || "2" });
+    }
+    if (/活动|签到|报名/.test(input)) behaviors.push({ field: "历史活动行为", operator: "包含", value: "报名或签到" });
+    if (/未留资|未提交表单/.test(input)) behaviors.push({ field: "近 7 天有效表单提交次数", operator: "等于", value: "0" });
+    if (/近 7 天有活跃|最近 7 天活跃/.test(input)) behaviors.push({ field: "近 7 天行为次数", operator: "大于等于", value: "1" });
+    if (behaviors.length) groups.push({ category: "行为条件", rules: behaviors });
+    if (/未进入\s*CRM|尚未进入\s*CRM/.test(input)) groups.push({ category: "客户属性", rules: [{ field: "CRM 客户阶段", operator: "等于", value: "未进入 CRM" }] });
+    renderSegmentConditions(groups);
+    const ruleCount = groups.reduce((count, group) => count + group.rules.length, 0);
+    document.getElementById("segmentStatement").textContent = ruleCount
+      ? `已将描述转换为 ${ruleCount} 条圈选条件，并同步到下方条件编辑器。请逐条确认字段和值；未识别的描述需要补充后再保存。`
+      : "这段描述还没有匹配到可用的圈选字段。请补充时间范围、客户行为或意向条件，再核对下方规则。";
+    document.getElementById("segmentTopEstimate").textContent = "示例预估 1,280 人";
+    document.getElementById("segmentMainEstimate").textContent = "1,280";
+    const footerEstimate = document.getElementById("segmentFooterEstimate");
+    if (footerEstimate) footerEstimate.textContent = "1,280";
+    questionPanel.classList.add("progressive-hidden");
+  }
+  document.querySelector(".ai-result-panel").classList.remove("progressive-hidden");
+  setSegmentStep(2);
+  document.querySelector(".ai-result-panel").scrollIntoView({ behavior: "smooth", block: "center" });
+});
 
-  if (input.includes("制造")) chips.push("行业 = 制造业");
-  if (input.includes("30天")) chips.push("最近 30 天活跃下降");
-  if (input.includes("活动")) chips.push("历史参加过活动");
-  if (input.includes("高意向")) chips.push("意向等级 = 高意向");
+function setSegmentStep(activeStep) {
+  document.querySelectorAll(".page.active .create-steps span").forEach((step, index) => {
+    const number = index + 1;
+    step.classList.toggle("done", number < activeStep);
+    step.classList.toggle("current", number === activeStep);
+  });
+}
 
-  const fallback = ["行业 = 制造业", "最近 30 天活跃下降", "历史参加过活动", "意向分 > 40"];
-  document.getElementById("ruleChips").innerHTML = (chips.length ? chips : fallback)
-    .map((chip) => `<span>${chip}</span>`)
-    .join("");
+document.getElementById("confirmSegmentRulesButton")?.addEventListener("click", () => {
+  document.getElementById("segmentRulesStep").classList.remove("progressive-hidden");
+  document.getElementById("segmentSummaryPanel").classList.remove("progressive-hidden");
+  setSegmentStep(3);
+  document.getElementById("segmentRulesStep").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.getElementById("toggleSegmentSamplesButton")?.addEventListener("click", (event) => {
+  const panel = document.getElementById("segmentSamplePanel");
+  const isOpening = panel.classList.contains("progressive-hidden");
+  panel.classList.toggle("progressive-hidden", !isOpening);
+  event.currentTarget.setAttribute("aria-expanded", String(isOpening));
+  event.currentTarget.innerHTML = isOpening ? "收起 CRM 状态与样本名单 <span aria-hidden=\"true\">⌃</span>" : "查看 CRM 状态与样本名单 <span aria-hidden=\"true\">⌄</span>";
+  if (isOpening) panel.scrollIntoView({ behavior: "smooth", block: "center" });
 });
 
 document.getElementById("publishSegmentButton").addEventListener("click", () => {
-  document.getElementById("publishNote").classList.add("visible");
+  const name = document.getElementById("segmentName").value.trim();
+  if (!name) {
+    document.getElementById("segmentName").focus();
+    document.getElementById("segmentName").setCustomValidity("请填写分组名称");
+    document.getElementById("segmentName").reportValidity();
+    return;
+  }
+  document.getElementById("segmentName").setCustomValidity("");
+  const resultConfirmation = document.getElementById("confirmSegmentResult");
+  if (resultConfirmation && !resultConfirmation.checked) return;
+  const note = document.getElementById("publishNote");
+  note.textContent = `已保存为条件组「${name}」。分组创建不会自动触达客户或写入 CRM。`;
+  note.classList.add("visible");
+  document.getElementById("segmentActionsPanel")?.classList.remove("progressive-hidden");
+  document.getElementById("publishSegmentButton").textContent = "分组已创建";
+  document.getElementById("publishSegmentButton").disabled = true;
+  setSegmentStep(4);
+  document.getElementById("segmentActionsPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+document.getElementById("confirmSegmentResult")?.addEventListener("change", (event) => {
+  document.getElementById("publishSegmentButton").disabled = !event.currentTarget.checked;
+});
+
+document.getElementById("saveSegmentDraftButton")?.addEventListener("click", () => {
+  const note = document.getElementById("publishNote");
+  note.textContent = "草稿已保存，可返回继续编辑。";
+  note.classList.add("visible");
+});
+
+const manualNumberOperators = ["大于等于", "大于", "等于", "不等于", "小于等于", "小于"];
+const manualFieldOptions = {
+  industry: { label: "所属企业行业", values: ["制造业", "软件和信息技术服务业", "金融业", "批发和零售业", "其他"] },
+  user_scope: { label: "用户类型", values: ["客户", "内部员工", "伙伴", "未知"] },
+  exclusion_status: { label: "经营排除状态", values: ["可经营", "已排除"] },
+  intent_score: { label: "客户意向分", input: "number", min: 0, max: 100, value: 60 },
+  intent_level: { label: "客户意向层级", values: ["高意向", "中意向", "低意向", "沉默"] },
+  account_intent_score: { label: "所属企业意向分", input: "number", min: 0, max: 100, value: 70 },
+  crm_customer_stage: { label: "CRM 客户阶段", values: ["未进入 CRM", "销售跟进中", "培育中", "已转化", "暂时无效"] },
+  recency_days: { label: "距最近一次活跃天数", input: "number", min: 0, value: 30, suffix: "天" },
+  behavior_count: { label: "近 7 天行为次数", input: "number", min: 0, value: 1, scope: "period" },
+  activity_trend: { label: "近 30 天活跃趋势", values: ["上升", "持平", "下降"], scope: "trend" },
+  activity_history: { label: "历史活动行为", values: ["报名或签到", "仅报名", "仅签到"], scope: "activity" },
+  registration_status: { label: "活动报名状态", values: ["未报名", "报名成功", "已取消"], scope: "activity" },
+  checkin_status: { label: "活动签到状态", values: ["未签到", "已签到"], scope: "activity" },
+  solution_visits: { label: "近 7 天方案页访问次数", input: "number", min: 0, value: 2, scope: "solution" },
+  form_submissions: { label: "近 7 天有效表单提交次数", input: "number", min: 0, value: 0, scope: "period" },
+  account_active_contacts: { label: "所属企业近 7 天活跃联系人数（去重）", input: "number", min: 0, value: 3, scope: "account" },
+  account_page_visits: { label: "所属企业近 7 天产品/方案页访问次数", input: "number", min: 0, value: 1, scope: "page" },
+  behavior_tags: { label: "行为标签", tags: ["制造业", "供应链", "数字营销", "智能制造"] },
+  interest_tags: { label: "兴趣标签", tags: ["财务管理", "供应链管理", "营销管理", "人力资源"] },
+};
+Object.values(manualFieldOptions).forEach((config) => {
+  config.category = config.tags ? "标签条件" : segmentCategoryFields["客户属性"].includes(config.label) ? "客户属性" : "行为条件";
+  config.operators = config.input ? manualNumberOperators : config.tags ? ["包含任一", "包含全部", "不包含任一"] : ["等于", "不等于"];
+});
+
+function invalidateManualPreview() {
+  setSegmentStep(1);
+  document.getElementById("manualEstimate").textContent = "—";
+  document.getElementById("manualPreviewCopy").textContent = "条件已调整，请重新预览人群。";
+  document.getElementById("saveManualSegmentButton").disabled = true;
+  document.getElementById("saveManualSegmentButton").textContent = "确认并创建分组";
+  document.getElementById("confirmManualResult").checked = false;
+  document.getElementById("manualResultConfirmRow").classList.add("progressive-hidden");
+  document.getElementById("manualSegmentSuccess").classList.remove("visible");
+}
+
+function populateManualFields(row, preferred) {
+  const category = row.querySelector(".manual-category").value;
+  const field = row.querySelector(".manual-field");
+  field.replaceChildren(...Object.entries(manualFieldOptions).filter(([, config]) => config.category === category).map(([key, config]) => new Option(config.label, key)));
+  if (preferred && manualFieldOptions[preferred]?.category === category) field.value = preferred;
+  refreshManualConditionRow(row);
+}
+
+function refreshManualConditionRow(row) {
+  const config = manualFieldOptions[row.querySelector(".manual-field").value];
+  const operator = row.querySelector(".manual-operator");
+  let valueHost = row.querySelector(".manual-value-field");
+  if (valueHost.tagName === "LABEL") {
+    const host = document.createElement("div"); host.className = valueHost.className;
+    valueHost.replaceWith(host); valueHost = host;
+  }
+  operator.replaceChildren(...config.operators.map((label) => new Option(label, label)));
+  valueHost.innerHTML = "<span>字段值</span>";
+  if (config.tags) {
+    const search = document.createElement("input");
+    search.type = "search";
+    search.placeholder = "搜索标签，可多选";
+    search.className = "manual-tag-search";
+    search.setAttribute("aria-label", "搜索" + config.label);
+    const options = document.createElement("div");
+    options.className = "manual-tag-options";
+    config.tags.forEach((tag, index) => {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "checkbox"; input.value = tag; input.checked = index === 0;
+      label.append(input, document.createTextNode(tag)); options.append(label);
+    });
+    valueHost.append(search, options);
+  } else if (config.values) {
+    const select = document.createElement("select");
+    select.className = "manual-value";
+    select.setAttribute("aria-label", config.label + "的字段值");
+    config.values.forEach((label) => select.add(new Option(label, label)));
+    valueHost.append(select);
+  } else {
+    const input = document.createElement("input");
+    input.className = "manual-value"; input.type = "number"; input.step = "1";
+    input.min = config.min; if (config.max !== undefined) input.max = config.max;
+    input.value = config.value; input.required = true;
+    input.setAttribute("aria-label", config.label + "的字段值" + (config.suffix ? "（" + config.suffix + "）" : ""));
+    valueHost.append(input);
+  }
+  row.querySelector(".manual-scope-fields")?.remove();
+  if (config.scope) {
+    const scope = document.createElement("div"); scope.className = "manual-scope-fields";
+    const addSelect = (name, values, selected) => {
+      const label = document.createElement("label"); label.textContent = name;
+      const select = document.createElement("select"); select.setAttribute("aria-label", name);
+      select.className = "manual-scope-value";
+      values.forEach((value) => select.add(new Option(value, value)));
+      if (selected) select.value = selected;
+      label.append(select); scope.append(label);
+    };
+    addSelect("统计周期", ["近 7 天", "近 30 天", "近 90 天", ...(config.scope === "activity" ? ["全部历史"] : [])], config.scope === "trend" ? "近 30 天" : config.scope === "activity" ? "全部历史" : "近 7 天");
+    if (config.scope === "activity") addSelect("活动范围（演示）", ["请选择具体活动", "2026 制造业数智化峰会", "财务管理线上研讨会", "智能制造产品体验会"]);
+    if (config.scope === "solution") addSelect("方案页面（演示）", ["全部方案页", "智能制造解决方案页", "财务管理解决方案页"]);
+    if (config.scope === "page") addSelect("页面范围（演示）", ["全部产品/方案页", "仅产品页", "仅方案页", "智能制造解决方案页", "财务管理解决方案页"]);
+    const note = document.createElement("small");
+    note.className = "manual-scope-note";
+    note.textContent = config.scope === "trend" ? "比较所选周期与紧邻的上一等长周期，按有效行为次数计算趋势。" : ["account", "page"].includes(config.scope) ? "按所属企业汇总有效联系人行为；活跃人数按联系人去重，员工不参与。" : "仅统计有效行为；以所选周期和活动/页面范围为准。";
+    scope.append(note); row.append(scope);
+  }
+}
+
+document.querySelectorAll("#manualConditionList .manual-condition-row").forEach((row) => {
+  const label = document.createElement("label"); label.innerHTML = '<span>条件分类</span><select class="manual-category"><option>客户属性</option><option>行为条件</option><option>标签条件</option></select>';
+  row.prepend(label); populateManualFields(row, "intent_score");
+});
+if (document.getElementById("manualConditionCount")) document.getElementById("manualConditionCount").textContent = "1 条";
+
+document.getElementById("manualConditionList")?.addEventListener("change", (event) => {
+  const row = event.target.closest(".manual-condition-row");
+  if (event.target.matches(".manual-category")) populateManualFields(row);
+  if (event.target.matches(".manual-field")) refreshManualConditionRow(row);
+  if (event.target.matches('.manual-scope-value[aria-label="统计周期"]')) {
+    const field = row.querySelector(".manual-field");
+    field.selectedOptions[0].textContent = manualFieldOptions[field.value].label.replace(/近 \d+ 天/, event.target.value);
+  }
+});
+document.getElementById("segmentManual")?.addEventListener("input", (event) => { if (!event.target.matches("#confirmManualResult")) invalidateManualPreview(); });
+document.getElementById("segmentManual")?.addEventListener("change", (event) => {
+  if (!event.target.matches("#confirmManualResult")) invalidateManualPreview();
+});
+document.getElementById("manualConditionList")?.addEventListener("input", (event) => {
+  if (!event.target.matches(".manual-tag-search")) return;
+  const query = event.target.value.trim().toLowerCase();
+  event.target.nextElementSibling.querySelectorAll("label").forEach((label) => label.hidden = !label.textContent.toLowerCase().includes(query));
+});
+
+document.getElementById("addManualConditionButton")?.addEventListener("click", () => {
+  const list = document.getElementById("manualConditionList");
+  const row = list.querySelector(".manual-condition-row").cloneNode(true);
+  row.querySelector(".manual-category").value = "客户属性";
+  populateManualFields(row, "intent_level");
+  invalidateManualPreview();
+  list.append(row);
+  document.getElementById("manualConditionCount").textContent = `${list.querySelectorAll(".manual-condition-row").length} 条`;
+  document.getElementById("saveManualSegmentButton").disabled = true;
+  document.getElementById("confirmManualResult").checked = false;
+  document.getElementById("manualResultConfirmRow").classList.add("progressive-hidden");
+});
+
+document.getElementById("manualConditionList")?.addEventListener("click", (event) => {
+  const remove = event.target.closest(".remove-manual-condition");
+  if (!remove) return;
+  const rows = document.querySelectorAll("#manualConditionList .manual-condition-row");
+  if (rows.length <= 1) return;
+  remove.closest(".manual-condition-row").remove();
+  document.getElementById("manualConditionCount").textContent = `${document.querySelectorAll("#manualConditionList .manual-condition-row").length} 条`;
+  document.getElementById("saveManualSegmentButton").disabled = true;
+  document.getElementById("confirmManualResult").checked = false;
+  document.getElementById("manualResultConfirmRow").classList.add("progressive-hidden");
+});
+
+document.getElementById("manualSegmentType")?.addEventListener("change", (event) => {
+  const fixed = event.currentTarget.value === "fixed";
+  document.getElementById("manualRulePanel").classList.toggle("progressive-hidden", fixed);
+  document.getElementById("manualFixedPanel").classList.toggle("progressive-hidden", !fixed);
+  document.getElementById("manualSegmentFrequency").disabled = fixed;
+  document.getElementById("manualEstimate").textContent = "—";
+  document.getElementById("manualPreviewCopy").textContent = fixed ? "选择名单后点击预览，确认固定组成员。" : "调整条件后点击“预览人群”查看预计人数。";
+  document.getElementById("manualResultConfirmRow").classList.add("progressive-hidden");
+  document.getElementById("saveManualSegmentButton").disabled = true;
+});
+
+document.getElementById("manualContactSearch")?.addEventListener("input", (event) => {
+  const query = event.currentTarget.value.trim().toLowerCase();
+  document.querySelectorAll(".manual-contact-options label").forEach((row) => {
+    row.hidden = !row.textContent.toLowerCase().includes(query);
+  });
+});
+
+document.getElementById("previewManualSegmentButton")?.addEventListener("click", () => {
+  const isFixed = document.getElementById("manualSegmentType").value === "fixed";
+  if (!isFixed) {
+    for (const row of document.querySelectorAll("#manualConditionList .manual-condition-row")) {
+      const invalid = [...row.querySelectorAll("input.manual-value")].find((input) => !input.checkValidity());
+      if (invalid) { invalid.reportValidity(); return; }
+      const activity = [...row.querySelectorAll(".manual-scope-value")].find((select) => select.value === "请选择具体活动");
+      if (activity) { activity.setCustomValidity("请选择具体活动"); activity.reportValidity(); activity.setCustomValidity(""); return; }
+      if (row.querySelector(".manual-tag-options") && !row.querySelector(".manual-tag-options input:checked")) {
+        const search = row.querySelector(".manual-tag-search"); search.setCustomValidity("请至少选择一个标签"); search.reportValidity(); search.setCustomValidity(""); return;
+      }
+    }
+  }
+  const selected = document.querySelectorAll(".manual-contact-options input:checked").length;
+  const count = isFixed ? selected : Math.max(128, 3428 - document.querySelectorAll("#manualConditionList .manual-condition-row").length * 620);
+  document.getElementById("manualEstimate").textContent = count.toLocaleString("zh-CN");
+  document.getElementById("manualPreviewCopy").textContent = isFixed ? `已选中 ${selected} 位联系人，固定组不会自动更新。` : "基于演示数据的条件预估；保存后按所选频率更新。";
+  if (!isFixed) {
+    const rules = [...document.querySelectorAll("#manualConditionList .manual-condition-row")].map((row) => {
+      const field = row.querySelector(".manual-field").selectedOptions[0].textContent;
+      const values = row.querySelector(".manual-tag-options")
+        ? [...row.querySelectorAll(".manual-tag-options input:checked")].map((input) => input.value).join("、")
+        : row.querySelector(".manual-value").value;
+      const scopes = [...row.querySelectorAll(".manual-scope-value")].map((select) => select.value).join("，");
+      return `${field} ${row.querySelector(".manual-operator").value} ${values}${scopes ? `（${scopes}）` : ""}`;
+    });
+    document.getElementById("manualPreviewCopy").textContent += ` 条件${document.querySelector('[name="manualLogic"]:checked').value === "and" ? "全部满足" : "任一满足"}：${rules.join("；")}。`;
+  }
+  document.getElementById("manualConditionCount").textContent = isFixed ? `${selected} 位联系人` : `${document.querySelectorAll("#manualConditionList .manual-condition-row").length} 条`;
+  document.getElementById("manualResultConfirmRow").classList.remove("progressive-hidden");
+  setSegmentStep(2);
+  document.getElementById("confirmManualResult").checked = false;
+  document.getElementById("saveManualSegmentButton").disabled = true;
+  document.getElementById("manualResultConfirmRow").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+document.getElementById("confirmManualResult")?.addEventListener("change", (event) => {
+  document.getElementById("saveManualSegmentButton").disabled = !event.currentTarget.checked;
+  if (event.currentTarget.checked) setSegmentStep(3);
+});
+
+document.getElementById("saveManualDraftButton")?.addEventListener("click", () => {
+  const note = document.getElementById("manualSegmentSuccess");
+  note.textContent = "草稿已保存，可返回继续编辑。";
+  note.classList.add("visible");
+});
+
+document.getElementById("saveManualSegmentButton")?.addEventListener("click", () => {
+  const name = document.getElementById("manualSegmentName");
+  if (!name.value.trim()) {
+    name.setCustomValidity("请填写分组名称");
+    name.reportValidity();
+    name.focus();
+    return;
+  }
+  name.setCustomValidity("");
+  const note = document.getElementById("manualSegmentSuccess");
+  const kind = document.getElementById("manualSegmentType").value === "fixed" ? "固定组" : "条件组";
+  note.textContent = `已创建${kind}「${name.value.trim()}」，未执行任何触达或 CRM 写入。`;
+  note.classList.add("visible");
+  setSegmentStep(4);
+  document.getElementById("saveManualSegmentButton").textContent = "分组已创建";
+  document.getElementById("saveManualSegmentButton").disabled = true;
 });
 
 const segmentTemplates = {
@@ -1113,42 +1618,63 @@ const segmentTemplates = {
     prompt: "帮我找出最近 30 天活跃下降，但曾经参加过活动的制造业客户",
     name: "制造业活动沉默客户召回",
     estimate: "3,428",
-    chips: ["行业 = 制造业", "近 30 天活跃下降", "历史参加活动", "意向分 > 40"],
+    question: "“参加过活动”按报名或签到计算，还是只统计实际签到？",
+    conditions: [
+      { category: "客户属性", rules: [{ field: "所属企业行业", operator: "等于", value: "制造业" }, { field: "客户意向分", operator: "大于", value: "40" }] },
+      { category: "行为条件", rules: [{ field: "近 30 天活跃趋势", operator: "等于", value: "下降" }, { field: "历史活动行为", operator: "包含", value: "报名或签到" }] },
+    ],
     statement: "识别“活动后沉默的制造业客户”，建议先通过内容或活动召回，再将重新升温的高意向客户交由销售跟进。",
   },
   high: {
     prompt: "找出意向分达到 80、近 7 天有活跃，但尚未进入 CRM 的客户",
     name: "高意向未进入 CRM 客户",
     estimate: "864",
-    chips: ["意向分 ≥ 80", "近 7 天有活跃", "未进入 CRM"],
+    conditions: [
+      { category: "客户属性", rules: [{ field: "客户意向分", operator: "大于等于", value: "80" }] },
+      { category: "行为条件", rules: [{ field: "近 7 天行为次数", operator: "大于等于", value: "1" }] },
+      { category: "客户属性", rules: [{ field: "CRM 客户阶段", operator: "等于", value: "未进入 CRM" }] },
+    ],
     statement: "识别可立即交给销售的高意向新客，仅为未进入 CRM 的客户生成线索待创建名单。",
   },
   page: {
     prompt: "找出近 7 天访问方案页 2 次以上、但未提交表单的客户",
     name: "方案页高频访问未留资客户",
     estimate: "1,246",
-    chips: ["方案页访问 ≥ 2 次", "近 7 天", "未提交表单"],
+    conditions: [{ category: "行为条件", rules: [
+      { field: "近 7 天方案页访问次数", operator: "大于等于", value: "2" },
+      { field: "近 7 天有效表单提交次数", operator: "等于", value: "0" },
+    ] }],
     statement: "识别具有产品兴趣但尚未留资的客户，建议先加入内容培育，避免直接进入销售队列。",
   },
   noshow: {
     prompt: "找出活动已报名但未签到、且意向分超过 50 的客户",
     name: "活动报名未签到客户回访",
     estimate: "718",
-    chips: ["活动已报名", "未签到", "意向分 > 50"],
+    conditions: [
+      { category: "行为条件", rules: [{ field: "活动报名状态", operator: "等于", value: "报名成功" }, { field: "活动签到状态", operator: "等于", value: "未签到" }] },
+      { category: "客户属性", rules: [{ field: "客户意向分", operator: "大于", value: "50" }] },
+    ],
     statement: "识别报名未签到但仍有潜在意向的客户，建议使用活动回放或案例内容进行轻量回访。",
   },
   multi: {
-    prompt: "找出近 7 天同企业至少 3 名联系人活跃，且访问过产品或解决方案页的企业",
+    prompt: "找出近 7 天同企业至少 3 名联系人活跃，且至少 1 次访问产品或解决方案页的企业",
     name: "多人活跃企业",
     estimate: "126",
-    chips: ["近 7 天企业内活跃联系人 ≥ 3", "访问产品或方案页", "企业意向分 ≥ 70"],
+    conditions: [
+      { category: "行为条件", rules: [{ field: "所属企业近 7 天活跃联系人数（去重）", operator: "大于等于", value: "3" }, { field: "所属企业近 7 天产品/方案页访问次数", operator: "大于等于", value: "1" }] },
+      { category: "客户属性", rules: [{ field: "所属企业意向分", operator: "大于等于", value: "70" }] },
+    ],
     statement: "识别出现多人协同关注信号的企业，建议优先查看企业洞察并确认是否需要销售介入。",
   },
   dormant: {
     prompt: "找出意向分超过 80、但最近 30 天未活跃的客户",
     name: "沉默高意向客户",
     estimate: "356",
-    chips: ["意向分 ≥ 80", "最近 30 天未活跃", "CRM 状态可经营"],
+    conditions: [
+      { category: "客户属性", rules: [{ field: "客户意向分", operator: "大于", value: "80" }] },
+      { category: "行为条件", rules: [{ field: "距最近一次活跃天数", operator: "大于", value: "30" }] },
+      { category: "客户属性", rules: [{ field: "CRM 客户阶段", operator: "不等于", value: "已转化" }] },
+    ],
     statement: "识别历史高意向但近期沉默的客户，建议先用内容或活动进行轻量召回，再根据再活跃情况转销售。",
   },
 };
@@ -1156,12 +1682,38 @@ const segmentTemplates = {
 function applySegmentTemplate(key) {
   const template = segmentTemplates[key];
   if (!template) return;
+  activeSegmentTemplate = key;
+  if (key === "silent") {
+    const activityRule = template.conditions.flatMap((group) => group.rules).find((rule) => rule.field === "历史活动行为");
+    if (activityRule) activityRule.value = "报名或签到";
+    document.querySelectorAll(".ai-question button").forEach((button) => button.classList.remove("active"));
+  }
   document.getElementById("segmentInput").value = template.prompt;
   document.getElementById("segmentName").value = template.name;
-  document.getElementById("ruleChips").innerHTML = template.chips.map((chip) => `<span>${chip}</span>`).join("");
+  renderSegmentConditions(template.conditions);
   document.getElementById("segmentStatement").textContent = template.statement;
-  document.getElementById("segmentTopEstimate").textContent = `预估 ${template.estimate} 人`;
+  document.getElementById("segmentTopEstimate").textContent = `示例预估 ${template.estimate} 人`;
   document.getElementById("segmentMainEstimate").textContent = template.estimate;
+  const footerEstimate = document.getElementById("segmentFooterEstimate");
+  if (footerEstimate) footerEstimate.textContent = template.estimate;
+  const questionPanel = document.querySelector(".ai-question");
+  questionPanel.classList.toggle("progressive-hidden", !template.question);
+  const questionText = document.getElementById("segmentQuestionText");
+  if (template.question && questionText) questionText.textContent = template.question;
+  const resultPanel = document.querySelector(".ai-result-panel");
+  if (resultPanel) resultPanel.classList.add("progressive-hidden");
+  document.getElementById("segmentRulesStep")?.classList.add("progressive-hidden");
+  document.getElementById("segmentSummaryPanel")?.classList.add("progressive-hidden");
+  document.getElementById("segmentActionsPanel")?.classList.add("progressive-hidden");
+  document.getElementById("publishNote")?.classList.remove("visible");
+  const createButton = document.getElementById("publishSegmentButton");
+  if (createButton) {
+    createButton.textContent = "确认筛选结果并创建分组";
+    createButton.disabled = true;
+  }
+  setSegmentStep(1);
+  const resultConfirmation = document.getElementById("confirmSegmentResult");
+  if (resultConfirmation) resultConfirmation.checked = false;
   document.querySelectorAll("[data-ai-template]").forEach((item) => {
     item.classList.toggle("active", item.dataset.aiTemplate === key);
   });
@@ -1171,13 +1723,40 @@ document.querySelectorAll("[data-ai-template]").forEach((button) => {
   button.addEventListener("click", () => applySegmentTemplate(button.dataset.aiTemplate));
 });
 
+document.getElementById("segmentInput")?.addEventListener("input", () => {
+  if (document.getElementById("segmentInput").value === segmentTemplates[activeSegmentTemplate]?.prompt) return;
+  activeSegmentTemplate = null;
+  document.getElementById("segmentName").value = "";
+  document.querySelectorAll("[data-ai-template]").forEach((item) => item.classList.remove("active"));
+});
+
+if (document.getElementById("segmentInput")) applySegmentTemplate("silent");
+
 document.getElementById("clearSegmentButton").addEventListener("click", () => {
   document.getElementById("segmentInput").value = "";
 });
 
 document.querySelectorAll("[data-activity-answer]").forEach((button) => {
   button.addEventListener("click", () => {
-    document.getElementById("activityValue").value = button.dataset.activityAnswer;
+    if (activeSegmentTemplate === "silent") {
+      const activityRuleTemplate = segmentTemplates.silent.conditions.flatMap((group) => group.rules).find((rule) => rule.field === "历史活动行为");
+      if (activityRuleTemplate) activityRuleTemplate.value = button.dataset.activityAnswer;
+    }
+    const activityRule = [...document.querySelectorAll("#segmentRulesStep .condition-row")]
+      .find((row) => row.querySelector(".segment-rule-field")?.value === "历史活动行为");
+    if (activityRule) activityRule.querySelector(".segment-rule-value").value = button.dataset.activityAnswer;
+    const question = button.closest(".ai-question");
+    question.querySelectorAll("button").forEach((option) => option.classList.toggle("active", option === button));
+    question.querySelector("b").textContent = "已确认";
+    question.querySelector("span").textContent = `活动范围已设为“${button.dataset.activityAnswer}”，并同步更新圈选条件。`;
+    if (activeSegmentTemplate === "silent") {
+      const estimate = button.dataset.activityAnswer === "仅签到" ? "2,106" : "3,428";
+      document.getElementById("segmentTopEstimate").textContent = `演示预估 ${estimate} 人`;
+      document.getElementById("segmentMainEstimate").textContent = estimate;
+      const footerEstimate = document.getElementById("segmentFooterEstimate");
+      if (footerEstimate) footerEstimate.textContent = estimate;
+    }
+    onSegmentRuleEdited();
   });
 });
 
