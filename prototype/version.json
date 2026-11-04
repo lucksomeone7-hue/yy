@@ -1,8 +1,8 @@
 {
-  "version": "2.3.1",
-  "name": "Marketing Cloud 一期原型 · 列表筛选与状态操作优化版",
+  "version": "2.4.0",
+  "name": "Marketing Cloud 一期原型 · 微信文章自动同步与发布",
   "channel": "stable",
   "sourceBranch": "main",
   "previewPath": "/mk/navigation-admin.html",
-  "updatedAt": "2026-11-03"
+  "updatedAt": "2026-11-04"
 }

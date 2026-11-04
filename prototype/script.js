@@ -159,7 +159,8 @@ function renderContentRows(rows) {
 }
 
 function renderArticleRows(rows) {
-  document.getElementById("contentSectionList").innerHTML = rows.map((row) => `<div class="article-list-row"><span>${row[0]}</span><span><b>${row[1]}</b></span><span><em>${row[2]}</em></span><span><em class="article-source">${row[3]}</em></span><span>${row[4]}</span><span>${row[5]}</span><span>${row[6]}</span><span>${row[7]}</span><span>${row[8]}</span><span><b class="article-status ${row[9] === "已上架" ? "online" : ""}">${row[9]}</b></span><span><button class="text-button">编辑</button><button class="text-button">${row[9] === "已上架" ? "下架" : "上架"}</button><button class="row-more" aria-label="更多操作">···</button></span></div>`).join("");
+  rows = [...(window.mkWechatSync?.articleRows() || []), ...rows];
+  document.getElementById("contentSectionList").innerHTML = rows.map((row) => `<div class="article-list-row"><span>${row[0]}</span><span><b>${row[1]}</b></span><span><em>${row[2]}</em></span><span><em class="article-source">${row[3]}</em></span><span>${row[4]}</span><span>${row[5]}</span><span>${row[6]}</span><span>${row[7]}</span><span>${row[8]}</span><span><b class="article-status ${row[9] === "已上架" ? "online" : ""}">${row[9]}</b></span><span>${row[10] ? `<button class="text-button" data-wechat-view="${row[10]}">同步详情</button>` : `<button class="text-button">编辑</button><button class="text-button">${row[9] === "已上架" ? "下架" : "上架"}</button><button class="row-more" aria-label="更多操作">···</button>`}</span></div>`).join("");
 }
 
 function renderFormRows(rows) {
@@ -253,7 +254,7 @@ function configureContentFilters(section, viewId) {
     reset.hidden = false;
   } else {
     keyword.placeholder = "请输入文章标题";
-    category.innerHTML = "<option>全部分类</option><option>行业洞察</option><option>产品动态</option><option>品牌资讯</option>";
+    category.innerHTML = "<option>全部分类</option>" + contentCategoryRows.articles.map(([, label]) => `<option>${label}</option>`).join("");
     category.hidden = false;
     status.innerHTML = "<option>全部状态</option><option>已上架</option><option>未上架</option><option>草稿</option>";
     type.innerHTML = "<option>全部类型</option><option>SEO</option><option>GEO</option>";

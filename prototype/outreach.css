@@ -1,1 +1,64 @@
 .outreach-panel{border:1px solid #e6e8ec;border-radius:8px;background:#fff;overflow:hidden}.outreach-toolbar{display:grid;grid-template-columns:minmax(260px,1.2fr) minmax(170px,.6fr) auto auto;align-items:end;gap:14px;padding:16px 18px;background:#fafafb;border-bottom:1px solid #eceef1}.outreach-toolbar.compact{grid-template-columns:minmax(280px,1.3fr) repeat(2,minmax(145px,.55fr)) auto auto}.outreach-toolbar label,.ranking-filters label{display:grid;gap:6px;color:#676b72;font-size:12px}.outreach-toolbar input,.outreach-toolbar select,.ranking-filters input,.ranking-filters select{width:100%;height:40px;padding:0 11px;border:1px solid #dcdfe5;border-radius:5px;background:#fff;font:inherit}.wechat-table{display:grid;grid-template-columns:1.3fr .8fr 1fr .8fr .7fr .8fr}.employee-table{display:grid;grid-template-columns:minmax(300px,1.7fr) 80px 90px 145px 145px 90px 100px;min-width:960px}.wechat-table>*,.employee-table>*{padding:14px 16px;border-bottom:1px solid #eceef2}.wechat-table>b,.employee-table>b{background:#fafafa;color:#646970;font-size:12px}.wechat-table em,.employee-table em{padding:3px 8px;border-radius:10px;background:#e5f6ee;color:#18875d;font-style:normal}.employee-table em.pending{background:#eaf1ff;color:#3568ad}.employee-table em.ended{background:#f0f1f3;color:#70747a}.wechat-table button,.employee-table button{padding:0;border:0;background:none;color:#d60012;cursor:pointer}.ranking-filters{display:grid;grid-template-columns:1.2fr 1.3fr .7fr 1fr 1fr auto;align-items:end;gap:14px;padding:18px;background:#fafafb;border-bottom:1px solid #eceef1}.date-pair{display:flex;align-items:center;gap:7px}.date-pair i{color:#999;font-style:normal}.ranking-filters>div{display:flex;gap:8px}.ranking-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 18px}.ranking-cards article{padding:16px;border:1px solid #e7e9ed;border-radius:7px}.ranking-cards span,.ranking-cards small{display:block;color:#777c84}.ranking-cards b{display:block;margin:7px 0 4px;font-size:24px}.ranking-layout{display:grid;grid-template-columns:minmax(360px,.85fr) minmax(580px,1.5fr);gap:16px;padding:0 18px 18px}.ranking-layout section{overflow-x:auto;border:1px solid #e7e9ed;border-radius:7px}.ranking-layout h4{margin:0;padding:14px 15px;border-bottom:1px solid #e7e9ed}.rank-list{display:grid;grid-template-columns:55px 100px 1fr 65px 65px}.share-detail{display:grid;grid-template-columns:150px 85px 135px minmax(230px,1fr) 90px;min-width:690px}.rank-list>*,.share-detail>*{padding:11px 12px;border-bottom:1px solid #eceef2}.rank-list>b,.share-detail>b{background:#fafafa;color:#696d74;font-size:12px}.share-detail strong,.share-detail small{display:block}.share-detail small{margin-top:3px;color:#92969e;font-size:11px}@media(max-width:1100px){.ranking-filters{grid-template-columns:repeat(3,1fr)}.ranking-layout{grid-template-columns:1fr}.wechat-table{min-width:780px}.outreach-panel{overflow-x:auto}}@media(max-width:720px){.outreach-toolbar,.outreach-toolbar.compact,.ranking-filters{grid-template-columns:1fr}.ranking-cards{grid-template-columns:1fr}.ranking-layout{padding:0 12px 12px}}
+
+/* 公众号文章同步配置与处理记录 */
+#wechatMarketing.wx-sync-open > .sms-header,
+#wechatMarketing.wx-sync-open > .outreach-panel,
+body:has(#wechatMarketing.active.wx-sync-open) #mkPageDescription,
+body:has(#wechatMarketing.active.wx-sync-open) #mkPageActions [data-wechat-auth] { display:none; }
+.wx-sync { --wx-border:#e8ebf0; --wx-muted:#646c7b; --wx-blue:#2458d3; color:#1b2435; }
+.wx-sync-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0 16px; }
+.wx-sync-heading p,.wx-sync-detail header p { margin:0 0 5px; color:#646c7b; font-size:12px; }
+.wx-sync-heading h3,.wx-sync-detail h3 { margin:0; font-size:20px; line-height:1.45; }
+.wx-sync-heading > span { color:var(--wx-muted); font-size:13px; }
+.wx-sync-tabs { display:flex; gap:24px; border-bottom:1px solid var(--wx-border); margin-bottom:16px; }
+.wx-sync-tabs button { padding:10px 2px; border:0; border-bottom:2px solid transparent; color:var(--wx-muted); background:none; }
+.wx-sync-tabs [aria-pressed="true"] { border-color:var(--wx-blue); color:var(--wx-blue); font-weight:600; }
+.wx-sync-tabs span { margin-left:5px; font-size:11px; color:#985217; }
+.wx-sync-pipeline { list-style:none; margin:0 0 16px; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); background:#f5f8ff; border:1px solid #e1e9fa; border-radius:8px; }
+.wx-sync-pipeline li { display:flex; align-items:center; gap:11px; padding:14px 16px; }
+.wx-sync-pipeline li+li { border-left:1px solid #e1e9fa; }
+.wx-sync-pipeline li > span { display:grid; place-items:center; flex:0 0 26px; height:26px; border-radius:50%; background:#e5edff; color:var(--wx-blue); font-weight:600; }
+.wx-sync-pipeline small { display:block; color:var(--wx-muted); margin-top:4px; }
+.wx-sync-card { padding:18px 20px; border:1px solid var(--wx-border); border-radius:8px; background:#fff; margin-bottom:14px; }
+.wx-sync-card-head,.wx-sync-demo,.wx-sync-meta { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.wx-sync-card h4 { margin:0; font-size:15px; }
+.wx-sync-card p { margin:6px 0 0; color:var(--wx-muted); font-size:13px; }
+.wx-sync-card form { margin-top:18px; }
+.wx-sync-switch { display:flex; align-items:center; gap:9px; margin-bottom:16px; font-weight:600; }
+.wx-sync-switch input { width:18px; height:18px; accent-color:var(--wx-blue); }
+.wx-sync-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 18px; max-width:820px; }
+.wx-sync-fields label,.wx-sync-filter { display:grid; gap:6px; font-size:13px; font-weight:600; }
+.wx-sync-fields .wide { grid-column:1/-1; }
+.wx-sync-fields :is(select,input,textarea),.wx-sync-filter select { width:100%; border:1px solid #dbe0e8; border-radius:5px; background:#fff; padding:8px 10px; font:inherit; font-weight:400; color:#232c3d; }
+.wx-sync-fields :disabled { background:#f7f8fa; opacity:1; }
+.wx-sync-fields small { color:var(--wx-muted); font-size:12px; font-weight:400; }
+.wx-sync-note,.wx-sync-card .wx-sync-note { margin:16px 0 0; padding:10px 12px; border-radius:5px; background:#f5f7fa; color:#545e70; font-size:13px; }
+.wx-sync-card footer,.wx-sync-demo-actions,.wx-sync-detail footer { display:flex; align-items:center; gap:10px; }
+.wx-sync-card footer { margin-top:16px; }
+.wx-sync-demo [role="status"],.wx-sync-card footer span { color:#21674b; font-size:12px; }
+.wx-sync-state { display:inline-block; padding:3px 9px; border-radius:4px; font-size:12px; line-height:1.5; white-space:nowrap; }
+.wx-sync-state.published { background:#eaf7ef; color:#236847; }
+.wx-sync-state.review { background:#fff1dd; color:#8a4a0e; }
+.wx-sync-state.processing { background:#eef2f8; color:#4b5870; }
+.wx-sync-filter { width:160px; margin:16px 0 12px; }
+.wx-sync-table-wrap { overflow:auto; }
+.wx-sync table { width:100%; min-width:720px; border-collapse:collapse; text-align:left; }
+.wx-sync th,.wx-sync td { padding:12px 10px; border-bottom:1px solid #edf0f3; font-size:13px; }
+.wx-sync th { color:#4c5567; background:#f6f8fb; white-space:nowrap; }
+.wx-sync td.wx-sync-empty { padding:36px 10px; color:var(--wx-muted); text-align:center; }
+.wx-sync-records a { text-decoration:none; display:inline-flex; align-items:center; white-space:nowrap; }
+.wx-sync-dialog { width:min(640px,calc(100vw - 32px)); max-height:calc(100vh - 48px); padding:0; border:0; border-radius:10px; box-shadow:0 20px 70px #1b243533; color:#1b2435; }
+.wx-sync-dialog::backdrop { background:#131e3866; }
+.wx-sync-detail header,.wx-sync-detail footer { display:flex; align-items:center; padding:16px 20px; gap:12px; }
+.wx-sync-detail header { justify-content:space-between; border-bottom:1px solid #e8ebf0; }
+.wx-sync-close { border:0; background:none; font-size:24px; color:#646c7b; }
+.wx-sync-detail footer { justify-content:flex-end; border-top:1px solid #e8ebf0; }
+.wx-sync-detail-body { padding:18px 20px; }
+.wx-sync-meta,.wx-sync-source { color:#646c7b; font-size:13px; }
+.wx-sync-source { line-height:1.6; }
+.wx-sync-note.warning { margin:0 0 14px; background:#fff4e4; color:#8a4a0e; }
+@media(max-width:760px) {
+  .wx-sync-pipeline,.wx-sync-fields { grid-template-columns:1fr; }
+  .wx-sync-pipeline li+li { border-left:0; border-top:1px solid #e1e9fa; }
+  .wx-sync-demo { align-items:flex-start; flex-direction:column; }
+}
