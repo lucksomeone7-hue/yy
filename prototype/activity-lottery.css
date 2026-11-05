@@ -233,7 +233,7 @@ body.mk-mega-layout .lottery-table th { background: #f7f8fa; color: #77808f; fon
 .lottery-step.is-complete > span { color: #4a7e60; background: #eaf3ec; }
 .lottery-step.is-current > span { color: #b67943; background: #faf0e1; }
 .lottery-step + .lottery-step::before { margin-right: 8px; }
-.lottery-stats { padding: 16px 0; margin-bottom: 18px; border: 1px solid var(--lottery-line); border-radius: 9px; }
+.lottery-stats { padding: 20px 0; margin-bottom: 20px; border: 1px solid var(--lottery-line); border-radius: 9px; }
 .lottery-stats strong { font-size: 26px; line-height: 32px; }
 .lottery-stats strong small { font-weight: 400; color: #8d95a0; margin-left: 3px; }
 .lottery-tabs > button > span { display: inline-flex; padding: 0 6px; margin-left: 6px; border-radius: 8px; background: #f0f2f6; color: #8a94a3; font-size: 11px; line-height: 18px; }
@@ -281,7 +281,7 @@ body.mk-mega-layout .lottery-table th { background: #f7f8fa; color: #77808f; fon
 .lottery-detail-copy h2 { font-size: 21px; font-weight: 600; line-height: 30px; }
 .lottery-detail-copy .lottery-muted { margin-top: 7px !important; font-size: 12px; color: #8992a0; }
 .lottery-detail-copy .lottery-status { padding: 2px 8px; border-radius: 4px; background: #edf5ef; color: #62826c; font-size: 11px; }
-.lottery-detail-header { padding: 14px 24px; }
+.lottery-detail-header { padding: 18px 24px; margin-bottom: 20px; }
 .lottery-detail-copy > .lottery-back { margin-bottom: 3px; }
 .lottery-stats > .lottery-stat { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
 .lottery-stat > span { align-self: center; }
@@ -293,11 +293,17 @@ body.mk-mega-layout .lottery-table th { background: #f7f8fa; color: #77808f; fon
 .lottery-prize-card .lottery-prize-name { grid-column: 2; grid-row: 2; margin: 0 !important; align-self: start; font-size: 11px; }
 .lottery-prize-card .lottery-prize-badge { top: 18px; right: 18px; font-size: 10px; padding: 2px 6px; }
 .lottery-prize-counts { grid-column: 1 / -1; margin: 20px 0 12px; }
-.lottery-prize-card .lottery-progress, .lottery-prize-card .lottery-card-actions { grid-column: 1 / -1; }
+.lottery-prize-card .lottery-batch-meta,
+.lottery-prize-card .lottery-progress,
+.lottery-prize-card .lottery-card-actions { grid-column: 1 / -1; }
+.lottery-prize-card .lottery-batch-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; line-height: 1.6; }
+.lottery-prize-card .lottery-batch-meta > span { white-space: nowrap; }
+.lottery-prize-card h3 { overflow-wrap: anywhere; padding-right: 52px; }
+.lottery-prize-card .lottery-prize-badge { max-width: calc(100% - 100px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lottery-prize-card .lottery-card-actions { margin-top: 14px; padding-top: 10px; }
 @media (min-width: 1700px) { .lottery-prize-grid { gap: 22px; } .lottery-prize-card { padding: 24px; } }
 @media (max-width: 1300px) { .lottery-prize-card { grid-template-columns: 42px minmax(0,1fr); column-gap: 10px; } .lottery-prize-icon { width: 42px; height: 48px; } .lottery-prize-card h3 { font-size: 15px; } .lottery-prize-card .lottery-prize-badge { top: 12px; right: 12px; } }
-@media (max-width: 1200px) { .lottery-prize-grid { gap: 12px; } .lottery-prize-card { padding: 16px; } .lottery-prize-card .lottery-prize-badge { position: static; grid-column: 2; } .lottery-prize-card-top { display: contents; } .lottery-prize-card-top .lottery-prize-icon { grid-column: 1; grid-row: 1 / span 2; } .lottery-prize-card h3 { grid-row: 2; } .lottery-prize-card .lottery-prize-name { grid-column: 1 / -1; grid-row: 3; margin-top: 10px !important; } .lottery-screen-heading { padding: 20px; } .lottery-content { padding: 20px; } }
+@media (max-width: 1200px) { .lottery-prize-grid { gap: 12px; } .lottery-prize-card { padding: 16px; } .lottery-prize-card .lottery-prize-badge { position: static; grid-column: 2; } .lottery-prize-card-top { display: contents; } .lottery-prize-card-top .lottery-prize-icon { grid-column: 1; grid-row: 1 / span 2; } .lottery-prize-card h3 { grid-row: 2; padding-right: 0; } .lottery-prize-card .lottery-prize-name { grid-column: 1 / -1; grid-row: 3; margin-top: 10px !important; } .lottery-screen-heading { padding: 20px; } .lottery-content { padding: 20px; } }
 @media (max-width: 950px) { .lottery-prize-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .lottery-stats > div, .lottery-stats > article { padding: 0 16px; } .lottery-steps { gap: 12px; } }
 @media (max-width: 700px) {
   .lottery-screen-heading { align-items: flex-start; flex-direction: column; gap: 16px; }

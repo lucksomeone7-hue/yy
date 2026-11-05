@@ -190,7 +190,14 @@
     if(selectedPage==='activityDetail'){
       title=activityTabs.find(([key])=>key===activityTab)[1];
       description=[headingText(source),description].filter(Boolean).join(' · ');
-      if(activityTab==='lottery')description='设置奖项、管理抽奖池，开启现场大屏互动。';
+      if(activityTab==='lottery'){
+        description='设置奖项、管理抽奖池，开启现场大屏互动。';
+        const create=document.createElement('button');
+        create.type='button';create.id='activityLotteryCreate';create.className='primary-button';create.textContent='＋ 新建大屏';
+        create.hidden=window.mkLottery?.isListView===false;
+        create.addEventListener('click',()=>window.mkLottery?.createScreen());
+        contextActions.insertBefore(create,get('mkFavorite'));
+      }
       const repeatedHeading=document.querySelector(`[data-activity-panel="${activityTab}"] > .section-head h3`);
       if(repeatedHeading?.textContent.trim()===title){repeatedHeading.classList.add('mk-context-source');contextSources.push(repeatedHeading);}
     }

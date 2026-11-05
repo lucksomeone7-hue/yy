@@ -71,7 +71,7 @@
   }
   let state = loadState();
   let selectedScreenId = state.screens[0]?.id || null;
-  let view = selectedScreenId ? 'detail' : 'list';
+  let view = 'list';
   let tab = 'prizes';
   let poolQuery = '', winnerQuery = '', winnerPrize = '', poolPage = 1, winnerPage = 1;
   let busy = false, drawSession = null, launchDraft = null;
@@ -112,36 +112,30 @@
   const maskPhone = phone => /^1\d{10}$/.test(phone) ? `${phone.slice(0, 3)}****${phone.slice(-4)}` : phone || '—';
   const dateLabel = value => new Intl.DateTimeFormat('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai'}).format(new Date(value));
   const timeLabel = value => new Intl.DateTimeFormat('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Shanghai'}).format(new Date(value));
-  const demoNote = '<p class="lottery-demo-note"><span class="lottery-demo-badge">原型演示</span> 当前为固定活动示例，内置参与人为虚构数据；导入名单、配置与抽奖结果仅保存在当前浏览器。</p>';
   const btn = (action, label, extra = '') => `<button type="button" class="lottery-btn" data-lottery-action="${action}" ${extra}>${label}</button>`;
 
   function renderList() {
-    return `<div class="lottery-toolbar"><div class="lottery-screen-heading"><p class="lottery-eyebrow">签到与互动 / 互动抽奖</p><h2>抽奖大屏</h2><p class="lottery-muted">统一管理大屏、奖项与参与名单，让现场抽奖准备更清晰。</p></div><div class="lottery-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="new-screen">＋ 新建大屏</button></div></div>${demoNote}
-      <div class="lottery-section-head"><h3>全部大屏 <span class="lottery-muted">${state.screens.length}</span></h3><p class="lottery-muted">选择大屏，继续配置或开始抽奖</p></div>
+    return `${document.body.classList.contains('mk-scheme-c') ? '' : '<div class="lottery-toolbar"><button type="button" class="lottery-btn is-primary" data-lottery-action="new-screen">＋ 新建大屏</button></div>'}<div class="lottery-section-head"><h3>全部大屏 <span class="lottery-muted">${state.screens.length}</span></h3><p class="lottery-muted">选择大屏，继续配置或开始抽奖</p></div>
       ${state.screens.length ? `<div class="lottery-screen-list">${state.screens.map(screen => `<article class="lottery-screen-card"><div class="lottery-prize-icon">${giftIcon}</div><div class="lottery-screen-card-copy"><h3>${escapeHTML(screen.name)}</h3><p class="lottery-screen-meta">创建于 ${escapeHTML(dateLabel(screen.createdAt))} · ${screen.prizes.length} 个奖项 · ${screen.people.length} 位参与人</p><p class="lottery-muted">已抽 ${screen.winners.length} 人 / 总名额 ${totalSlots(screen)} 人</p></div><div class="lottery-card-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="open-screen" data-id="${escapeHTML(screen.id)}">管理大屏</button>${btn('edit-screen', '编辑名称', `data-id="${escapeHTML(screen.id)}"`)}${btn('delete-screen', '删除', `data-id="${escapeHTML(screen.id)}"`)}</div></article>`).join('')}</div>` : `<div class="lottery-empty"><div class="lottery-empty-icon">${giftIcon}</div><h3>创建第一个抽奖大屏</h3><p>设置奖项、导入参与名单，即可开始现场抽奖。</p><button type="button" class="lottery-btn is-primary" data-lottery-action="new-screen">新建大屏</button></div>`}`;
   }
 
   function renderStats(screen) {
     const eligible = eligiblePeople(screen).length;
-    return `<div class="lottery-stats" aria-label="抽奖概况"><div class="lottery-stat"><span>参与人数</span><strong>${screen.people.length}<small> 人</small></strong><small>${eligible} 人当前可抽</small></div><div class="lottery-stat"><span>奖项设置</span><strong>${screen.prizes.length}<small> 项</small></strong><small>共 ${totalSlots(screen)} 个中奖名额</small></div><div class="lottery-stat"><span>已中奖人数</span><strong>${screen.winners.length}<small> 人</small></strong><small>同一参与人只中奖一次</small></div><div class="lottery-stat"><span>剩余名额</span><strong>${remainingSlots(screen)}<small> 个</small></strong><small>${eligible < remainingSlots(screen) ? '当前可抽人数少于剩余名额' : '名单与奖项已同步'}</small></div></div>`;
+    return `<div class="lottery-stats" aria-label="抽奖概况"><div class="lottery-stat"><span>参与人数</span><strong>${screen.people.length}<small> 人</small></strong><small>${eligible} 人当前可抽</small></div><div class="lottery-stat"><span>奖项数量</span><strong>${screen.prizes.length}<small> 项</small></strong><small>共 ${totalSlots(screen)} 个中奖名额</small></div><div class="lottery-stat"><span>已中奖人数</span><strong>${screen.winners.length}<small> 人</small></strong><small>同一参与人只中奖一次</small></div><div class="lottery-stat"><span>剩余名额</span><strong>${remainingSlots(screen)}<small> 个</small></strong><small>${!screen.prizes.length ? '添加奖项后生成名额' : !remainingSlots(screen) ? '全部奖项已抽完' : eligible < remainingSlots(screen) ? `还需补充 ${remainingSlots(screen) - eligible} 位可抽人员` : '可继续抽取'}</small></div></div>`;
   }
   function renderDetail(screen) {
     const noDraw = !screen.prizes.length || !eligiblePeople(screen).length || !remainingSlots(screen);
-    return `<div class="lottery-detail-header"><div class="lottery-detail-copy"><button type="button" class="lottery-btn is-quiet lottery-back" data-lottery-action="screen-list">← 全部大屏</button><div class="lottery-title-line"><h2>${escapeHTML(screen.name)}</h2><span class="lottery-status">${screen.winners.length ? remainingSlots(screen) ? '抽奖进行中' : '抽奖已完成' : '准备中'}</span></div><p class="lottery-muted">先配置奖项和名单，再选择形式与主题进入舞台。</p></div><div class="lottery-actions">${btn('edit-screen', '编辑名称', `data-id="${escapeHTML(screen.id)}"`)}<button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${noDraw ? 'disabled title="请先设置奖项并准备可抽取的参与名单"' : ''}>${!remainingSlots(screen) && screen.winners.length ? '全部奖项已抽完' : !eligiblePeople(screen).length && screen.people.length ? '暂无可抽人员' : '选择形式并进入大屏'} <span aria-hidden="true">↗</span></button></div></div>${demoNote}${renderPreparation(screen)}${renderStats(screen)}
+    return `<div class="lottery-detail-header"><div class="lottery-detail-copy"><button type="button" class="lottery-btn is-quiet lottery-back" data-lottery-action="screen-list">← 全部大屏</button><div class="lottery-title-line"><h2>${escapeHTML(screen.name)}</h2><span class="lottery-status">${screen.winners.length ? remainingSlots(screen) ? '抽奖进行中' : '抽奖已完成' : '准备中'}</span></div></div><div class="lottery-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${noDraw ? 'disabled title="请先设置奖项并准备可抽取的参与名单"' : ''}>${!screen.prizes.length ? '请先添加奖项' : !remainingSlots(screen) && screen.winners.length ? '全部奖项已抽完' : !screen.people.length ? '请先导入名单' : !eligiblePeople(screen).length ? '暂无可抽人员' : '选择形式并进入大屏'} <span aria-hidden="true">↗</span></button></div></div>${renderStats(screen)}
       <div class="lottery-tabs" role="tablist" aria-label="抽奖管理">${[['prizes', '奖项设置', screen.prizes.length], ['pool', '抽奖池名单', screen.people.length], ['winners', '中奖记录', screen.winners.length]].map(([key, label, count]) => `<button type="button" id="lottery-tab-${key}" role="tab" aria-selected="${tab === key}" aria-controls="lottery-panel-${key}" tabindex="${tab === key ? 0 : -1}" class="${tab === key ? 'is-active' : ''}" data-lottery-tab="${key}">${label}<span>${count}</span></button>`).join('')}</div>
       <section class="lottery-section" id="lottery-panel-${tab}" role="tabpanel" aria-labelledby="lottery-tab-${tab}" tabindex="0">${tab === 'prizes' ? renderPrizes(screen) : tab === 'pool' ? renderPool(screen) : renderWinners(screen)}</section>`;
-  }
-  function renderPreparation(screen) {
-    const left = remainingSlots(screen), eligible = eligiblePeople(screen).length, ready = left > 0 && eligible > 0;
-    return `<nav class="lottery-preparation" aria-label="抽奖准备流程"><button type="button" class="${left ? 'is-ready' : ''}" data-lottery-tab="prizes"><span>01</span><strong>设置奖项</strong><small>${screen.prizes.length ? `${screen.prizes.length} 个奖项 · 剩余 ${left} 个名额` : '添加奖品、总名额与每轮人数'}</small></button><button type="button" class="${eligible ? 'is-ready' : ''}" data-lottery-tab="pool"><span>02</span><strong>准备名单</strong><small>${screen.people.length ? `${screen.people.length} 人已导入 · ${eligible} 人可抽` : '导入参与人，已中奖人员自动排除'}</small></button><button type="button" class="${ready ? 'is-ready' : ''}" data-lottery-action="open-draw" ${ready ? '' : 'disabled'}><span>03</span><strong>${left || !screen.prizes.length ? '选择形式与主题' : '抽奖已完成'}</strong><small>${ready ? '预览确认后进入舞台，开始前不抽取' : !left ? '请添加奖项或增加名额' : '请补充可抽取人员'}</small></button></nav>`;
   }
   function renderPrizes(screen) {
     const eligible = eligiblePeople(screen).length;
     return `<div class="lottery-section-head"><div><h3>奖项设置</h3><p class="lottery-muted">总名额控制奖品数量，每轮人数控制抽奖节奏；进入舞台前可调整本轮人数。</p></div><button type="button" class="lottery-btn" data-lottery-action="add-prize">＋ 添加奖项</button></div>${eligible < remainingSlots(screen) ? `<p class="lottery-inline-warning"><span aria-hidden="true">ⓘ</span> 当前可抽人数 ${eligible} 人，少于剩余名额 ${remainingSlots(screen)} 个。可前往<button type="button" class="lottery-link" data-lottery-tab="pool">抽奖池名单</button>导入更多参与人。</p>` : ''}
       <div class="lottery-prize-grid">${screen.prizes.map((prize, index) => {
         const won = wonFor(screen, prize.id), left = prize.total - won;
-        return `<article class="lottery-prize-card" data-prize-index="${index % 3}"><div class="lottery-prize-card-top"><span class="lottery-prize-badge">${escapeHTML(prize.level)}</span><div class="lottery-prize-icon">${giftIcon}</div></div><h3>${escapeHTML(prize.name)}</h3><p class="lottery-prize-name">${left ? '等待幸运时刻' : '本奖项已抽完'}</p><div class="lottery-prize-counts"><div><strong>${prize.total}</strong><span>总名额</span></div><div><strong>${won}</strong><span>已抽出</span></div><div><strong>${left}</strong><span>剩余</span></div></div><p class="lottery-batch-meta">每轮默认 ${prizeBatch(prize)} 人${left ? ` · 剩余预计 ${Math.ceil(left / prizeBatch(prize))} 轮` : ''}</p><div class="lottery-progress" role="progressbar" aria-label="${escapeHTML(prize.level)}抽取进度" aria-valuemin="0" aria-valuemax="${prize.total}" aria-valuenow="${won}"><span style="width:${Math.min(100, won / prize.total * 100)}%"></span></div><div class="lottery-card-actions">${btn('edit-prize', '编辑奖项', `data-id="${escapeHTML(prize.id)}"`)}<button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-prize" data-id="${escapeHTML(prize.id)}" ${won ? 'disabled title="已有中奖记录的奖项不可删除"' : ''}>删除</button></div></article>`;
-      }).join('')}<button type="button" class="lottery-add-card" data-lottery-action="add-prize"><span class="lottery-add-icon" aria-hidden="true">＋</span><strong>添加奖项</strong><span>设置更多惊喜</span></button></div>`;
+        return `<article class="lottery-prize-card" data-prize-index="${index % 3}"><div class="lottery-prize-card-top"><span class="lottery-prize-badge">${escapeHTML(prize.level)}</span><div class="lottery-prize-icon">${giftIcon}</div></div><h3>${escapeHTML(prize.name)}</h3><p class="lottery-prize-name">${left ? won ? '抽奖进行中' : '待抽奖' : '本奖项已抽完'}</p><div class="lottery-prize-counts"><div><strong>${prize.total}</strong><span>总名额</span></div><div><strong>${won}</strong><span>已抽出</span></div><div><strong>${left}</strong><span>剩余</span></div></div><p class="lottery-batch-meta"><span>每轮默认 ${prizeBatch(prize)} 人</span>${left ? `<span>按默认人数约 ${Math.ceil(left / prizeBatch(prize))} 轮完成</span>` : ''}</p><div class="lottery-progress" role="progressbar" aria-label="${escapeHTML(prize.level)}抽取进度" aria-valuemin="0" aria-valuemax="${prize.total}" aria-valuenow="${won}"><span style="width:${Math.min(100, won / prize.total * 100)}%"></span></div><div class="lottery-card-actions">${btn('edit-prize', '编辑奖项', `data-id="${escapeHTML(prize.id)}"`)}<button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-prize" data-id="${escapeHTML(prize.id)}" ${won ? 'disabled title="已有中奖记录的奖项不可删除"' : ''}>删除</button></div></article>`;
+      }).join('')}</div>${screen.prizes.length ? '' : '<div class="lottery-empty"><div class="lottery-empty-icon">' + giftIcon + '</div><h3>尚未设置奖项</h3><p>点击右上角“添加奖项”，设置奖品、中奖名额和每轮人数。</p></div>'}`;
   }
   function searchPeople(items, query) {
     const needle = query.toLocaleLowerCase();
@@ -169,6 +163,8 @@
   function render() {
     const screen = currentScreen();
     if (!screen) view = 'list';
+    const createButton = document.getElementById('activityLotteryCreate');
+    if (createButton) createButton.hidden = view !== 'list';
     viewRoot.innerHTML = view === 'list' ? renderList() : renderDetail(screen);
   }
   function resetFilters() { poolQuery = ''; winnerQuery = ''; winnerPrize = ''; poolPage = 1; winnerPage = 1; }
@@ -178,7 +174,7 @@
     if (opener?.isConnected) { opener.focus(); return; }
     let target;
     if (fallback) target = root.querySelector(`${fallback}:not(:disabled)`);
-    (target || root.querySelector(`[data-lottery-tab="${tab}"]`) || root.querySelector('[data-lottery-action="new-screen"]'))?.focus();
+    (target || root.querySelector(`[data-lottery-tab="${tab}"]`) || document.getElementById('activityLotteryCreate') || root.querySelector('[data-lottery-action="new-screen"]'))?.focus();
   }
   function openDialog(title, content, footer, options = {}) {
     if (dialogs.querySelector('dialog[open]')) return null;
@@ -538,7 +534,7 @@
       dialog.querySelector('.lottery-motion-note').textContent = `已补充 ${additions.length} 位虚构示例参与人，当前共 ${screen.people.length} 人。`; return;
     }
     if (busy) return;
-    if (action === 'screen-list') { view = 'list'; render(); root.querySelector('[data-lottery-action="new-screen"]')?.focus(); }
+    if (action === 'screen-list') { view = 'list'; render(); (document.getElementById('activityLotteryCreate') || root.querySelector('[data-lottery-action="new-screen"]'))?.focus(); }
     else if (action === 'new-screen') screenEditor();
     else if (action === 'edit-screen') screenEditor(id);
     else if (action === 'delete-screen') confirmDelete('screen', id);
@@ -624,6 +620,8 @@
     }
   });
   window.mkLottery = Object.freeze({
+    get isListView() { return view === 'list'; },
+    createScreen: () => screenEditor(),
     open: () => { if (currentScreen()) view = 'detail'; render(); },
     showList: () => { view = 'list'; render(); },
     showPrizes: () => { view = 'detail'; tab = 'prizes'; render(); },
