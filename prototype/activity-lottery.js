@@ -6,8 +6,7 @@
   const STORAGE_KEY = 'mk-activity-lottery-v1';
   const PAGE_SIZE = 10;
   const MAX_BATCH_SIZE = 50;
-  const recommendedBatch = total => total <= 5 ? 1 : total <= 20 ? 5 : 10;
-  const prizeBatch = prize => Number.isInteger(prize?.batchSize) && prize.batchSize > 0 ? Math.min(MAX_BATCH_SIZE, prize.total, prize.batchSize) : recommendedBatch(prize?.total || 1);
+  const roundQuantity = prize => prize?.lastQuantity || 1;
   const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
   const uid = prefix => `${prefix}-${globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}`;
   const giftIcon = '<svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h32v19H8zM5 13h38v8H5zM24 13v27"/><path d="M24 13c-9 0-13-2-13-6 0-3 4-5 7-2l6 8Zm0 0c9 0 13-2 13-6 0-3-4-5-7-2l-6 8Z"/></svg>';
@@ -40,19 +39,29 @@
     return data.screens.every(screen => {
       if (!screen || !textValid(screen.id) || screenIDs.has(screen.id) || !textValid(screen.name, 80) || !Number.isFinite(Date.parse(screen.createdAt))) return false;
       screenIDs.add(screen.id);
+      if (screen.groups !== undefined && (!Array.isArray(screen.groups) || screen.groups.length > 100 || !screen.groups.every(group => textValid(group,40)))) return false;
       if (!Array.isArray(screen.people) || screen.people.length > 10000 || !Array.isArray(screen.prizes) || screen.prizes.length > 100 || !Array.isArray(screen.winners)) return false;
-      const peopleIDs = new Set(), prizeIDs = new Set(), winnerIDs = new Set(), wonPeople = new Set();
+      const peopleIDs = new Set(), prizeIDs = new Set(), winnerIDs = new Set(), roundPeople = new Set();
       if (!screen.people.every(person => {
         if (!person || !textValid(person.id) || peopleIDs.has(person.id) || !textValid(person.name, 60) || typeof person.company !== 'string' || person.company.length > 120 || !phoneValid(person.phone)) return false;
+        if (['checked','surveyed','allowed'].some(key => person[key] !== undefined && typeof person[key] !== 'boolean')) return false;
+        if (['nickname','source','group'].some(key => person[key] !== undefined && (typeof person[key] !== 'string' || person[key].length > 120))) return false;
         peopleIDs.add(person.id); return true;
       })) return false;
       if (!screen.prizes.every(prize => {
         if (!prize || !textValid(prize.id) || prizeIDs.has(prize.id) || !textValid(prize.name, 80) || !textValid(prize.level, 20) || !Number.isSafeInteger(prize.total) || prize.total < 1 || prize.total > 10000 || (prize.batchSize !== undefined && (!Number.isInteger(prize.batchSize) || prize.batchSize < 1 || prize.batchSize > Math.min(MAX_BATCH_SIZE, prize.total)))) return false;
+        if (prize.scope !== undefined && !['all','checked','surveyed','group'].includes(prize.scope) || prize.allowRepeat !== undefined && typeof prize.allowRepeat !== 'boolean') return false;
+        if (prize.scope === 'group' && !textValid(prize.group,40)) return false;
+        if (prize.lastQuantity !== undefined && (!Number.isInteger(prize.lastQuantity) || prize.lastQuantity < 1 || prize.lastQuantity > MAX_BATCH_SIZE)) return false;
+        if (prize.winnerScope !== undefined && !['random','designated'].includes(prize.winnerScope)) return false;
+        if (prize.designatedIds !== undefined && (!Array.isArray(prize.designatedIds) || !prize.designatedIds.every(id => peopleIDs.has(id)))) return false;
         prizeIDs.add(prize.id); return true;
       })) return false;
       if (!screen.winners.every(winner => {
-        if (!winner || !textValid(winner.id) || winnerIDs.has(winner.id) || !peopleIDs.has(winner.personId) || wonPeople.has(winner.personId) || !prizeIDs.has(winner.prizeId) || !textValid(winner.name, 60) || typeof winner.company !== 'string' || winner.company.length > 120 || !phoneValid(winner.phone) || !textValid(winner.prizeName, 80) || !textValid(winner.level, 20) || !Number.isFinite(Date.parse(winner.drawnAt))) return false;
-        winnerIDs.add(winner.id); wonPeople.add(winner.personId); return true;
+        if (!winner || !textValid(winner.id) || winnerIDs.has(winner.id) || !peopleIDs.has(winner.personId) || !prizeIDs.has(winner.prizeId) || !textValid(winner.name, 60) || typeof winner.company !== 'string' || winner.company.length > 120 || !phoneValid(winner.phone) || !textValid(winner.prizeName, 80) || !textValid(winner.level, 20) || !Number.isFinite(Date.parse(winner.drawnAt))) return false;
+        const roundKey = `${winner.roundId || winner.id}:${winner.personId}`;
+        if (roundPeople.has(roundKey)) return false;
+        winnerIDs.add(winner.id); roundPeople.add(roundKey); return true;
       })) return false;
       return screen.prizes.every(prize => screen.winners.filter(winner => winner.prizeId === prize.id).length <= prize.total);
     });
@@ -63,7 +72,17 @@
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (validateStored(parsed)) return parsed;
+        if (validateStored(parsed)) {
+          parsed.screens.forEach(screen => screen.prizes.forEach(prize => {
+            if (prize.scope === 'group') {
+              prize.designatedIds = screen.people.filter(person => person.group === prize.group).map(person => person.id);
+              prize.scope = 'all'; prize.winnerScope = 'designated';
+              storageWarning = '历史指定分组范围已转为对应内定人员名单，请核对奖项配置。';
+            }
+            delete prize.group; delete prize.batchSize;
+          }));
+          return parsed;
+        }
         storageWarning = '本地保存的数据格式异常，已恢复示例数据。';
       }
     } catch (_) { storageWarning = '暂时无法读取本地记录。本次操作仍可使用，刷新后可能无法保留。'; }
@@ -106,7 +125,19 @@
   }
   function saveAndRender(message) { const saved = persist(); render(); if (saved && message) notify(message); }
   const wonFor = (screen, prizeId) => screen.winners.filter(winner => winner.prizeId === prizeId).length;
-  const eligiblePeople = screen => { const won = new Set(screen.winners.map(winner => winner.personId)); return screen.people.filter(person => !won.has(person.id)); };
+  const scopeLabels = {all: '全部人员', checked: '已签到人员', surveyed: '已填写问卷人员'};
+  function eligiblePeople(screen, prize) {
+    if (!prize) {
+      const ids = new Set(screen.prizes.filter(item => item.total > wonFor(screen, item.id)).flatMap(item => eligiblePeople(screen, item).map(person => person.id)));
+      return screen.people.filter(person => ids.has(person.id));
+    }
+    const won = new Set(screen.winners.map(winner => winner.personId));
+    return screen.people.filter(person => person.allowed !== false && (prize.allowRepeat || !won.has(person.id)) &&
+      (prize.scope !== 'checked' || person.checked === true) && (prize.scope !== 'surveyed' || person.surveyed === true) &&
+      (prize.winnerScope !== 'designated' || (prize.designatedIds || []).includes(person.id)));
+  }
+  const groupsFor = screen => [...new Set([...(screen.groups || []), ...screen.people.map(person => person.group).filter(Boolean)])];
+  let poolFilter = '', selectedPeople = new Set();
   const totalSlots = screen => screen.prizes.reduce((total, prize) => total + prize.total, 0);
   const remainingSlots = screen => totalSlots(screen) - screen.winners.length;
   const maskPhone = phone => /^1\d{10}$/.test(phone) ? `${phone.slice(0, 3)}****${phone.slice(-4)}` : phone || '—';
@@ -116,42 +147,130 @@
 
   function renderList() {
     return `${document.body.classList.contains('mk-scheme-c') ? '' : '<div class="lottery-toolbar"><button type="button" class="lottery-btn is-primary" data-lottery-action="new-screen">＋ 新建大屏</button></div>'}<div class="lottery-section-head"><h3>全部大屏 <span class="lottery-muted">${state.screens.length}</span></h3><p class="lottery-muted">选择大屏，继续配置或开始抽奖</p></div>
-      ${state.screens.length ? `<div class="lottery-screen-list">${state.screens.map(screen => `<article class="lottery-screen-card"><div class="lottery-prize-icon">${giftIcon}</div><div class="lottery-screen-card-copy"><h3>${escapeHTML(screen.name)}</h3><p class="lottery-screen-meta">创建于 ${escapeHTML(dateLabel(screen.createdAt))} · ${screen.prizes.length} 个奖项 · ${screen.people.length} 位参与人</p><p class="lottery-muted">已抽 ${screen.winners.length} 人 / 总名额 ${totalSlots(screen)} 人</p></div><div class="lottery-card-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="open-screen" data-id="${escapeHTML(screen.id)}">管理大屏</button>${btn('edit-screen', '编辑名称', `data-id="${escapeHTML(screen.id)}"`)}${btn('delete-screen', '删除', `data-id="${escapeHTML(screen.id)}"`)}</div></article>`).join('')}</div>` : `<div class="lottery-empty"><div class="lottery-empty-icon">${giftIcon}</div><h3>创建第一个抽奖大屏</h3><p>设置奖项、导入参与名单，即可开始现场抽奖。</p><button type="button" class="lottery-btn is-primary" data-lottery-action="new-screen">新建大屏</button></div>`}`;
+      ${state.screens.length ? `<div class="lottery-screen-list">${state.screens.map(screen => `<article class="lottery-screen-card"><div class="lottery-prize-icon">${giftIcon}</div><div class="lottery-screen-card-copy"><h3>${escapeHTML(screen.name)}</h3><p class="lottery-screen-meta">创建于 ${escapeHTML(dateLabel(screen.createdAt))} · ${screen.prizes.length} 个奖项 · ${screen.people.length} 位参与人</p><p class="lottery-muted">已抽 ${screen.winners.length} 人次 / 总名额 ${totalSlots(screen)} 人</p></div><div class="lottery-card-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="open-screen" data-id="${escapeHTML(screen.id)}">管理大屏</button>${btn('edit-screen', '编辑名称', `data-id="${escapeHTML(screen.id)}"`)}${btn('delete-screen', '删除', `data-id="${escapeHTML(screen.id)}"`)}</div></article>`).join('')}</div>` : `<div class="lottery-empty"><div class="lottery-empty-icon">${giftIcon}</div><h3>创建第一个抽奖大屏</h3><p>设置奖项、同步参与名单，即可开始现场抽奖。</p><button type="button" class="lottery-btn is-primary" data-lottery-action="new-screen">新建大屏</button></div>`}`;
   }
 
   function renderStats(screen) {
     const eligible = eligiblePeople(screen).length;
-    return `<div class="lottery-stats" aria-label="抽奖概况"><div class="lottery-stat"><span>参与人数</span><strong>${screen.people.length}<small> 人</small></strong><small>${eligible} 人当前可抽</small></div><div class="lottery-stat"><span>奖项数量</span><strong>${screen.prizes.length}<small> 项</small></strong><small>共 ${totalSlots(screen)} 个中奖名额</small></div><div class="lottery-stat"><span>已中奖人数</span><strong>${screen.winners.length}<small> 人</small></strong><small>同一参与人只中奖一次</small></div><div class="lottery-stat"><span>剩余名额</span><strong>${remainingSlots(screen)}<small> 个</small></strong><small>${!screen.prizes.length ? '添加奖项后生成名额' : !remainingSlots(screen) ? '全部奖项已抽完' : eligible < remainingSlots(screen) ? `还需补充 ${remainingSlots(screen) - eligible} 位可抽人员` : '可继续抽取'}</small></div></div>`;
+    return `<div class="lottery-stats" aria-label="抽奖概况"><div class="lottery-stat"><span>参与人数</span><strong>${screen.people.length}<small> 人</small></strong><small>${eligible} 人当前可抽</small></div><div class="lottery-stat"><span>奖项数量</span><strong>${screen.prizes.length}<small> 项</small></strong><small>共 ${totalSlots(screen)} 个中奖名额</small></div><div class="lottery-stat"><span>中奖人次</span><strong>${screen.winners.length}<small> 人</small></strong><small>重复中奖按奖项规则控制</small></div><div class="lottery-stat"><span>剩余名额</span><strong>${remainingSlots(screen)}<small> 个</small></strong><small>${!screen.prizes.length ? '添加奖项后生成名额' : !remainingSlots(screen) ? '全部奖项已抽完' : eligible < remainingSlots(screen) ? `还需补充 ${remainingSlots(screen) - eligible} 位可抽人员` : '可继续抽取'}</small></div></div>`;
   }
   function renderDetail(screen) {
     const noDraw = !screen.prizes.length || !eligiblePeople(screen).length || !remainingSlots(screen);
-    return `<div class="lottery-detail-header"><div class="lottery-detail-copy"><button type="button" class="lottery-btn is-quiet lottery-back" data-lottery-action="screen-list">← 全部大屏</button><div class="lottery-title-line"><h2>${escapeHTML(screen.name)}</h2><span class="lottery-status">${screen.winners.length ? remainingSlots(screen) ? '抽奖进行中' : '抽奖已完成' : '准备中'}</span></div></div><div class="lottery-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${noDraw ? 'disabled title="请先设置奖项并准备可抽取的参与名单"' : ''}>${!screen.prizes.length ? '请先添加奖项' : !remainingSlots(screen) && screen.winners.length ? '全部奖项已抽完' : !screen.people.length ? '请先导入名单' : !eligiblePeople(screen).length ? '暂无可抽人员' : '选择形式并进入大屏'} <span aria-hidden="true">↗</span></button></div></div>${renderStats(screen)}
+    return `<div class="lottery-detail-header"><div class="lottery-detail-copy"><button type="button" class="lottery-btn is-quiet lottery-back" data-lottery-action="screen-list">← 全部大屏</button><div class="lottery-title-line"><h2>${escapeHTML(screen.name)}</h2><span class="lottery-status">${screen.winners.length ? remainingSlots(screen) ? '抽奖进行中' : '抽奖已完成' : '准备中'}</span></div></div><div class="lottery-actions"><button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${noDraw ? 'disabled title="请先设置奖项并准备可抽取的参与名单"' : ''}>${!screen.prizes.length ? '请先添加奖项' : !remainingSlots(screen) && screen.winners.length ? '全部奖项已抽完' : !screen.people.length ? '请先同步名单' : !eligiblePeople(screen).length ? '暂无可抽人员' : '选择形式并进入大屏'} <span aria-hidden="true">↗</span></button></div></div>${renderStats(screen)}
       <div class="lottery-tabs" role="tablist" aria-label="抽奖管理">${[['prizes', '奖项设置', screen.prizes.length], ['pool', '抽奖池名单', screen.people.length], ['winners', '中奖记录', screen.winners.length]].map(([key, label, count]) => `<button type="button" id="lottery-tab-${key}" role="tab" aria-selected="${tab === key}" aria-controls="lottery-panel-${key}" tabindex="${tab === key ? 0 : -1}" class="${tab === key ? 'is-active' : ''}" data-lottery-tab="${key}">${label}<span>${count}</span></button>`).join('')}</div>
       <section class="lottery-section" id="lottery-panel-${tab}" role="tabpanel" aria-labelledby="lottery-tab-${tab}" tabindex="0">${tab === 'prizes' ? renderPrizes(screen) : tab === 'pool' ? renderPool(screen) : renderWinners(screen)}</section>`;
   }
   function renderPrizes(screen) {
     const eligible = eligiblePeople(screen).length;
-    return `<div class="lottery-section-head"><div><h3>奖项设置</h3><p class="lottery-muted">总名额控制奖品数量，每轮人数控制抽奖节奏；进入舞台前可调整本轮人数。</p></div><button type="button" class="lottery-btn" data-lottery-action="add-prize">＋ 添加奖项</button></div>${eligible < remainingSlots(screen) ? `<p class="lottery-inline-warning"><span aria-hidden="true">ⓘ</span> 当前可抽人数 ${eligible} 人，少于剩余名额 ${remainingSlots(screen)} 个。可前往<button type="button" class="lottery-link" data-lottery-tab="pool">抽奖池名单</button>导入更多参与人。</p>` : ''}
+    return `<div class="lottery-section-head"><div><h3>奖项设置</h3><p class="lottery-muted">总名额控制奖品数量，每轮人数控制抽奖节奏；进入舞台前可调整本轮人数。</p></div><button type="button" class="lottery-btn" data-lottery-action="add-prize">＋ 添加奖项</button></div>${screen.prizes.every(prize => !prize.allowRepeat) && eligible < remainingSlots(screen) ? `<p class="lottery-inline-warning"><span aria-hidden="true">ⓘ</span> 当前可抽人数 ${eligible} 人，少于剩余名额 ${remainingSlots(screen)} 个。可前往<button type="button" class="lottery-link" data-lottery-tab="pool">抽奖池名单</button>同步更多参与人。</p>` : ''}
       <div class="lottery-prize-grid">${screen.prizes.map((prize, index) => {
         const won = wonFor(screen, prize.id), left = prize.total - won;
-        return `<article class="lottery-prize-card" data-prize-index="${index % 3}"><div class="lottery-prize-card-top"><span class="lottery-prize-badge">${escapeHTML(prize.level)}</span><div class="lottery-prize-icon">${giftIcon}</div></div><h3>${escapeHTML(prize.name)}</h3><p class="lottery-prize-name">${left ? won ? '抽奖进行中' : '待抽奖' : '本奖项已抽完'}</p><div class="lottery-prize-counts"><div><strong>${prize.total}</strong><span>总名额</span></div><div><strong>${won}</strong><span>已抽出</span></div><div><strong>${left}</strong><span>剩余</span></div></div><p class="lottery-batch-meta"><span>每轮默认 ${prizeBatch(prize)} 人</span>${left ? `<span>按默认人数约 ${Math.ceil(left / prizeBatch(prize))} 轮完成</span>` : ''}</p><div class="lottery-progress" role="progressbar" aria-label="${escapeHTML(prize.level)}抽取进度" aria-valuemin="0" aria-valuemax="${prize.total}" aria-valuenow="${won}"><span style="width:${Math.min(100, won / prize.total * 100)}%"></span></div><div class="lottery-card-actions">${btn('edit-prize', '编辑奖项', `data-id="${escapeHTML(prize.id)}"`)}<button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-prize" data-id="${escapeHTML(prize.id)}" ${won ? 'disabled title="已有中奖记录的奖项不可删除"' : ''}>删除</button></div></article>`;
+        return `<article class="lottery-prize-card" data-prize-index="${index % 3}"><div class="lottery-prize-card-top"><span class="lottery-prize-badge">${escapeHTML(prize.level)}</span><div class="lottery-prize-icon">${giftIcon}</div></div><h3>${escapeHTML(prize.name)}</h3><p class="lottery-prize-name">${left ? won ? '抽奖进行中' : '待抽奖' : '本奖项已抽完'}</p><div class="lottery-prize-counts"><div><strong>${prize.total}</strong><span>总名额</span></div><div><strong>${won}</strong><span>已抽出</span></div><div><strong>${left}</strong><span>剩余</span></div></div><p class="lottery-rule-summary">${scopeLabels[prize.scope || 'all']} · ${prize.winnerScope === 'designated' ? '内定人员' : '随机抽取'} · ${prize.allowRepeat ? '允许重复中奖' : '不允许重复中奖'} · ${eligiblePeople(screen, prize).length} 人可抽</p><div class="lottery-progress" role="progressbar" aria-label="${escapeHTML(prize.level)}抽取进度" aria-valuemin="0" aria-valuemax="${prize.total}" aria-valuenow="${won}"><span style="width:${Math.min(100, won / prize.total * 100)}%"></span></div><div class="lottery-card-actions">${btn('edit-prize', '编辑奖项', `data-id="${escapeHTML(prize.id)}"`)}<button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-prize" data-id="${escapeHTML(prize.id)}" ${won ? 'disabled title="已有中奖记录的奖项不可删除"' : ''}>删除</button></div></article>`;
       }).join('')}</div>${screen.prizes.length ? '' : '<div class="lottery-empty"><div class="lottery-empty-icon">' + giftIcon + '</div><h3>尚未设置奖项</h3><p>点击右上角“添加奖项”，设置奖品、中奖名额和每轮人数。</p></div>'}`;
   }
   function searchPeople(items, query) {
     const needle = query.toLocaleLowerCase();
-    return needle ? items.filter(item => `${item.name} ${item.company} ${item.phone}`.toLocaleLowerCase().includes(needle)) : items;
+    return needle ? items.filter(item => `${item.name} ${item.nickname || ''} ${item.company} ${item.phone}`.toLocaleLowerCase().includes(needle)) : items;
   }
   function pagination(page, total, kind) {
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     return `<div class="lottery-pagination" tabindex="-1"><span>共 ${total} 条 · 每页 ${PAGE_SIZE} 条</span><div><button type="button" class="lottery-btn is-small" aria-label="上一页" data-lottery-action="${kind}-page" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>上一页</button><span aria-live="polite">${page} / ${pages}</span><button type="button" class="lottery-btn is-small" aria-label="下一页" data-lottery-action="${kind}-page" data-page="${page + 1}" ${page >= pages ? 'disabled' : ''}>下一页</button></div></div>`;
   }
+  function poolRows(screen) {
+    return searchPeople(screen.people, poolQuery).filter(person => !poolFilter ||
+      poolFilter === 'checked' && person.checked || poolFilter === 'unchecked' && !person.checked ||
+      poolFilter === 'allowed' && person.allowed !== false || poolFilter === 'blocked' && person.allowed === false ||
+      poolFilter === 'surveyed' && person.surveyed || poolFilter === `group:${person.group}`);
+  }
+  function renderSelection() {
+    const count = root.querySelector('[data-pool-selected-count]');
+    if (count) count.textContent = `已选择 ${selectedPeople.size} 人`;
+    const exportButton = root.querySelector('[data-lottery-action=export-pool]');
+    if (exportButton) exportButton.textContent = selectedPeople.size ? '导出已选人员' : '导出筛选名单';
+    const inputs = [...root.querySelectorAll('[data-pool-select]')], all = root.querySelector('[data-pool-select-all]');
+    if (all) { all.checked = inputs.length > 0 && inputs.every(input => input.checked); all.indeterminate = inputs.some(input => input.checked) && !all.checked; }
+    root.querySelectorAll('[data-pool-batch]').forEach(button => { button.disabled = !selectedPeople.size; });
+  }
   function renderPool(screen) {
-    const rows = searchPeople(screen.people, poolQuery);
+    const rows = poolRows(screen);
     poolPage = Math.min(poolPage, Math.max(1, Math.ceil(rows.length / PAGE_SIZE)));
-    const won = new Set(screen.winners.map(winner => winner.personId));
-    return `<div class="lottery-section-head"><div><h3>抽奖池名单</h3><p class="lottery-muted">每位参与人最多中奖一次；已中奖人员自动排除后续抽取。</p></div><div class="lottery-actions">${btn('download-template', '下载导入模板')}<button type="button" class="lottery-btn is-primary" data-lottery-action="import-people">导入名单</button></div></div>
-      <form class="lottery-filters" data-lottery-form="pool-search"><label class="lottery-field"><span>关键词</span><input type="search" name="query" value="${escapeHTML(poolQuery)}" maxlength="120" placeholder="搜索姓名、公司或手机号" aria-label="搜索抽奖池名单"></label><button class="lottery-btn is-primary" type="submit">搜索</button><button class="lottery-btn is-quiet" type="button" data-lottery-action="reset-pool">重置</button><span class="lottery-filter-summary">${poolQuery ? `筛选 ${rows.length} / ${screen.people.length} 人` : `${screen.people.length} 位参与人`} · ${eligiblePeople(screen).length} 人可抽</span></form>
-      ${rows.length ? `<div class="lottery-table-wrap"><table class="lottery-table"><thead><tr><th scope="col">姓名</th><th scope="col">公司</th><th scope="col">手机号</th><th scope="col">抽奖状态</th></tr></thead><tbody>${rows.slice((poolPage - 1) * PAGE_SIZE, poolPage * PAGE_SIZE).map(person => `<tr><td><span class="lottery-person-avatar" aria-hidden="true">${escapeHTML(person.name.slice(0, 1))}</span><strong>${escapeHTML(person.name)}</strong></td><td>${escapeHTML(person.company || '—')}</td><td class="lottery-numeric">${escapeHTML(maskPhone(person.phone))}</td><td><span class="lottery-row-status ${won.has(person.id) ? 'is-won' : ''}">${won.has(person.id) ? '已中奖' : '待抽取'}</span></td></tr>`).join('')}</tbody></table></div>${pagination(poolPage, rows.length, 'pool')}` : `<div class="lottery-empty"><div class="lottery-empty-icon">${peopleIcon}</div><h3>${poolQuery ? '没有找到匹配的参与人' : '还没有参与人'}</h3><p>${poolQuery ? '试试其他关键词，或重置搜索条件。' : '使用 CSV 模板导入姓名、公司与手机号，即可准备抽奖。'}</p><div class="lottery-empty-actions">${poolQuery ? btn('reset-pool', '重置搜索') : '<button type="button" class="lottery-btn is-primary" data-lottery-action="import-people">导入名单</button>'}</div></div>`}`;
+    const visible = rows.slice((poolPage - 1) * PAGE_SIZE, poolPage * PAGE_SIZE);
+    const options = [['', '全部人员'], ['checked', '已签到'], ['unchecked', '未签到'], ['allowed', '允许抽奖'], ['blocked', '禁止抽奖'], ['surveyed', '已填写问卷'], ...groupsFor(screen).map(group => [`group:${group}`, group])];
+    return `<div class="lottery-section-head"><div><h3>抽奖池名单</h3><p class="lottery-muted">统一管理签到、分组与抽奖资格；实际可抽人员按各奖项规则筛选。</p></div><div class="lottery-actions">${btn('manage-groups', '分组管理')}${btn('add-person', '添加用户')}<button type="button" class="lottery-btn is-primary" data-lottery-action="sync-people">同步名单</button>${btn('export-pool', selectedPeople.size ? '导出已选人员' : '导出筛选名单')}</div></div>
+      <form class="lottery-filters" data-lottery-form="pool-search"><label class="lottery-field"><span>筛选</span><select name="poolFilter">${options.map(([key,label]) => `<option value="${escapeHTML(key)}" ${poolFilter === key ? 'selected' : ''}>${escapeHTML(label)}</option>`).join('')}</select></label><label class="lottery-field"><span>用户名</span><input type="search" name="query" value="${escapeHTML(poolQuery)}" placeholder="姓名、微信昵称、公司或手机号"></label><button class="lottery-btn" type="submit">搜索</button>${btn('reset-pool','重置')}<span class="lottery-filter-summary">筛选 ${rows.length} / ${screen.people.length} 人</span></form>
+      <div class="lottery-pool-batch"><span data-pool-selected-count>已选择 ${selectedPeople.size} 人</span>${[['set-checked','设为已签到'],['set-unchecked','设为未签到'],['block-people','禁止抽奖'],['allow-people','允许抽奖'],['assign-group','设置分组']].map(([action,label]) => `<button type="button" class="lottery-btn" data-lottery-action="${action}" data-pool-batch ${selectedPeople.size ? '' : 'disabled'}>${label}</button>`).join('')}</div>
+      <div class="lottery-table-wrap"><table class="lottery-table lottery-pool-table"><thead><tr><th><input type="checkbox" data-pool-select-all aria-label="选择当前页人员" ${visible.length && visible.every(person => selectedPeople.has(person.id)) ? 'checked' : ''}></th><th>操作</th><th>真实姓名 / 公司</th><th>微信昵称</th><th>来源</th><th>分组</th><th>签到 / 问卷</th><th>允许抽奖</th><th>手机号码</th><th>进入时间</th></tr></thead><tbody>${visible.map(person => `<tr><td><input type="checkbox" data-pool-select value="${escapeHTML(person.id)}" aria-label="选择${escapeHTML(person.name)}" ${selectedPeople.has(person.id) ? 'checked' : ''}></td><td>${btn('edit-person','编辑',`data-id="${escapeHTML(person.id)}"`)}</td><td><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.company || '—')}</small></td><td>${escapeHTML(person.nickname || '—')}</td><td>${escapeHTML(person.source || '内置示例')}</td><td>${escapeHTML(person.group || '未分组')}</td><td>${person.checked ? '已签到' : '未签到'}<small>${person.surveyed ? '已填写问卷' : '未填写问卷'}</small></td><td><span class="lottery-row-status ${person.allowed === false ? 'is-blocked' : ''}">${person.allowed === false ? '禁止' : '允许'}</span></td><td>${escapeHTML(maskPhone(person.phone))}</td><td>${person.joinedAt ? escapeHTML(timeLabel(person.joinedAt)) : '—'}</td></tr>`).join('') || '<tr><td colspan="10" class="lottery-pool-empty">暂无匹配人员，可调整筛选、添加用户或同步名单。</td></tr>'}</tbody></table></div>${pagination(poolPage, rows.length, 'pool')}`;
+  }
+  function personEditor(id) {
+    const screen = currentScreen(), person = screen.people.find(item => item.id === id);
+    openDialog(person ? '编辑用户' : '添加用户', `<div class="lottery-form"><input type="hidden" name="id" value="${escapeHTML(person?.id || '')}">${[['name','真实姓名',60],['nickname','微信昵称',60],['company','公司',120],['phone','手机号',20]].map(([name,label,max]) => `<label>${label}<input name="${name}" maxlength="${max}" ${name === 'name' ? 'required' : ''} value="${escapeHTML(person?.[name] || '')}"></label>`).join('')}<label>分组<select name="group"><option value="">未分组</option>${groupsFor(screen).map(group => `<option ${person?.group === group ? 'selected' : ''}>${escapeHTML(group)}</option>`).join('')}</select></label><div class="lottery-person-flags">${[['checked','已签到'],['surveyed','已填写问卷'],['allowed','允许抽奖']].map(([key,label]) => `<label><input type="checkbox" name="${key}" ${(key === 'allowed' ? person?.allowed !== false : person?.[key]) ? 'checked' : ''}>${label}</label>`).join('')}</div></div>`, `${cancelButton}${submitButton('保存')}`, {form:'person-editor'});
+  }
+  function syncPeopleDialog() {
+    const cells = [...document.querySelectorAll('[data-activity-panel="attendees"] .activity-simple-table > span')];
+    const people = [];
+    for (let index = 0; index + 4 < cells.length; index += 5) {
+      if (cells[index + 2].textContent.trim() !== '已通过') continue;
+      people.push({id:`attendee-${index / 5}`, name:cells[index].textContent.trim(), company:cells[index + 1].textContent.trim(), phone:'', checked:cells[index + 3].textContent.trim() === '已签到'});
+    }
+    openDialog('同步活动参会名单', `<div class="lottery-form"><p>来源：当前活动「用友数智营销峰会」已通过报名的参会人员。</p><p class="lottery-muted">当前原型可同步 ${people.length} 位示例参会人员。已存在人员按来源标识或姓名与公司匹配，仅更新签到状态；已有分组、抽奖资格和中奖记录保留。</p><label>同步范围<select name="syncScope"><option value="all">全部已通过报名人员</option><option value="checked">仅已签到人员</option></select></label></div>`, `${cancelButton}${submitButton('确认同步')}`, {form:'sync-people'});
+    const form = dialogs.querySelector('[data-lottery-form="sync-people"]');
+    if (form) form.dataset.people = JSON.stringify(people);
+  }
+  function handleRosterAction(event) {
+    const button = event.target.closest('[data-lottery-action]');
+    if (!button || button.disabled) return false;
+    const screen = currentScreen(), action = button.dataset.lotteryAction;
+    if (!screen) return false;
+    if (action === 'add-person' || action === 'edit-person') { personEditor(button.dataset.id); return true; }
+    if (action === 'manage-groups') {
+      openDialog('分组管理', `<div class="lottery-form"><label>分组名称，每行一个<textarea name="groups" rows="6" placeholder="例如：嘉宾组">${escapeHTML(groupsFor(screen).join('\n'))}</textarea></label><p class="lottery-muted">分组用于名单管理；删除分组后，组内人员变为未分组。</p></div>`, `${cancelButton}${submitButton('保存分组')}`, {form:'pool-groups'}); return true;
+    }
+    if (action === 'assign-group') {
+      openDialog('设置人员分组', `<div class="lottery-form"><p>将为 ${selectedPeople.size} 位已选人员设置分组。</p><label>分组<select name="group"><option value="">未分组</option>${groupsFor(screen).map(group => `<option>${escapeHTML(group)}</option>`).join('')}</select></label></div>`, `${cancelButton}${submitButton('确认')}`, {form:'assign-group'}); return true;
+    }
+    const changes = {'set-checked':{checked:true}, 'set-unchecked':{checked:false}, 'block-people':{allowed:false}, 'allow-people':{allowed:true}};
+    if (changes[action]) {
+      if (!selectedPeople.size) return true;
+      screen.people.filter(person => selectedPeople.has(person.id)).forEach(person => Object.assign(person,changes[action]));
+      saveAndRender(`已更新 ${selectedPeople.size} 位人员。`); return true;
+    }
+    if (action === 'export-pool') {
+      const people = poolRows(screen).filter(person => !selectedPeople.size || selectedPeople.has(person.id));
+      if (!people.length) { notify('当前没有可导出的人员。',true); return true; }
+      downloadCSV('抽奖池名单.csv', [['真实姓名','微信昵称','公司','来源','分组','签到状态','问卷状态','允许抽奖','手机号','进入时间'], ...people.map(person => [person.name,person.nickname || '',person.company,person.source || '内置示例',person.group || '',person.checked ? '已签到' : '未签到',person.surveyed ? '已填写' : '未填写',person.allowed === false ? '否' : '是',maskPhone(person.phone),person.joinedAt ? timeLabel(person.joinedAt) : ''])]); return true;
+    }
+    return false;
+  }
+  function submitRosterForm(form, data, kind) {
+    if (!['person-editor','pool-groups','assign-group','sync-people'].includes(kind)) return false;
+    const screen = currentScreen();
+    let message = '名单设置已保存。';
+    if (kind === 'person-editor') {
+      const id = String(data.get('id') || ''), name = String(data.get('name') || '').trim(), phone = String(data.get('phone') || '').trim();
+      if (!textValid(name,60) || !phoneValid(phone)) { formError(form,'请填写姓名和有效手机号，手机号可留空。'); return true; }
+      const values = {name,phone,nickname:String(data.get('nickname') || '').trim(),company:String(data.get('company') || '').trim(),group:String(data.get('group') || ''),checked:data.has('checked'),surveyed:data.has('surveyed'),allowed:data.has('allowed')};
+      if (screen.people.some(person => person.id !== id && personKey(person) === personKey(values))) { formError(form,'该人员已存在，请编辑已有记录。'); return true; }
+      const person = screen.people.find(item => item.id === id);
+      if (person) Object.assign(person,values);
+      else { if (screen.people.length >= 10000) { formError(form,'每个大屏最多 10,000 人。'); return true; } screen.people.push({id:uid('person'),...values,source:'手动添加',joinedAt:new Date().toISOString()}); }
+    } else if (kind === 'pool-groups') {
+      const groups = [...new Set(String(data.get('groups') || '').split('\n').map(value => value.trim()).filter(Boolean))];
+      if (groups.length > 100 || groups.some(group => group.length > 40)) { formError(form,'最多 100 个分组，每个名称最多 40 字。'); return true; }
+      screen.groups = groups; screen.people.forEach(person => { if (!groups.includes(person.group)) person.group = ''; });
+    } else if (kind === 'assign-group') {
+      screen.people.filter(person => selectedPeople.has(person.id)).forEach(person => { person.group = String(data.get('group') || ''); });
+    } else {
+      const people = JSON.parse(form.dataset.people).filter(person => data.get('syncScope') !== 'checked' || person.checked);
+      const additions = people.filter(person => !screen.people.some(item => item.attendeeId === person.id || personKey(item) === personKey(person)));
+      if (screen.people.length + additions.length > 10000) { formError(form,'同步后将超过 10,000 人。'); return true; }
+      message = `同步完成：新增 ${additions.length} 人，更新 ${people.length - additions.length} 人。`;
+      people.forEach(person => {
+        const existing = screen.people.find(item => item.attendeeId === person.id || personKey(item) === personKey(person));
+        if (existing) { existing.checked = person.checked; existing.attendeeId = person.id; }
+        else screen.people.push({...person,id:uid('person'),attendeeId:person.id,source:'活动参会人',allowed:true,joinedAt:new Date().toISOString()});
+      });
+    }
+    form.dataset.committed = 'true'; selectedPeople.clear(); form.closest('dialog').close(); saveAndRender(message); return true;
   }
   function renderWinners(screen) {
     const filtered = searchPeople(screen.winners.filter(winner => !winnerPrize || winner.prizeId === winnerPrize), winnerQuery).slice().reverse();
@@ -167,7 +286,7 @@
     if (createButton) createButton.hidden = view !== 'list';
     viewRoot.innerHTML = view === 'list' ? renderList() : renderDetail(screen);
   }
-  function resetFilters() { poolQuery = ''; winnerQuery = ''; winnerPrize = ''; poolPage = 1; winnerPage = 1; }
+  function resetFilters() { poolFilter = ''; selectedPeople.clear(); poolQuery = ''; winnerQuery = ''; winnerPrize = ''; poolPage = 1; winnerPage = 1; }
   function switchTab(next) { if (!['prizes', 'pool', 'winners'].includes(next)) return; tab = next; render(); root.querySelector(`#lottery-tab-${next}`)?.focus(); }
 
   function restoreFocus(opener, fallback) {
@@ -196,26 +315,38 @@
   function formError(form, message) { const element = form.querySelector('.lottery-form-error'); element.textContent = message; element.hidden = false; }
   function screenEditor(id) {
     const screen = state.screens.find(item => item.id === id);
-    const dialog = openDialog(screen ? '编辑大屏名称' : '新建抽奖大屏', `<div class="lottery-form"><input type="hidden" name="id" value="${escapeHTML(screen?.id || '')}"><label>大屏名称 <span class="lottery-required">*</span><input autofocus name="name" required maxlength="80" placeholder="例如：年度盛典抽奖" value="${escapeHTML(screen?.name || '')}"></label><p class="lottery-muted">创建后可添加奖项并导入名单。所有数据仅用于当前浏览器中的原型演示。</p></div>`, `${cancelButton}${submitButton(screen ? '保存修改' : '创建大屏')}`, {form: 'screen-editor', fallback: '[data-lottery-action="new-screen"]'});
+    const dialog = openDialog(screen ? '编辑大屏名称' : '新建抽奖大屏', `<div class="lottery-form"><input type="hidden" name="id" value="${escapeHTML(screen?.id || '')}"><label>大屏名称 <span class="lottery-required">*</span><input autofocus name="name" required maxlength="80" placeholder="例如：年度盛典抽奖" value="${escapeHTML(screen?.name || '')}"></label><p class="lottery-muted">创建后可添加奖项并同步名单。所有数据仅用于当前浏览器中的原型演示。</p></div>`, `${cancelButton}${submitButton(screen ? '保存修改' : '创建大屏')}`, {form: 'screen-editor', fallback: '[data-lottery-action="new-screen"]'});
     dialog?.querySelector('input[name="name"]')?.focus();
   }
   function prizeEditor(id) {
     const screen = currentScreen(); if (!screen) return;
     const prize = screen.prizes.find(item => item.id === id);
     const min = prize ? Math.max(1, wonFor(screen, prize.id)) : 1;
-    const dialog = openDialog(prize ? '编辑奖项' : '添加奖项', `<div class="lottery-form"><input type="hidden" name="id" value="${escapeHTML(prize?.id || '')}"><label>奖项等级 <span class="lottery-required">*</span><input name="level" autofocus required maxlength="20" value="${escapeHTML(prize?.level || '')}" placeholder="例如：一等奖"></label><label>奖品名称 <span class="lottery-required">*</span><input name="name" required maxlength="80" value="${escapeHTML(prize?.name || '')}" placeholder="例如：蓝牙耳机"></label><div class="lottery-prize-fields"><label>总中奖名额 <span class="lottery-required">*</span><input name="total" type="number" required min="${min}" max="10000" step="1" value="${prize?.total || 1}"><small>该奖项共可发出的数量</small></label><label>每轮默认抽取人数 <span class="lottery-required">*</span><input name="batchSize" type="number" required min="1" max="${Math.min(MAX_BATCH_SIZE, prize?.total || 1)}" step="1" value="${prizeBatch(prize)}"><small>进入舞台前可调整本轮人数</small></label></div><p class="lottery-muted">总名额须为 ${min}–10,000 的整数，不能少于已抽出人数。每轮人数须为 1–50 的整数且不超过总名额；抽取时还受形式、剩余名额与可抽人数限制。</p><div class="lottery-batch-advice"><strong>建议抽奖节奏</strong><p>总名额 1–5 人：每轮 1 人；6–20 人：每轮 5 人；21 人以上：每轮 10 人。现场批量抽取建议每轮 10–20 人，最多 50 人。</p><small class="lottery-batch-recommendation"></small></div></div>`, `${cancelButton}${submitButton(prize ? '保存修改' : '添加奖项')}`, {form: 'prize-editor', fallback: '[data-lottery-action="add-prize"]'});
+    const dialog = openDialog(prize ? '编辑奖项' : '添加奖项', `<div class="lottery-form">
+      <input type="hidden" name="id" value="${escapeHTML(prize?.id || '')}">
+      <label>奖项名称<input name="level" autofocus required maxlength="20" value="${escapeHTML(prize?.level || '')}" placeholder="例如：一等奖"></label>
+      <label>奖品名称<input name="name" required maxlength="80" value="${escapeHTML(prize?.name || '')}" placeholder="例如：蓝牙耳机"></label>
+      <label>总中奖名额<input name="total" type="number" required min="${min}" max="10000" step="1" value="${prize?.total || 1}"><small>该奖项可发出的奖品总数，不能少于已抽出的 ${prize ? wonFor(screen,prize.id) : 0} 个名额。</small></label>
+      <div class="lottery-prize-fields"><label>抽奖范围<select name="scope">${Object.entries(scopeLabels).map(([key,label]) => `<option value="${key}" ${(prize?.scope || 'all') === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label>
+      <label>允许重复中奖<select name="allowRepeat"><option value="no">否</option><option value="yes" ${prize?.allowRepeat ? 'selected' : ''}>是</option></select></label></div>
+      <label>中奖范围<select name="winnerScope"><option value="random">随机抽取</option><option value="designated" ${prize?.winnerScope === 'designated' ? 'selected' : ''}>内定人员</option></select></label>
+      <fieldset class="lottery-designated" ${prize?.winnerScope === 'designated' ? '' : 'hidden'}><legend>选择内定人员</legend><input type="search" data-designated-search placeholder="搜索姓名、公司或手机号" aria-label="搜索内定人员"><div class="lottery-designated-list">${screen.people.map(person => `<label data-designated-person><input type="checkbox" name="designatedIds" value="${escapeHTML(person.id)}" ${(prize?.designatedIds || []).includes(person.id) ? 'checked' : ''}><span>${escapeHTML(person.name)}<small>${escapeHTML(person.company || '')} ${escapeHTML(maskPhone(person.phone))}${person.allowed === false ? ' · 已禁止抽奖' : ''}</small></span></label>`).join('') || '<p class="lottery-muted">请先在抽奖池名单添加或同步人员。</p>'}</div><p class="lottery-muted" data-designated-count></p></fieldset>
+      <p class="lottery-muted">选择内定人员后，仅从该名单抽取；名单人数多于名额时，在名单内随机选出。内定人员仍须符合抽奖范围及允许抽奖资格。选择允许重复中奖后，已中奖人员可再次参与；同一轮每人最多中奖一次。当前符合规则人数为 0 时可保存配置，开始抽奖前须补齐资格。</p>
+      </div>`, `${cancelButton}${submitButton(prize ? '保存修改' : '添加奖项')}`, {form: 'prize-editor', fallback: '[data-lottery-action="add-prize"]'});
     if (!dialog) return;
-    const total = dialog.querySelector('[name="total"]'), batch = dialog.querySelector('[name="batchSize"]');
-    let automatic = !prize;
+    const form = dialog.querySelector('form'), fieldset = dialog.querySelector('.lottery-designated');
     const refresh = () => {
-      const value = Number(total.value), limit = Math.min(MAX_BATCH_SIZE, Math.max(1, value));
-      batch.max = String(limit);
-      if (automatic && Number.isInteger(value) && value > 0) batch.value = String(recommendedBatch(value));
-      dialog.querySelector('.lottery-batch-recommendation').textContent = Number.isInteger(value) && value > 0 ? `当前建议每轮 ${recommendedBatch(value)} 人，约 ${Math.ceil(value / recommendedBatch(value))} 轮完成。转盘、单人滚动和金蛋每轮固定 1 人，老虎机最多 3 人。` : '请先填写总名额。';
+      fieldset.hidden = form.elements.winnerScope.value !== 'designated';
+      const ids = [...form.querySelectorAll('[name="designatedIds"]:checked')].map(input => input.value);
+      const rules = {scope:form.elements.scope.value, allowRepeat:form.elements.allowRepeat.value === 'yes', winnerScope:'designated', designatedIds:ids};
+      dialog.querySelector('[data-designated-count]').textContent = `已选择 ${ids.length} 人 · 当前符合规则 ${eligiblePeople(screen,rules).length} 人`;
     };
-    total.addEventListener('input', refresh);
-    batch.addEventListener('input', () => { automatic = false; });
-    refresh(); dialog.querySelector('input[name="level"]').focus();
+    form.addEventListener('change', refresh);
+    dialog.querySelector('[data-designated-search]').addEventListener('input', event => {
+      const query = event.target.value.trim().toLocaleLowerCase();
+      dialog.querySelectorAll('[data-designated-person]').forEach(row => { row.hidden = !row.textContent.toLocaleLowerCase().includes(query); });
+    });
+    refresh(); form.elements.level.focus();
   }
   function confirmDelete(kind, id) {
     const screen = kind === 'screen' ? state.screens.find(item => item.id === id) : currentScreen();
@@ -236,65 +367,7 @@
     anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  function parseCSV(source) {
-    const text = source.replace(/^\uFEFF/, ''), rows = [];
-    let row = [], cell = '', inQuotes = false, closedQuote = false;
-    function endCell() { row.push(cell); cell = ''; closedQuote = false; }
-    function endRow() { endCell(); rows.push(row); row = []; }
-    for (let index = 0; index < text.length; index++) {
-      const char = text[index];
-      if (inQuotes) {
-        if (char === '"') { if (text[index + 1] === '"') { cell += '"'; index++; } else { inQuotes = false; closedQuote = true; } }
-        else cell += char;
-      } else if (char === '"') {
-        if (cell.length || closedQuote) throw new Error('CSV 引号格式不正确，请使用模板另存为 UTF-8 CSV。');
-        inQuotes = true;
-      } else if (char === ',') endCell();
-      else if (char === '\n' || char === '\r') { endRow(); if (char === '\r' && text[index + 1] === '\n') index++; }
-      else if (closedQuote && !/\s/.test(char)) throw new Error('CSV 引号后存在无效字符，请检查文件。');
-      else if (!closedQuote) cell += char;
-    }
-    if (inQuotes) throw new Error('CSV 中有未闭合的引号，请检查文件。');
-    if (cell.length || row.length || closedQuote) endRow();
-    return rows;
-  }
   function personKey(person) { return person.phone.trim() ? `phone:${person.phone.replace(/[\s()-]/g, '')}` : `person:${person.name.trim().toLocaleLowerCase()}|${person.company.trim().toLocaleLowerCase()}`; }
-  function importDialog() {
-    openDialog('导入抽奖池名单', `<div class="lottery-form"><p>上传 UTF-8 编码的 <strong>.csv</strong> 文件，首行必须包含「姓名、公司、手机号」三列，顺序可调整。</p><p class="lottery-muted">姓名必填，公司和手机号可留空。支持带引号的逗号与换行；按手机号去重，没有手机号时按姓名＋公司去重。已有名单将保留。</p><button type="button" class="lottery-btn" data-lottery-action="download-template">下载 CSV 模板</button><label>选择 CSV 文件 <span class="lottery-required">*</span><input name="file" type="file" accept=".csv,text/csv" required aria-describedby="lottery-file-help"></label><p class="lottery-muted" id="lottery-file-help">文件不超过 2 MB；每个大屏最多保存 10,000 位参与人。手机号支持 11 位手机号或 138****0000 格式。</p></div>`, `${cancelButton}${submitButton('导入名单')}`, {form: 'import', fallback: '[data-lottery-action="import-people"]'});
-  }
-  async function importPeople(form) {
-    const file = form.elements.file.files[0], screen = currentScreen();
-    if (!file || !screen) return;
-    if (!/\.csv$/i.test(file.name)) return formError(form, '请选择 .csv 文件。');
-    if (file.size > 2 * 1024 * 1024) return formError(form, '文件超过 2 MB，请拆分后导入。');
-    const submit = form.querySelector('[type="submit"]'); submit.disabled = true; submit.textContent = '正在导入…'; busy = true;
-    try {
-      const source = await file.text();
-      if (!form.isConnected) return;
-      if (source.includes('\uFFFD') || source.includes('\0')) throw new Error('文件编码无法识别，请另存为 UTF-8 CSV 后重试。');
-      const rows = parseCSV(source);
-      if (!rows.length) throw new Error('文件为空，请下载模板填写后再导入。');
-      const headers = rows.shift().map(value => value.trim());
-      const nameIndex = headers.indexOf('姓名'), companyIndex = headers.indexOf('公司'), phoneIndex = headers.indexOf('手机号');
-      if ([nameIndex, companyIndex, phoneIndex].some(index => index < 0) || new Set(headers).size !== headers.length) throw new Error('表头必须包含且不能重复：姓名、公司、手机号。');
-      const keys = new Set(screen.people.map(personKey)), additions = [];
-      let skipped = 0, duplicates = 0, invalid = 0;
-      rows.forEach(cells => {
-        if (cells.every(cell => !cell.trim())) return;
-        const person = {id: uid('person'), name: (cells[nameIndex] || '').trim(), company: (cells[companyIndex] || '').trim(), phone: (cells[phoneIndex] || '').trim().replace(/[\s()-]/g, '')};
-        if (cells.length !== headers.length || !textValid(person.name, 60) || person.company.length > 120 || person.phone && !/^(?:1\d{10}|1\d{2}\*{4}\d{4})$/.test(person.phone)) { skipped++; invalid++; return; }
-        const key = personKey(person);
-        if (keys.has(key)) { skipped++; duplicates++; return; }
-        keys.add(key); additions.push(person);
-      });
-      if (screen.people.length + additions.length > 10000) throw new Error('导入后将超过 10,000 位参与人，请减少文件中的人数后重试。');
-      screen.people.push(...additions); poolPage = 1; poolQuery = ''; tab = 'pool';
-      form.closest('dialog').close();
-      saveAndRender(`导入完成：新增 ${additions.length} 人，跳过 ${skipped} 行（重复 ${duplicates} 行、格式无效 ${invalid} 行）。当前共 ${screen.people.length} 位参与人。`);
-    } catch (error) { if (form.isConnected) formError(form, error.message || '导入失败，请检查 CSV 格式后重试。'); }
-    finally { busy = false; if (submit.isConnected) { submit.disabled = false; submit.textContent = '导入名单'; } }
-  }
-
   function randomIndex(length) {
     if (!globalThis.crypto?.getRandomValues) throw new Error('此浏览器不支持安全随机数，请使用较新的浏览器进行演示。');
     const array = new Uint32Array(1), limit = Math.floor(0x100000000 / length) * length;
@@ -302,7 +375,7 @@
     return array[0] % length;
   }
   function drawOptions(screen, selected) {
-    return screen.prizes.map(prize => `<option value="${escapeHTML(prize.id)}" ${prize.id === selected ? 'selected' : ''} ${wonFor(screen, prize.id) >= prize.total ? 'disabled' : ''}>${escapeHTML(prize.level)} · ${escapeHTML(prize.name)}（剩余 ${prize.total - wonFor(screen, prize.id)}）</option>`).join('');
+    return screen.prizes.map(prize => `<option value="${escapeHTML(prize.id)}" ${prize.id === selected ? 'selected' : ''} ${wonFor(screen, prize.id) >= prize.total || !eligiblePeople(screen, prize).length ? 'disabled' : ''}>${escapeHTML(prize.level)} · ${escapeHTML(prize.name)}（剩余 ${prize.total - wonFor(screen, prize.id)}）</option>`).join('');
   }
   function stylePicker(mode) {
     return `<div class="lottery-style-picker" role="group" aria-label="抽奖样式">${DRAW_MODES.map(item => `<button type="button" class="lottery-style-option ${item.id === mode ? 'is-active' : ''}" data-lottery-mode="${item.id}" aria-pressed="${item.id === mode}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${item.glyph}</svg><span><strong>${item.label}</strong><small>${item.caption}</small></span></button>`).join('')}</div>`;
@@ -322,16 +395,14 @@
     const screen = currentScreen(); if (!screen || !dialog?.open) return;
     const form = dialog.querySelector('form'), prize = screen.prizes.find(item => item.id === form.elements.setupPrize.value);
     const mode = drawMode(form.elements.setupMode.value), quantity = form.elements.setupQuantity;
-    const left = prize ? prize.total - wonFor(screen, prize.id) : 0, eligible = eligiblePeople(screen).length;
-    const max = Math.min(left, eligible, mode.max), desired = useDefault ? prizeBatch(prize) : Number(quantity.value);
+    const left = prize ? prize.total - wonFor(screen, prize.id) : 0, eligible = eligiblePeople(screen, prize).length;
+    const max = Math.min(left, eligible, mode.max), desired = useDefault ? roundQuantity(prize) : Number(quantity.value);
     quantity.max = String(Math.max(1, max));
-    if (useDefault) quantity.value = String(Math.max(1, Math.min(desired, max)));
+    if (useDefault || mode.max === 1 || Number(quantity.value) > max) quantity.value = String(Math.max(1, Math.min(desired, max)));
     const count = Number(quantity.value), valid = Number.isInteger(count) && count >= 1 && count <= max;
-    const defaults = prizeBatch(prize), restrictions = [];
-    if (defaults > mode.max) restrictions.push(`${mode.label}每轮最多 ${mode.max} 人`);
-    if (defaults > left) restrictions.push(`该奖项仅剩 ${left} 个名额`);
-    if (defaults > eligible) restrictions.push(`当前仅 ${eligible} 人可抽`);
-    dialog.querySelector('.lottery-launch-availability').textContent = `奖项默认每轮 ${defaults} 人 · 本形式上限 ${mode.max} 人 · 剩余 ${left} 个名额 · ${eligible} 人可抽。本轮可设 1–${Math.max(0, max)} 人。${restrictions.length ? ` ${restrictions.join('；')}，仅调整本轮，奖项默认不变。` : ''}`;
+    quantity.readOnly = mode.max === 1;
+    quantity.setAttribute('aria-readonly', String(mode.max === 1));
+    dialog.querySelector('.lottery-launch-availability').textContent = `剩余 ${left} 个名额 · 当前可抽 ${eligible} 人${mode.max === 1 ? ' · 本形式每轮固定抽取 1 人' : ` · 本轮最多抽取 ${max} 人`} · ${prize?.winnerScope === 'designated' ? '仅从内定人员中抽取' : '随机抽取'}`;
     dialog.querySelector('.lottery-launch-summary').innerHTML = `<strong>进入舞台前确认</strong><p>${escapeHTML(prize ? `${prize.level} · ${prize.name}` : '请选择奖项')} <span> / </span> ${mode.label} <span> / </span> ${valid ? count : '—'} 人 <span> / </span> ${escapeHTML(stageTheme(form.elements.setupTheme.value).label)}</p><small>${valid ? count === left ? '本轮将抽完该奖项的剩余名额。' : `本轮结束后，该奖项还剩 ${left - count} 个名额。` : `请输入 1–${Math.max(0, max)} 的整数。`} ${valid && count > 10 ? `结果每页展示 10 人，共 ${Math.ceil(count / 10)} 页；翻页不会再次抽取。` : valid && count > 5 ? '揭晓后切换为本轮名单主画面。' : '少量中奖人以头像卡突出展示。'} 进入舞台仅预览，点击开始后滚动，点击停止时才生成结果。</small>`;
     dialog.querySelector('[type="submit"]').disabled = !valid;
     rememberLaunch(form);
@@ -339,15 +410,15 @@
   function drawSetupDialog() {
     if (dialogs.querySelector('dialog[open]')) return;
     const screen = currentScreen(); if (!screen) return;
-    const fallbackPrize = screen.prizes.find(item => item.total > wonFor(screen, item.id));
-    if (!fallbackPrize || !eligiblePeople(screen).length) { notify('请先设置剩余奖项并准备尚未中奖的参与名单。', true); return; }
+    const fallbackPrize = screen.prizes.find(item => item.total > wonFor(screen, item.id) && eligiblePeople(screen, item).length);
+    if (!fallbackPrize || !eligiblePeople(screen, fallbackPrize).length) { notify('请检查剩余名额、抽奖范围和人员资格。', true); return; }
     const preferences = presentationFor(screen);
-    if (!screen.presentation?.mode && prizeBatch(fallbackPrize) > 3) preferences.mode = 'matrix';
-    const saved = launchDraft?.screenId === screen.id ? launchDraft : {...preferences, prizeId: fallbackPrize.id, quantity: null};
-    const prize = screen.prizes.find(item => item.id === saved.prizeId && item.total > wonFor(screen, item.id)) || fallbackPrize;
+    if (!screen.presentation?.mode && roundQuantity(fallbackPrize) > 3) preferences.mode = 'matrix';
+    const saved = {...preferences, prizeId: launchDraft?.screenId === screen.id ? launchDraft.prizeId : fallbackPrize.id};
+    const prize = screen.prizes.find(item => item.id === saved.prizeId && item.total > wonFor(screen, item.id) && eligiblePeople(screen, item).length) || fallbackPrize;
     const mode = drawMode(saved.mode), theme = stageTheme(saved.theme).id;
-    const max = Math.min(mode.max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen).length);
-    const count = Math.min(saved.quantity || prizeBatch(prize), max);
+    const max = Math.min(mode.max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length);
+    const count = Math.min(roundQuantity(prize), max);
     const dialog = openDialog('选择抽奖形式与舞台', `<div class="lottery-launch-body"><div class="lottery-launch-fields"><section><h3>01 / 本轮奖项与人数</h3><div class="lottery-prize-fields"><label>选择奖项<select name="setupPrize">${drawOptions(screen, prize.id)}</select></label><label>本轮抽取人数<input type="number" name="setupQuantity" min="1" max="${max}" step="1" required value="${count}"></label></div><p class="lottery-launch-availability lottery-muted"></p></section><section><h3>02 / 选择抽奖形式</h3><input type="hidden" name="setupMode" value="${mode.id}">${stylePicker(mode.id)}<p class="lottery-muted">转盘 / 单人 / 金蛋：1 人；老虎机：最多 3 人；矩阵 / 名单 / 球形：最多 50 人。批量抽奖建议选择头像矩阵或名单滚动。</p></section><section><h3>03 / 选择舞台主题</h3><input type="hidden" name="setupTheme" value="${theme}">${themePicker(theme)}<p class="lottery-muted">6 套系统预置，其中 4 套为图片背景；主题适用于全部抽奖形式。当前不提供自定义图片上传。</p></section><label class="lottery-launch-motion"><input type="checkbox" name="setupReducedMotion" ${saved.reducedMotion ? 'checked' : ''}>减少动态效果（跳过快速旋转与滚动）</label></div><aside class="lottery-launch-summary" aria-live="polite"></aside></div>`, `${cancelButton}${submitButton('进入抽奖舞台')}`, {className: 'lottery-launch-dialog', form: 'draw-setup', description: '奖项与名单已准备好；在这里确认展示和本轮配置，进入后再开始抽奖。', fallback: '[data-lottery-action="open-draw"]'});
     if (dialog) updateLaunchForm(dialog);
   }
@@ -360,7 +431,7 @@
     dialog.dispatchEvent(new CustomEvent('lottery:round-state', {bubbles: true, detail: {phase, mode: session.mode, roundId: session.roundId || null}}));
   }
   function drawAvailability(screen, prize, mode) {
-    return prize ? `奖项默认每轮 ${prizeBatch(prize)} 人 · 剩余 ${prize.total - wonFor(screen, prize.id)} 个名额 · ${eligiblePeople(screen).length} 人可抽 · 此样式每轮最多 ${drawMode(mode).max} 人` : '全部奖项已抽取完毕。';
+    return prize ? `剩余 ${prize.total - wonFor(screen, prize.id)} 个名额 · 当前可抽 ${eligiblePeople(screen, prize).length} 人 · 本轮最多 ${Math.min(prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length, drawMode(mode).max)} 人` : '全部奖项已抽取完毕。';
   }
   function savePresentation(screen, session) {
     screen.presentation = {mode: session.mode, theme: session.theme, reducedMotion: session.reducedMotion};
@@ -371,7 +442,7 @@
     if (!screen || session.closed) return;
     session.engine?.destroy();
     const prize = screen.prizes.find(item => item.id === dialog.querySelector('[name="drawPrize"]').value);
-    session.engine = window.MKLotteryEffects.create({host: dialog.querySelector('.lottery-effect-host'), mode: session.mode, people: eligiblePeople(screen).map(person => ({...person})), history: screen.winners.map(winner => ({...winner})), prize, quantity: Number(dialog.querySelector('[name="quantity"]').value) || 1, reducedMotion: session.reducedMotion, onRequestStart: () => toggleDraw(dialog), onRequestStop: () => toggleDraw(dialog)});
+    session.engine = window.MKLotteryEffects.create({host: dialog.querySelector('.lottery-effect-host'), mode: session.mode, people: eligiblePeople(screen, prize).map(person => ({...person})), history: screen.winners.map(winner => ({...winner})), prize, quantity: Number(dialog.querySelector('[name="quantity"]').value) || 1, reducedMotion: session.reducedMotion, onRequestStart: () => toggleDraw(dialog), onRequestStop: () => toggleDraw(dialog)});
     updateDrawControls(dialog);
   }
   function updateDrawControls(dialog) {
@@ -380,10 +451,11 @@
     if (!screen || session.closed || !dialog.open) return;
     const select = dialog.querySelector('[name="drawPrize"]');
     let prize = screen.prizes.find(item => item.id === select.value);
-    if (!prize || prize.total <= wonFor(screen, prize.id)) prize = screen.prizes.find(item => item.total > wonFor(screen, item.id));
+    if (!prize || prize.total <= wonFor(screen, prize.id) || !eligiblePeople(screen, prize).length) prize = screen.prizes.find(item => item.total > wonFor(screen, item.id) && eligiblePeople(screen, item).length);
     select.innerHTML = drawOptions(screen, prize?.id || select.value);
-    const max = prize ? Math.min(prize.total - wonFor(screen, prize.id), eligiblePeople(screen).length, drawMode(session.mode).max) : 0;
+    const max = prize ? Math.min(prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length, drawMode(session.mode).max) : 0;
     const quantity = dialog.querySelector('[name="quantity"]');
+    quantity.readOnly = drawMode(session.mode).max === 1;
     quantity.max = String(Math.max(1, max));
     quantity.value = String(Math.min(Math.max(1, Number(quantity.value) || 1), Math.max(1, max)));
     const locked = session.phase === 'running' || session.phase === 'settling';
@@ -391,14 +463,15 @@
     dialog.querySelectorAll('[data-lottery-mode], [name="theme"], [name="reducedMotion"], [data-lottery-action="fill-demo"]').forEach(button => { button.disabled = locked; });
     const start = dialog.querySelector('.lottery-start');
     start.disabled = session.phase === 'settling' || !max;
-    start.textContent = session.phase === 'running' ? (session.mode === 'eggs' ? '砸开金蛋 · 揭晓结果' : '停止抽奖 · 揭晓结果') : session.phase === 'settling' ? '减速揭晓中…' : !max ? (prize ? '可抽人员已全部中奖' : '全部奖项已抽完') : session.phase === 'revealed' ? '开始下一轮' : '开始抽奖';
+    start.textContent = session.phase === 'running' ? (session.mode === 'eggs' ? '砸开金蛋 · 揭晓结果' : '停止抽奖 · 揭晓结果') : session.phase === 'settling' ? '减速揭晓中…' : !max ? (prize ? '当前奖项无符合规则的人员' : '全部奖项已抽完') : session.phase === 'revealed' ? '开始下一轮' : '开始抽奖';
     dialog.querySelector('.lottery-draw-availability').textContent = drawAvailability(screen, prize, session.mode);
     dialog.querySelector('.lottery-current-style').textContent = drawMode(session.mode).label;
     const displayedPrize = session.phase === 'revealed' && session.resultPrize ? session.resultPrize : prize;
     dialog.querySelector('.lottery-round-prize').textContent = displayedPrize ? `${displayedPrize.level} · ${displayedPrize.name}` : '本轮抽奖已结束';
     if (!max && !locked) dialog.querySelectorAll('[data-fx-action="toggle"]').forEach(button => { button.disabled = true; button.textContent = '本轮已结束'; button.setAttribute('aria-label', '没有可抽取的人员或奖项'); });
-    dialog.querySelector('.lottery-presentation-footer-count').textContent = `可抽 ${eligiblePeople(screen).length} 人 · 已中奖 ${screen.winners.length} 人`;
+    dialog.querySelector('.lottery-presentation-footer-count').textContent = `可抽 ${eligiblePeople(screen, prize).length} 人 · 已中奖 ${screen.winners.length} 人次`;
     dialog.querySelector('.lottery-motion-note').textContent = session.reducedMotion ? '减少动态效果已开启：保留结果与状态，跳过快速旋转和滚动。' : session.phase === 'running' && session.mode === 'eggs' ? '请选择舞台上的任意金蛋，或点击“砸开金蛋”揭晓。' : '空格开始 / 停止 · F 全屏 · Esc 退出 / 返回';
+    dialog.querySelector('.lottery-repeat-rule').textContent = `${prize?.winnerScope === 'designated' ? '按内定名单抽取 · ' : ''}${prize?.allowRepeat ? '允许跨轮重复中奖，同轮每人一次' : '已中奖人员不再参与当前奖项'}`;
     session.selectedPrize = prize?.id || '';
     const back = dialog.querySelector('[data-lottery-action="return-setup"]'); if (back) back.disabled = locked;
   }
@@ -420,11 +493,11 @@
     if (dialogs.querySelector('dialog[open]')) return;
     const screen = currentScreen(); if (!screen) return;
     if (!window.MKLotteryEffects?.create) { notify('抽奖动效组件未能加载，请刷新页面后重试。', true); return; }
-    const prize = screen.prizes.find(item => item.id === configuration.prizeId && item.total > wonFor(screen, item.id)) || screen.prizes.find(item => item.total > wonFor(screen, item.id));
-    if (!prize || !eligiblePeople(screen).length) { notify('请先设置剩余奖项，并准备尚未中奖的参与名单。', true); return; }
+    const prize = screen.prizes.find(item => item.id === configuration.prizeId && item.total > wonFor(screen, item.id) && eligiblePeople(screen, item).length) || screen.prizes.find(item => item.total > wonFor(screen, item.id) && eligiblePeople(screen, item).length);
+    if (!prize || !eligiblePeople(screen, prize).length) { notify('当前奖项没有符合范围和资格的可抽人员，请检查奖项规则与名单。', true); return; }
     const session = {...presentationFor(screen), ...configuration, mode: drawMode(configuration.mode || presentationFor(screen).mode).id, theme: stageTheme(configuration.theme || presentationFor(screen).theme).id, screenId: screen.id, phase: 'idle', selectedPrize: prize.id, closed: false, engine: null, roundId: null};
     drawSession = session;
-    const dialog = openDialog('现场抽奖大屏', `<div class="lottery-draw-layout"><section class="lottery-presentation" data-phase="idle" aria-label="抽奖展示舞台"><header class="lottery-presentation-header"><div><span class="lottery-stage-kicker">LUCKY MOMENT <span>·</span> <span class="lottery-current-style">${drawMode(session.mode).label}</span></span><h3>${escapeHTML(screen.name)}</h3><p class="lottery-round-prize">${escapeHTML(prize.level)} · ${escapeHTML(prize.name)}</p></div><span class="lottery-live-status" role="status">准备就绪</span></header><div class="lottery-effect-host"></div><footer class="lottery-presentation-footer"><span class="lottery-presentation-footer-count">可抽 ${eligiblePeople(screen).length} 人</span><span>演示模式 · 每人仅中奖一次</span></footer></section><aside class="lottery-draw-controls" aria-label="抽奖控制台"><div class="lottery-control-heading"><h3>抽奖控制台</h3><span class="lottery-control-step">01 / 选择样式</span></div>${stylePicker(session.mode)}<div class="lottery-appearance-row"><label class="lottery-field"><span>舞台主题</span><select name="theme">${stageThemes().map(theme => `<option value="${theme.id}" ${session.theme === theme.id ? 'selected' : ''}>${escapeHTML(theme.label)}</option>`).join('')}</select></label><label class="lottery-motion-toggle"><input type="checkbox" name="reducedMotion" ${session.reducedMotion ? 'checked' : ''}>减少动态效果</label></div><div class="lottery-control-divider"></div><span class="lottery-control-step">02 / 设置本轮</span><label class="lottery-field"><span>选择奖项</span><select name="drawPrize">${drawOptions(screen, prize.id)}</select></label><label class="lottery-field"><span>本轮抽取人数</span><input type="number" name="quantity" min="1" max="${Math.min(prize.total, eligiblePeople(screen).length, drawMode(session.mode).max)}" step="1" value="${Math.min(configuration.quantity || prizeBatch(prize), drawMode(session.mode).max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen).length)}" required></label><p class="lottery-draw-availability lottery-muted"></p><button type="button" class="lottery-btn is-primary lottery-start" data-lottery-action="toggle-draw">开始抽奖</button><p class="lottery-motion-note"></p>${screen.id === 'screen-annual-demo' && samplePeople().some(person => !screen.people.some(existing => existing.id === person.id)) ? '<button type="button" class="lottery-btn lottery-demo-fill" data-lottery-action="fill-demo">补齐内置示例人员</button>' : ''}<details class="lottery-motion-spec"><summary>交互与研发说明</summary><p>开始仅播放动效；停止时统一抽取并保存本轮结果，再减速揭晓。切换样式不重新抽取已揭晓结果。</p><p>滚动时关闭取消本轮；停止后关闭，已保存记录保留。转盘超过 12 人按分组展示，中奖对象仍是个人。</p><a href="./lottery-motion-guide.html" target="_blank" rel="noopener">打开动效与接口说明 ↗</a></details></aside></div>`, '', {className: 'lottery-draw-dialog lottery-effects-dialog', form: 'draw', description: '七种展示形式 · 共用奖项、名单与中奖记录', fallback: '[data-lottery-action="open-draw"]', onClose: () => { const committed = session.phase === 'settling'; disposeDrawSession(session); render(); if (committed) notify(session.saved === false ? '本轮结果已生成，但本地保存失败；请及时导出中奖记录。' : '本轮结果已保存，可在“中奖记录”中查看。'); }});
+    const dialog = openDialog('现场抽奖大屏', `<div class="lottery-draw-layout"><section class="lottery-presentation" data-phase="idle" aria-label="抽奖展示舞台"><header class="lottery-presentation-header"><div><span class="lottery-stage-kicker">LUCKY MOMENT <span>·</span> <span class="lottery-current-style">${drawMode(session.mode).label}</span></span><h3>${escapeHTML(screen.name)}</h3><p class="lottery-round-prize">${escapeHTML(prize.level)} · ${escapeHTML(prize.name)}</p></div><span class="lottery-live-status" role="status">准备就绪</span></header><div class="lottery-effect-host"></div><footer class="lottery-presentation-footer"><span class="lottery-presentation-footer-count">可抽 ${eligiblePeople(screen, prize).length} 人</span><span class="lottery-repeat-rule">${prize.allowRepeat ? '允许跨轮重复中奖' : '已中奖者不再参与本奖项'}</span></footer></section><aside class="lottery-draw-controls" aria-label="抽奖控制台"><div class="lottery-control-heading"><h3>抽奖控制台</h3><span class="lottery-control-step">01 / 选择样式</span></div>${stylePicker(session.mode)}<div class="lottery-appearance-row"><label class="lottery-field"><span>舞台主题</span><select name="theme">${stageThemes().map(theme => `<option value="${theme.id}" ${session.theme === theme.id ? 'selected' : ''}>${escapeHTML(theme.label)}</option>`).join('')}</select></label><label class="lottery-motion-toggle"><input type="checkbox" name="reducedMotion" ${session.reducedMotion ? 'checked' : ''}>减少动态效果</label></div><div class="lottery-control-divider"></div><span class="lottery-control-step">02 / 设置本轮</span><label class="lottery-field"><span>选择奖项</span><select name="drawPrize">${drawOptions(screen, prize.id)}</select></label><label class="lottery-field"><span>本轮抽取人数</span><input type="number" name="quantity" min="1" max="${Math.min(prize.total, eligiblePeople(screen, prize).length, drawMode(session.mode).max)}" step="1" value="${Math.min(configuration.quantity || roundQuantity(prize), drawMode(session.mode).max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length)}" required></label><p class="lottery-draw-availability lottery-muted"></p><button type="button" class="lottery-btn is-primary lottery-start" data-lottery-action="toggle-draw">开始抽奖</button><p class="lottery-motion-note"></p>${screen.id === 'screen-annual-demo' && samplePeople().some(person => !screen.people.some(existing => existing.id === person.id)) ? '<button type="button" class="lottery-btn lottery-demo-fill" data-lottery-action="fill-demo">补齐内置示例人员</button>' : ''}<details class="lottery-motion-spec"><summary>交互与研发说明</summary><p>开始仅播放动效；停止时统一抽取并保存本轮结果，再减速揭晓。切换样式不重新抽取已揭晓结果。</p><p>滚动时关闭取消本轮；停止后关闭，已保存记录保留。转盘超过 12 人按分组展示，中奖对象仍是个人。</p><a href="./lottery-motion-guide.html" target="_blank" rel="noopener">打开动效与接口说明 ↗</a></details></aside></div>`, '', {className: 'lottery-draw-dialog lottery-effects-dialog', form: 'draw', description: '七种展示形式 · 共用奖项、名单与中奖记录', fallback: '[data-lottery-action="open-draw"]', onClose: () => { const committed = session.phase === 'settling'; disposeDrawSession(session); render(); if (committed) notify(session.saved === false ? '本轮结果已生成，但本地保存失败；请及时导出中奖记录。' : '本轮结果已保存，可在“中奖记录”中查看。'); }});
     if (!dialog) { disposeDrawSession(session); return; }
     dialog.dataset.theme = session.theme;
     dialog.dataset.reducedMotion = String(session.reducedMotion);
@@ -454,19 +527,20 @@
       if (session.phase === 'idle' || session.phase === 'revealed') {
         const prize = screen.prizes.find(item => item.id === form.elements.drawPrize.value);
         const quantity = Number(form.elements.quantity.value);
-        const max = prize ? Math.min(prize.total - wonFor(screen, prize.id), eligiblePeople(screen).length, drawMode(session.mode).max) : 0;
+        const max = prize ? Math.min(prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length, drawMode(session.mode).max) : 0;
         if (!prize || !Number.isInteger(quantity) || quantity < 1 || quantity > max) { formError(form, `本轮人数必须是 1–${max} 的整数。`); return; }
         if (!globalThis.crypto?.getRandomValues) { formError(form, '此浏览器不支持安全随机数，请更换浏览器后演示。'); return; }
         form.querySelector('.lottery-form-error').hidden = true;
+        prize.lastQuantity = quantity; persist();
         session.selectedPrize = prize.id; session.quantity = quantity; session.roundId = uid('round');
-        session.engine.reset({people: eligiblePeople(screen).map(person => ({...person})), history: screen.winners.map(winner => ({...winner})), prize, quantity});
+        session.engine.reset({people: eligiblePeople(screen, prize).map(person => ({...person})), history: screen.winners.map(winner => ({...winner})), prize, quantity});
         setDrawPhase(dialog, session, 'running'); session.engine.start(); updateDrawControls(dialog);
         return;
       }
       if (session.phase !== 'running') return;
       setDrawPhase(dialog, session, 'settling');
       updateDrawControls(dialog);
-      const prize = screen.prizes.find(item => item.id === session.selectedPrize), pool = eligiblePeople(screen);
+      const prize = screen.prizes.find(item => item.id === session.selectedPrize), pool = eligiblePeople(screen, prize);
       session.resultPrize = {level: prize.level, name: prize.name};
       const count = Math.min(session.quantity, prize.total - wonFor(screen, prize.id), pool.length);
       if (!count) throw new Error('本轮没有可抽取的人员或剩余名额。');
@@ -499,7 +573,7 @@
         const attribute = mode ? 'data-lottery-mode' : 'data-lottery-theme';
         form.elements[mode ? 'setupMode' : 'setupTheme'].value = item.getAttribute(attribute);
         setup.querySelectorAll(`[${attribute}]`).forEach(button => { button.setAttribute('aria-pressed', String(button === item)); button.classList.toggle('is-active', button === item); });
-        updateLaunchForm(setup, Boolean(mode)); return;
+        updateLaunchForm(setup); return;
       }
     }
     const modeButton = event.target.closest('[data-lottery-mode]');
@@ -512,6 +586,7 @@
       savePresentation(screen, session); updateDrawControls(dialog); mountDrawEffect(dialog, session);
       return;
     }
+    if (handleRosterAction(event)) return;
     const tabButton = event.target.closest('[data-lottery-tab]');
     if (tabButton) { switchTab(tabButton.dataset.lotteryTab); return; }
     const button = event.target.closest('[data-lottery-action]'); if (!button || button.disabled) return;
@@ -542,11 +617,10 @@
     else if (action === 'add-prize') prizeEditor();
     else if (action === 'edit-prize') prizeEditor(id);
     else if (action === 'delete-prize') confirmDelete('prize', id);
-    else if (action === 'reset-pool') { poolQuery = ''; poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); }
+    else if (action === 'reset-pool') { poolFilter = ''; selectedPeople.clear(); poolQuery = ''; poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); }
     else if (action === 'reset-winners') { winnerQuery = ''; winnerPrize = ''; winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); }
     else if (action === 'pool-page' || action === 'winner-page') { const page = Number(button.dataset.page); if (action === 'pool-page') poolPage = Math.max(1, page); else winnerPage = Math.max(1, page); render(); root.querySelector('.lottery-pagination')?.focus({preventScroll: true}); root.querySelector('.lottery-table-wrap')?.scrollIntoView({block: 'nearest'}); }
-    else if (action === 'download-template') { downloadCSV('抽奖名单导入模板.csv', [['姓名', '公司', '手机号'], ['示例参与人', '示例公司', '13800000001']]); notify('已下载 CSV 模板，请替换示例行后导入。'); }
-    else if (action === 'import-people') importDialog();
+    else if (action === 'import-people' || action === 'sync-people') syncPeopleDialog();
     else if (action === 'export-winners') {
       const screen = currentScreen(); if (!screen) return;
       const rows = searchPeople(screen.winners.filter(winner => !winnerPrize || winner.prizeId === winnerPrize), winnerQuery).slice().reverse();
@@ -566,6 +640,8 @@
     if (setup && event.target.name === 'setupQuantity') updateLaunchForm(setup);
   });
   root.addEventListener('change', event => {
+    if (event.target.matches('[data-pool-select]')) { event.target.checked ? selectedPeople.add(event.target.value) : selectedPeople.delete(event.target.value); renderSelection(); return; }
+    if (event.target.matches('[data-pool-select-all]')) { root.querySelectorAll('[data-pool-select]').forEach(input => { input.checked = event.target.checked; input.checked ? selectedPeople.add(input.value) : selectedPeople.delete(input.value); }); renderSelection(); return; }
     const setup = event.target.closest('dialog.lottery-launch-dialog');
     if (setup) { updateLaunchForm(setup, event.target.name === 'setupPrize'); return; }
     const session = drawSession;
@@ -573,7 +649,7 @@
     const dialog = event.target.closest('dialog'), screen = currentScreen(); if (!dialog || !screen) return;
     if (event.target.matches('[name="theme"]')) { session.theme = stageTheme(event.target.value).id; dialog.dataset.theme = session.theme; savePresentation(screen, session); updateDrawControls(dialog); return; }
     else if (event.target.matches('[name="reducedMotion"]')) { session.reducedMotion = event.target.checked; dialog.dataset.reducedMotion = String(session.reducedMotion); savePresentation(screen, session); }
-    else if (event.target.matches('[name="drawPrize"]')) { const prize = screen.prizes.find(item => item.id === event.target.value); dialog.querySelector('[name="quantity"]').value = String(prizeBatch(prize)); }
+    else if (event.target.matches('[name="drawPrize"]')) { const prize = screen.prizes.find(item => item.id === event.target.value); dialog.querySelector('[name="quantity"]').value = String(roundQuantity(prize)); }
     else if (!event.target.matches('[name="quantity"]')) return;
     setDrawPhase(dialog, session, 'idle'); updateDrawControls(dialog); mountDrawEffect(dialog, session);
   });
@@ -586,31 +662,35 @@
     const form = event.target.closest('[data-lottery-form]'); if (!form) return;
     event.preventDefault(); if (busy || form.dataset.committed === 'true') return;
     const kind = form.dataset.lotteryForm, screen = currentScreen(), data = new FormData(form);
+    if (submitRosterForm(form, data, kind)) return;
     if (kind === 'draw') return;
     if (kind === 'draw-setup') {
       updateLaunchForm(form.closest('dialog'));
       const prize = screen?.prizes.find(item => item.id === launchDraft?.prizeId);
-      const max = prize ? Math.min(drawMode(launchDraft.mode).max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen).length) : 0;
+      const max = prize ? Math.min(drawMode(launchDraft.mode).max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length) : 0;
       if (!launchDraft || !Number.isInteger(launchDraft.quantity) || launchDraft.quantity < 1 || launchDraft.quantity > max) { formError(form, '请检查本轮奖项和人数。'); return; }
-      const configuration = {...launchDraft}; screen.presentation = {mode: configuration.mode, theme: configuration.theme, reducedMotion: configuration.reducedMotion}; persist();
+      const configuration = {...launchDraft}; prize.lastQuantity = configuration.quantity; screen.presentation = {mode: configuration.mode, theme: configuration.theme, reducedMotion: configuration.reducedMotion}; persist();
       form.dataset.committed = 'true'; afterDialogClose(form.closest('dialog'), () => drawDialog(configuration)); return;
     }
-    if (kind === 'pool-search') { poolQuery = String(data.get('query') || '').trim(); poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); return; }
+    if (kind === 'pool-search') { poolQuery = String(data.get('query') || '').trim(); poolFilter = String(data.get('poolFilter') || ''); selectedPeople.clear(); poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); return; }
     if (kind === 'winner-search') { winnerQuery = String(data.get('query') || '').trim(); winnerPrize = String(data.get('prize') || ''); winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); return; }
-    if (kind === 'import') { importPeople(form); return; }
     if (kind === 'screen-editor') {
       const id = String(data.get('id') || ''), name = String(data.get('name') || '').trim();
       if (!textValid(name, 80)) { formError(form, '请填写 1–80 个字符的大屏名称。'); return; }
       if (id) { const edited = state.screens.find(item => item.id === id); if (!edited) return; form.dataset.committed = 'true'; edited.name = name; }
       else { if (state.screens.length >= 100) { formError(form, '当前浏览器最多保存 100 个大屏。'); return; } form.dataset.committed = 'true'; const added = {id: uid('screen'), name, createdAt: new Date().toISOString(), people: [], prizes: [], winners: []}; state.screens.push(added); selectedScreenId = added.id; view = 'detail'; tab = 'prizes'; resetFilters(); }
-      form.closest('dialog').close(); saveAndRender(id ? '大屏名称已更新。' : '大屏已创建。接下来设置奖项并导入名单。');
+      form.closest('dialog').close(); saveAndRender(id ? '大屏名称已更新。' : '大屏已创建。接下来设置奖项并同步名单。');
     } else if (kind === 'prize-editor' && screen) {
-      const id = String(data.get('id') || ''), name = String(data.get('name') || '').trim(), level = String(data.get('level') || '').trim(), total = Number(data.get('total')), batchSize = Number(data.get('batchSize'));
+      const id = String(data.get('id') || ''), name = String(data.get('name') || '').trim(), level = String(data.get('level') || '').trim(), total = Number(data.get('total'));
       const existing = screen.prizes.find(prize => prize.id === id), minimum = existing ? Math.max(1, wonFor(screen, id)) : 1;
       if (!textValid(name, 80) || !textValid(level, 20) || !Number.isSafeInteger(total) || total < minimum || total > 10000) { formError(form, `请填写奖项等级、奖品名称，中奖名额须为 ${minimum}–10,000 的整数。`); return; }
-      if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > Math.min(MAX_BATCH_SIZE, total)) { formError(form, `每轮默认人数须为 1–${Math.min(MAX_BATCH_SIZE, total)} 的整数。`); return; }
-      if (existing) { form.dataset.committed = 'true'; Object.assign(existing, {name, level, total, batchSize}); }
-      else { if (screen.prizes.length >= 100) { formError(form, '每个大屏最多设置 100 个奖项。'); return; } form.dataset.committed = 'true'; screen.prizes.push({id: uid('prize'), name, level, total, batchSize}); }
+      const scope = String(data.get('scope') || 'all'), allowRepeat = data.get('allowRepeat') === 'yes';
+      const winnerScope = String(data.get('winnerScope') || 'random'), designatedIds = [...new Set(data.getAll('designatedIds').map(String))];
+      if (!scopeLabels[scope] || !['random','designated'].includes(winnerScope)) { formError(form, '请选择有效的抽奖范围和中奖范围。'); return; }
+      if (winnerScope === 'designated' && !designatedIds.length) { formError(form, '请选择至少一位内定人员。'); return; }
+      const rules = {scope, allowRepeat, winnerScope, designatedIds: winnerScope === 'designated' ? designatedIds : []};
+      if (existing) { form.dataset.committed = 'true'; Object.assign(existing, {name, level, total, ...rules}); }
+      else { if (screen.prizes.length >= 100) { formError(form, '每个大屏最多设置 100 个奖项。'); return; } form.dataset.committed = 'true'; screen.prizes.push({id: uid('prize'), name, level, total, ...rules}); }
       tab = 'prizes'; form.closest('dialog').close(); saveAndRender(existing ? '奖项已更新；历史中奖记录保留抽奖时的奖品名称。' : '奖项已添加。');
     } else if (kind === 'delete') {
       const id = String(data.get('id') || '');

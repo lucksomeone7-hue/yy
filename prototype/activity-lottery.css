@@ -327,3 +327,25 @@ body.mk-mega-layout .lottery-table th { background: #f7f8fa; color: #77808f; fon
   .lottery-filters .lottery-field, .lottery-filters input { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .lottery-sphere.running, .lottery-stage.is-running .lottery-stage-orb { animation: none; } #activityLotteryRoot * { transition: none; } }
+
+/* Roster management and prize eligibility. */
+.lottery-pool-batch { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; margin-bottom: 16px; background: #f7f8fa; border: 1px solid var(--lottery-line); border-radius: 6px; }
+.lottery-pool-batch > span { margin-right: 8px; color: var(--lottery-muted); font-size: 12px; }
+.lottery-pool-table { min-width: 1180px; }
+#activityLotteryRoot input[type="checkbox"], .lottery-dialog input[type="checkbox"] { min-height: 0; width: 16px; height: 16px; padding: 0; accent-color: var(--lottery-red); }
+.lottery-person-flags { display: flex; flex-wrap: wrap; gap: 16px; }
+.lottery-person-flags label { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; }
+.lottery-row-status.is-blocked { color: #b42335; background: #fff0f2; }
+.lottery-pool-empty { text-align: center; padding: 40px !important; color: var(--lottery-muted); }
+.lottery-prize-card .lottery-rule-summary { grid-column: 1 / -1; line-height: 1.7; font-size: 12px; color: #6e7786; }
+.lottery-form select:disabled { background: #f5f6f8; color: #949ca8; }
+.lottery-dialog:has(> [data-lottery-form="prize-editor"]) { width: min(640px, calc(100vw - 32px)); }
+.lottery-batch-advice strong, .lottery-batch-recommendation { display: block; }
+.lottery-batch-recommendation { margin-top: 4px; }
+.lottery-designated { min-width: 0; margin: 0; padding: 14px; border: 1px solid var(--lottery-line); border-radius: 6px; }
+.lottery-designated legend { padding: 0 5px; font-size: 13px; }
+.lottery-designated-list { max-height: 210px; overflow-y: auto; margin-top: 10px; }
+.lottery-designated-list label { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #edf0f4; font-size: 13px; }
+.lottery-designated-list small { display: block; margin-top: 3px; color: var(--lottery-muted); font-size: 11px; }
+.lottery-dialog .lottery-designated [hidden] { display: none !important; }
+.lottery-dialog input[readonly] { background: #f5f6f8; color: #647082; }
