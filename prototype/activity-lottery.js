@@ -119,9 +119,9 @@
     const target = root.querySelector('.lottery-notice');
     target.textContent = message; target.hidden = false; target.classList.toggle('is-warning', warning);
   }
-  function persist() {
+  function persist(failureMessage = '操作已在本次页面生效，但本地保存失败；刷新页面可能丢失本次修改。') {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
-    catch (_) { notify('操作已在本次页面生效，但本地保存失败；刷新页面可能丢失本次修改。', true); return false; }
+    catch (_) { if (failureMessage) notify(failureMessage, true); return false; }
   }
   function saveAndRender(message) { const saved = persist(); render(); if (saved && message) notify(message); }
   const wonFor = (screen, prizeId) => screen.winners.filter(winner => winner.prizeId === prizeId).length;
@@ -277,7 +277,7 @@
     winnerPage = Math.min(winnerPage, Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
     return `<div class="lottery-section-head"><div><h3>中奖记录</h3><p class="lottery-muted">抽奖结果自动保存，可按奖项筛选并导出当前结果。</p></div><button type="button" class="lottery-btn" data-lottery-action="export-winners" ${filtered.length ? '' : 'disabled'}>导出记录${filtered.length ? `（${filtered.length}）` : ''}</button></div>
       <form class="lottery-filters" data-lottery-form="winner-search"><label class="lottery-field"><span>奖项</span><select name="prize" aria-label="按奖项筛选"><option value="">全部奖项</option>${screen.prizes.map(prize => `<option value="${escapeHTML(prize.id)}" ${winnerPrize === prize.id ? 'selected' : ''}>${escapeHTML(prize.level)} · ${escapeHTML(prize.name)}</option>`).join('')}</select></label><label class="lottery-field"><span>关键词</span><input type="search" name="query" value="${escapeHTML(winnerQuery)}" maxlength="120" placeholder="搜索姓名、公司或手机号" aria-label="搜索中奖记录"></label><button class="lottery-btn is-primary" type="submit">搜索</button><button class="lottery-btn is-quiet" type="button" data-lottery-action="reset-winners">重置</button><span class="lottery-filter-summary">${winnerPrize || winnerQuery ? `筛选 ${filtered.length} / ${screen.winners.length} 条` : `共 ${screen.winners.length} 条记录`}</span></form>
-      ${filtered.length ? `<div class="lottery-table-wrap"><table class="lottery-table"><thead><tr><th scope="col">获奖人</th><th scope="col">奖项 / 奖品</th><th scope="col">公司</th><th scope="col">手机号</th><th scope="col">抽奖时间</th></tr></thead><tbody>${filtered.slice((winnerPage - 1) * PAGE_SIZE, winnerPage * PAGE_SIZE).map(winner => `<tr><td><span class="lottery-person-avatar" aria-hidden="true">${escapeHTML(winner.name.slice(0, 1))}</span><strong>${escapeHTML(winner.name)}</strong></td><td><span class="lottery-prize-badge">${escapeHTML(winner.level)}</span> ${escapeHTML(winner.prizeName)}</td><td>${escapeHTML(winner.company || '—')}</td><td class="lottery-numeric">${escapeHTML(maskPhone(winner.phone))}</td><td class="lottery-numeric">${escapeHTML(timeLabel(winner.drawnAt))}</td></tr>`).join('')}</tbody></table></div>${pagination(winnerPage, filtered.length, 'winner')}` : `<div class="lottery-empty"><div class="lottery-empty-icon">${clockIcon}</div><h3>${screen.winners.length ? '没有匹配的中奖记录' : '幸运时刻，等待开启'}</h3><p>${screen.winners.length ? '调整奖项或关键词，查看其他中奖记录。' : '完成奖项和名单设置后，在抽奖大屏开始抽奖，结果将自动出现在这里。'}</p><div class="lottery-empty-actions">${screen.winners.length ? btn('reset-winners', '重置筛选') : `<button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${!screen.prizes.length || !eligiblePeople(screen).length || !remainingSlots(screen) ? 'disabled' : ''}>开始抽奖</button><button type="button" class="lottery-btn" data-lottery-tab="prizes">前往奖项设置</button>`}</div></div>`}`;
+      ${filtered.length ? `<div class="lottery-table-wrap"><table class="lottery-table"><thead><tr><th scope="col">获奖人</th><th scope="col">奖项 / 奖品</th><th scope="col">公司</th><th scope="col">手机号</th><th scope="col">抽奖时间</th><th scope="col">操作</th></tr></thead><tbody>${filtered.slice((winnerPage - 1) * PAGE_SIZE, winnerPage * PAGE_SIZE).map(winner => `<tr><td><span class="lottery-person-avatar" aria-hidden="true">${escapeHTML(winner.name.slice(0, 1))}</span><strong>${escapeHTML(winner.name)}</strong></td><td><span class="lottery-prize-badge">${escapeHTML(winner.level)}</span> ${escapeHTML(winner.prizeName)}</td><td>${escapeHTML(winner.company || '—')}</td><td class="lottery-numeric">${escapeHTML(maskPhone(winner.phone))}</td><td class="lottery-numeric">${escapeHTML(timeLabel(winner.drawnAt))}</td><td><button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-winner" data-id="${escapeHTML(winner.id)}" aria-label="删除${escapeHTML(winner.name)}的中奖记录">删除</button></td></tr>`).join('')}</tbody></table></div>${pagination(winnerPage, filtered.length, 'winner')}` : `<div class="lottery-empty"><div class="lottery-empty-icon">${clockIcon}</div><h3>${screen.winners.length ? '没有匹配的中奖记录' : '幸运时刻，等待开启'}</h3><p>${screen.winners.length ? '调整奖项或关键词，查看其他中奖记录。' : '完成奖项和名单设置后，在抽奖大屏开始抽奖，结果将自动出现在这里。'}</p><div class="lottery-empty-actions">${screen.winners.length ? btn('reset-winners', '重置筛选') : `<button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${!screen.prizes.length || !eligiblePeople(screen).length || !remainingSlots(screen) ? 'disabled' : ''}>开始抽奖</button><button type="button" class="lottery-btn" data-lottery-tab="prizes">前往奖项设置</button>`}</div></div>`}`;
   }
   function render() {
     const screen = currentScreen();
@@ -350,10 +350,16 @@
   }
   function confirmDelete(kind, id) {
     const screen = kind === 'screen' ? state.screens.find(item => item.id === id) : currentScreen();
-    const target = kind === 'screen' ? screen : screen?.prizes.find(item => item.id === id);
+    const items = kind === 'winner' ? screen?.winners : screen?.prizes;
+    const target = kind === 'screen' ? screen : items?.find(item => item.id === id);
     if (!target) return;
     if (kind === 'prize' && wonFor(screen, id)) { notify('已有中奖记录的奖项不可删除，以保留完整抽奖记录。', true); return; }
-    openDialog(kind === 'screen' ? '删除这个大屏？' : '删除这个奖项？', `<div class="lottery-form"><input type="hidden" name="kind" value="${kind}"><input type="hidden" name="id" value="${escapeHTML(id)}"><p>确认删除「${escapeHTML(target.name)}」？</p><p class="lottery-muted">${kind === 'screen' ? '该大屏下的奖项、参与名单和中奖记录将从此浏览器删除，此操作无法撤销。' : '删除后，该奖项的中奖名额也会一并移除。'}</p></div>`, `${cancelButton}<button type="submit" class="lottery-btn is-danger">确认删除</button>`, {form: 'delete', fallback: kind === 'screen' ? '[data-lottery-action="new-screen"]' : '[data-lottery-action="add-prize"]'});
+    const options = {
+      screen: {label: '这个大屏', name: target.name, impact: '该大屏下的奖项、参与名单和中奖记录将从此浏览器删除，此操作无法撤销。', fallback: 'new-screen'},
+      prize: {label: '这个奖项', name: target.name, impact: '删除后，该奖项的中奖名额也会一并移除。', fallback: 'add-prize'},
+      winner: {label: '这条中奖记录', name: `${target.name} · ${target.level} · ${target.prizeName}`, impact: '删除后，该奖项将恢复 1 个名额，并重新判断获奖人的抽奖资格。此操作无法撤销。', fallback: 'delete-winner'}
+    }[kind];
+    openDialog(`删除${options.label}？`, `<div class="lottery-form"><input type="hidden" name="kind" value="${kind}"><input type="hidden" name="id" value="${escapeHTML(id)}"><p>确认删除「${escapeHTML(options.name)}」？</p><p class="lottery-muted">${options.impact}</p></div>`, `${cancelButton}<button type="submit" class="lottery-btn is-danger">确认删除</button>`, {form: 'delete', fallback: `[data-lottery-action="${options.fallback}"]`});
   }
 
   function csvCell(value) {
@@ -617,6 +623,7 @@
     else if (action === 'add-prize') prizeEditor();
     else if (action === 'edit-prize') prizeEditor(id);
     else if (action === 'delete-prize') confirmDelete('prize', id);
+    else if (action === 'delete-winner') confirmDelete('winner', id);
     else if (action === 'reset-pool') { poolFilter = ''; selectedPeople.clear(); poolQuery = ''; poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); }
     else if (action === 'reset-winners') { winnerQuery = ''; winnerPrize = ''; winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); }
     else if (action === 'pool-page' || action === 'winner-page') { const page = Number(button.dataset.page); if (action === 'pool-page') poolPage = Math.max(1, page); else winnerPage = Math.max(1, page); render(); root.querySelector('.lottery-pagination')?.focus({preventScroll: true}); root.querySelector('.lottery-table-wrap')?.scrollIntoView({block: 'nearest'}); }
@@ -694,6 +701,21 @@
       tab = 'prizes'; form.closest('dialog').close(); saveAndRender(existing ? '奖项已更新；历史中奖记录保留抽奖时的奖品名称。' : '奖项已添加。');
     } else if (kind === 'delete') {
       const id = String(data.get('id') || '');
+      if (data.get('kind') === 'winner') {
+        if (!screen?.winners.some(winner => winner.id === id)) { formError(form, '这条中奖记录已不存在。'); return; }
+        const previous = screen.winners;
+        screen.winners = previous.filter(winner => winner.id !== id);
+        if (!persist('')) {
+          screen.winners = previous;
+          formError(form, '本地保存失败，中奖记录仍保留，请重试。');
+          return;
+        }
+        form.dataset.committed = 'true';
+        form.closest('dialog').close();
+        render();
+        notify('中奖记录已删除，已归还 1 个中奖名额。');
+        return;
+      }
       if (data.get('kind') === 'screen') { form.dataset.committed = 'true'; state.screens = state.screens.filter(item => item.id !== id); if (selectedScreenId === id) { selectedScreenId = state.screens[0]?.id || null; view = 'list'; resetFilters(); } }
       else if (screen) { if (wonFor(screen, id)) { formError(form, '该奖项已有中奖记录，无法删除。'); return; } form.dataset.committed = 'true'; screen.prizes = screen.prizes.filter(prize => prize.id !== id); }
       form.closest('dialog').close(); saveAndRender('已删除。');
