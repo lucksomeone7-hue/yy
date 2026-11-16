@@ -1,4 +1,40 @@
-/* Static image themes. Load after the effects and presentation styles. */
+/* Stage palettes. Load after the effects and presentation styles. */
+.lottery-effects-dialog[data-theme="festival"] {
+  --lottery-theme-ink: #fff1d1;
+  --lottery-theme-muted: #f3d0b9;
+  --lottery-theme-line: #ffdfa45e;
+  --lottery-theme-header: #730f28e0;
+  --lottery-theme-surface: #801a32da;
+  --lottery-theme-winner: #a82c42;
+  --lottery-theme-focus: #fff0b5;
+  --lottery-theme-accent: #f4d496;
+  --lottery-theme-active: #a33246;
+  --lottery-theme-button: linear-gradient(180deg,#ffecb1,#e2b565);
+  --lottery-theme-button-ink: #82182c;
+  --lottery-theme-avatar: linear-gradient(135deg,#ffeac0,#e3ba75);
+  --lottery-theme-avatar-ink: #8e2239;
+  --lottery-theme-shadow: #48061940;
+}
+.lottery-effects-dialog[data-theme="midnight"] {
+  --lottery-theme-ink: #f1f6ff;
+  --lottery-theme-muted: #b9cbe1;
+  --lottery-theme-line: #869fc56e;
+  --lottery-theme-header: #152640e8;
+  --lottery-theme-surface: #203754e8;
+  --lottery-theme-winner: #2b496d;
+  --lottery-theme-focus: #c0dbff;
+  --lottery-theme-accent: #a8c9f2;
+  --lottery-theme-active: #3c577a;
+  --lottery-theme-button: linear-gradient(180deg,#c7defc,#93b7e8);
+  --lottery-theme-button-ink: #162e4e;
+  --lottery-theme-avatar: linear-gradient(135deg,#e4effd,#acc4e4);
+  --lottery-theme-avatar-ink: #2c496d;
+  --lottery-theme-shadow: #0916265c;
+  --lottery-prop-dark: #284665;
+  --lottery-prop-light: #e9d4a7;
+  --lottery-prop-ink: #233d5b;
+}
+
 .lottery-effects-dialog[data-theme="neon"] {
   --lottery-theme-image: url("./assets/lottery/themes/neon.jpg");
   --lottery-theme-canvas: #190e43;
@@ -34,6 +70,9 @@
   --lottery-theme-avatar: linear-gradient(135deg,#e8f6ff,#bdd8ef);
   --lottery-theme-avatar-ink: #315c87;
   --lottery-theme-shadow: #284e7614;
+  --lottery-prop-dark: #28618e;
+  --lottery-prop-light: #e3f2ff;
+  --lottery-prop-ink: #214869;
 }
 .lottery-effects-dialog[data-theme="celebration"] {
   --lottery-theme-image: url("./assets/lottery/themes/celebration.png");
@@ -70,6 +109,9 @@
   --lottery-theme-avatar: linear-gradient(135deg,#fff4df,#ebd0ac);
   --lottery-theme-avatar-ink: #8d573b;
   --lottery-theme-shadow: #79583e12;
+  --lottery-prop-dark: #805641;
+  --lottery-prop-light: #fff0d8;
+  --lottery-prop-ink: #634432;
 }
 
 /* Keep the original artwork visible across the whole stage, including its edges. */
@@ -82,18 +124,21 @@
   color: var(--lottery-theme-ink);
 }
 .lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx {
-  --lottery-fx-pale: var(--lottery-theme-ink);
-  --lottery-fx-muted: var(--lottery-theme-muted);
-  --lottery-fx-gold: var(--lottery-theme-accent);
-  --lottery-fx-line: var(--lottery-theme-line);
   border-color: transparent;
   background: transparent;
-  color: var(--lottery-theme-ink);
   box-shadow: none;
 }
 .lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx::before,
 .lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx::after { display: none; }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-presentation-header {
+
+.lottery-effects-dialog[data-theme] .lottery-fx {
+  --lottery-fx-pale: var(--lottery-theme-ink);
+  --lottery-fx-muted: var(--lottery-theme-muted);
+  --lottery-fx-gold: var(--lottery-theme-accent);
+  --lottery-fx-line: var(--lottery-theme-line);
+  color: var(--lottery-theme-ink);
+}
+.lottery-effects-dialog[data-theme] .lottery-presentation-header {
   padding: 12px 16px;
   border: 1px solid var(--lottery-theme-line);
   border-radius: 10px;
@@ -101,24 +146,24 @@
   box-shadow: 0 4px 20px var(--lottery-theme-shadow);
   backdrop-filter: blur(5px);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-presentation-header h3,.lottery-fx-head h3,.lottery-fx-ready,.lottery-fx-stage-title) {
+.lottery-effects-dialog[data-theme] :is(.lottery-presentation-header h3,.lottery-fx-head h3,.lottery-fx-ready,.lottery-fx-stage-title) {
   color: var(--lottery-theme-ink);
   text-shadow: none;
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-stage-kicker,.lottery-round-prize,.lottery-presentation-footer,.lottery-fx-footer,.lottery-fx-result p,.lottery-fx-wheel-note,.lottery-fx-slots-note) { color: var(--lottery-theme-muted); }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-presentation-footer {
+.lottery-effects-dialog[data-theme] :is(.lottery-stage-kicker,.lottery-presentation-footer,.lottery-fx-footer,.lottery-fx-result p,.lottery-fx-wheel-note,.lottery-fx-slots-note) { color: var(--lottery-theme-muted); }
+.lottery-effects-dialog[data-theme] .lottery-presentation-footer {
   padding: 7px 10px;
   border: 1px solid var(--lottery-theme-line);
   border-radius: 6px;
   background: var(--lottery-theme-header);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-live-status {
+.lottery-effects-dialog[data-theme] .lottery-live-status {
   border-color: var(--lottery-theme-line);
   background: var(--lottery-theme-surface);
   color: var(--lottery-theme-ink);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-live-status::before { background: var(--lottery-theme-accent); box-shadow: none; }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx-result {
+.lottery-effects-dialog[data-theme] .lottery-live-status::before { background: var(--lottery-theme-accent); box-shadow: none; }
+.lottery-effects-dialog[data-theme] .lottery-fx-result {
   padding: 10px 14px;
   border: 1px solid var(--lottery-theme-line);
   border-radius: 10px;
@@ -126,55 +171,135 @@
   color: var(--lottery-theme-ink);
   backdrop-filter: blur(5px);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx-result:empty { padding: 0; border: 0; background: transparent; }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx-avatar {
+.lottery-effects-dialog[data-theme] .lottery-fx-result:empty { padding: 0; border: 0; background: transparent; }
+.lottery-effects-dialog[data-theme] .lottery-fx .lottery-fx-avatar {
   border-color: var(--lottery-theme-line);
   background: var(--lottery-theme-avatar);
   color: var(--lottery-theme-avatar-ink);
   box-shadow: 0 2px 10px var(--lottery-theme-shadow);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-winner,.lottery-fx-person,.lottery-fx-matrix-person,.lottery-fx-history-item) {
+.lottery-effects-dialog[data-theme] :is(.lottery-fx-winner,.lottery-fx-person,.lottery-fx-matrix-person,.lottery-fx-history-item) {
   border-color: var(--lottery-theme-line);
   background: var(--lottery-theme-surface);
   color: var(--lottery-theme-ink);
   box-shadow: 0 3px 12px var(--lottery-theme-shadow);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx-winner { background: var(--lottery-theme-winner); }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-person.is-active,.lottery-fx-matrix-person.is-active) {
+.lottery-effects-dialog[data-theme] .lottery-fx-winner { background: var(--lottery-theme-winner); }
+.lottery-effects-dialog[data-theme] :is(.lottery-fx-person.is-active,.lottery-fx-matrix-person.is-active) {
   border-color: var(--lottery-theme-focus);
   background: var(--lottery-theme-active);
   box-shadow: 0 0 0 2px var(--lottery-theme-line), 0 0 20px var(--lottery-theme-shadow);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-person.is-winner,.lottery-fx-matrix-person.is-winner) {
+.lottery-effects-dialog[data-theme] :is(.lottery-fx-person.is-winner,.lottery-fx-matrix-person.is-winner) {
   border-color: var(--lottery-theme-focus);
   background: var(--lottery-theme-winner);
   color: var(--lottery-theme-ink);
   box-shadow: 0 0 0 3px var(--lottery-theme-line), 0 4px 22px var(--lottery-theme-shadow);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-company,.lottery-fx-history-item > div > span,.lottery-fx-egg-label,.lottery-fx-egg-prize .lottery-fx-company) { color: var(--lottery-theme-muted); }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-history-list,.lottery-fx-spotlight-card) {
+.lottery-effects-dialog[data-theme] :is(.lottery-fx-company,.lottery-fx-history-list > p,.lottery-fx-history-item > div > span,.lottery-fx-egg-label) { color: var(--lottery-theme-muted); }
+.lottery-effects-dialog[data-theme] :is(.lottery-fx-history-list,.lottery-fx-spotlight-card) {
   border-color: var(--lottery-theme-line);
   background: var(--lottery-theme-surface);
   color: var(--lottery-theme-ink);
   box-shadow: 0 6px 26px var(--lottery-theme-shadow);
   backdrop-filter: blur(5px);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-spotlight-card .lottery-fx-name,.lottery-fx-history-list > h4,.lottery-fx-history-item > div > strong,.lottery-fx-egg-prize > strong,.lottery-fx-result strong),
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx-history-item::before { color: var(--lottery-theme-ink); }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx .lottery-fx-trigger:not(.lottery-fx-slots-lever) {
+.lottery-effects-dialog[data-theme] :is(.lottery-fx-spotlight-card .lottery-fx-name,.lottery-fx-history-list > h4,.lottery-fx-history-item > div > strong,.lottery-fx-egg-prize > strong,.lottery-fx-result strong),
+.lottery-effects-dialog[data-theme] .lottery-fx-history-item::before { color: var(--lottery-theme-ink); }
+.lottery-effects-dialog[data-theme] .lottery-fx .lottery-fx-trigger:not(.lottery-fx-slots-lever) {
   border-color: var(--lottery-theme-accent);
   background: var(--lottery-theme-button);
   color: var(--lottery-theme-button-ink);
   box-shadow: inset 0 1px 0 #ffffff55, 0 4px 12px var(--lottery-theme-shadow);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx .lottery-fx-result-page-button {
+.lottery-effects-dialog[data-theme] .lottery-fx .lottery-fx-result-page-button {
   border-color: var(--lottery-theme-line);
   background: var(--lottery-theme-surface);
   color: var(--lottery-theme-ink);
 }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx .lottery-fx-result-page-button:hover:not(:disabled) { border-color: var(--lottery-theme-focus); background: var(--lottery-theme-active); }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) .lottery-fx :is(button,a,[tabindex]):focus-visible { outline-color: var(--lottery-theme-focus); }
-.lottery-effects-dialog:is([data-theme="neon"],[data-theme="ice"],[data-theme="celebration"],[data-theme="dawn"]) :is(.lottery-fx-history-list,.lottery-fx-matrix-grid,.lottery-fx-result) { scrollbar-color: var(--lottery-theme-accent) transparent; }
+.lottery-effects-dialog[data-theme] .lottery-fx .lottery-fx-result-page-button:hover:not(:disabled) { border-color: var(--lottery-theme-focus); background: var(--lottery-theme-active); }
+.lottery-effects-dialog[data-theme] .lottery-fx :is(button,a,[tabindex]):focus-visible { outline-color: var(--lottery-theme-focus); }
+.lottery-effects-dialog[data-theme] .lottery-effect-host :is(.lottery-fx.has-round-results,.lottery-fx-history-list,.lottery-fx-matrix-grid,.lottery-fx-result) { scrollbar-color: var(--lottery-theme-accent) transparent; }
+
+.lottery-effects-dialog[data-theme] .lottery-fx-spotlight-card {
+  background: linear-gradient(150deg, var(--lottery-theme-winner), var(--lottery-theme-surface));
+}
+.lottery-effects-dialog[data-theme] .lottery-fx-history-list > h4 { border-color: var(--lottery-theme-line); }
+.lottery-effects-dialog[data-theme] .lottery-fx-history-item::before { opacity: .78; }
+.lottery-effects-dialog[data-theme] .lottery-fx-spotlight-stage::after {
+  background: radial-gradient(ellipse, var(--lottery-theme-line), transparent 72%);
+}
+.lottery-effects-dialog[data-theme] .lottery-fx-egg-prize {
+  padding: 9px;
+  border: 1px solid var(--lottery-theme-line);
+  border-radius: 10px;
+  background: var(--lottery-theme-surface);
+}
+.lottery-effects-dialog[data-theme] .lottery-fx-egg-prize .lottery-fx-name { color: var(--lottery-theme-ink); }
+.lottery-effects-dialog[data-theme] .lottery-draw-controls .lottery-start {
+  background: var(--lottery-theme-button);
+  border-color: var(--lottery-theme-accent);
+  color: var(--lottery-theme-button-ink);
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-fx {
+  border-color: var(--lottery-theme-line);
+  box-shadow: inset 0 0 80px #080f253d;
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-fx::before {
+  border-color: #b1cceb38;
+  background: linear-gradient(0deg,#b1cceb19,transparent 72%);
+  box-shadow: 0 8px 0 #b1cceb0a, 0 22px 0 #b1cceb08;
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-fx::after {
+  background: radial-gradient(circle,#d1e3fc54 0 1px,transparent 1.5px) 0 0 / 18px 18px;
+}
+
+/* Keep the metal trim and gold eggs, and theme the painted parts of the props. */
+.lottery-effects-dialog:is([data-theme="midnight"],[data-theme="ice"],[data-theme="dawn"]) {
+  & .lottery-fx-wheel-disc { background: var(--lottery-prop-dark); }
+  & .lottery-fx-wheel-sector { fill: var(--lottery-prop-dark); stroke: var(--lottery-theme-accent); }
+  & .lottery-fx-wheel-sector.is-light { fill: var(--lottery-prop-light); }
+  & .lottery-fx-wheel-label { fill: #fffaf0; text-shadow: none; }
+  & .lottery-fx-wheel-label.is-light { fill: var(--lottery-prop-ink); }
+  & .lottery-fx-slots-machine {
+    box-shadow: inset 0 0 0 2px #fff0be, inset 0 0 0 7px #c5864266, 0 12px 0 var(--lottery-prop-dark), 0 20px 38px var(--lottery-theme-shadow);
+  }
+  & .lottery-fx-slots-reels { border-color: var(--lottery-prop-dark); background: var(--lottery-prop-dark); }
+  & .lottery-fx-slots-reel, & .lottery-fx-slots-item { background: var(--lottery-prop-light); }
+  & .lottery-fx-slots-item .lottery-fx-name { color: var(--lottery-prop-ink); }
+  & .lottery-fx-slots-lever::after {
+    background: radial-gradient(circle at 35% 30%, var(--lottery-prop-light), var(--lottery-prop-dark) 70%);
+    box-shadow: 0 3px 0 #a96e39, 0 4px 10px var(--lottery-theme-shadow);
+  }
+}
+
+/* Midnight controls use the same blue accents in the scene and console. */
+.lottery-effects-dialog[data-theme="midnight"] .lottery-style-option.is-active {
+  border-color: var(--lottery-theme-accent);
+  background: var(--lottery-theme-surface);
+  color: var(--lottery-theme-ink);
+  box-shadow: none;
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-style-option.is-active small {
+  color: var(--lottery-theme-muted);
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-style-option[aria-pressed="true"]::after,
+.lottery-effects-dialog[data-theme="midnight"] .lottery-draw-availability {
+  color: var(--lottery-theme-accent);
+}
+#activityLotteryRoot .lottery-effects-dialog[data-theme="midnight"] input[type="checkbox"] {
+  accent-color: var(--lottery-theme-accent);
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-fx-slots-lever::before {
+  border-color: #789ac1;
+  background: linear-gradient(90deg,#6385af,#d3e7ff 45%,#7395be);
+  box-shadow: 4px 3px 8px var(--lottery-theme-shadow);
+}
+.lottery-effects-dialog[data-theme="midnight"] .lottery-fx-slots-lever::after {
+  border-color: var(--lottery-theme-accent);
+  background: radial-gradient(circle at 35% 30%,var(--lottery-theme-focus),var(--lottery-prop-dark) 80%);
+  box-shadow: 0 3px 0 var(--lottery-prop-dark), 0 4px 10px var(--lottery-theme-shadow);
+}
 
 /* Light venue themes retain dark readable captions beside the gold props. */
 .lottery-effects-dialog:is([data-theme="ice"],[data-theme="dawn"]) :is(.lottery-fx-footer,.lottery-fx-wheel-note,.lottery-fx-slots-note) {
@@ -185,10 +310,6 @@
   opacity: 1;
 }
 .lottery-effects-dialog:is([data-theme="ice"],[data-theme="dawn"]) .lottery-fx-egg { color: var(--lottery-theme-ink); }
-.lottery-effects-dialog:is([data-theme="ice"],[data-theme="dawn"]) .lottery-fx-egg-prize { padding: 9px; border: 1px solid var(--lottery-theme-line); border-radius: 10px; background: var(--lottery-theme-surface); }
-.lottery-effects-dialog:is([data-theme="ice"],[data-theme="dawn"]) .lottery-fx-people.is-sphere .lottery-fx-person { background: var(--lottery-theme-surface); }
-.lottery-effects-dialog[data-theme="ice"] .lottery-fx-spotlight-stage::after { background: radial-gradient(ellipse,#a2c5e35c,transparent 72%); }
-.lottery-effects-dialog[data-theme="dawn"] .lottery-fx-spotlight-stage::after { background: radial-gradient(ellipse,#e9bf8b5c,transparent 72%); }
 
 /* Preparation-page cards: no image element is required in the card markup. */
 .lottery-theme-option[data-theme="festival"] { --lottery-theme-preview: radial-gradient(ellipse at 65% 100%,#f3bd6566,transparent 62%),linear-gradient(135deg,#860b27,#bd1b36 55%,#710a23); }
