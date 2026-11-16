@@ -93,6 +93,7 @@
   let view = 'list';
   let tab = 'prizes';
   let poolQuery = '', winnerQuery = '', winnerPrize = '', poolPage = 1, winnerPage = 1;
+  const selectedWinners = new Set();
   let busy = false, drawSession = null, launchDraft = null;
   const DRAW_MODES = [
     {id: 'wheel', label: '幸运转盘', caption: '旋转减速 · 精准定位', max: 1, glyph: '<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16m-13.7-5.7 11.4 11.4M6.3 17.7 17.7 6.3"/>'},
@@ -198,7 +199,7 @@
     const options = [['', '全部人员'], ['checked', '已签到'], ['unchecked', '未签到'], ['allowed', '允许抽奖'], ['blocked', '禁止抽奖'], ['surveyed', '已填写问卷'], ...groupsFor(screen).map(group => [`group:${group}`, group])];
     return `<div class="lottery-section-head"><div><h3>抽奖池名单</h3><p class="lottery-muted">统一管理签到、分组与抽奖资格；实际可抽人员按各奖项规则筛选。</p></div><div class="lottery-actions">${btn('manage-groups', '分组管理')}${btn('add-person', '添加用户')}<button type="button" class="lottery-btn is-primary" data-lottery-action="sync-people">同步名单</button>${btn('export-pool', selectedPeople.size ? '导出已选人员' : '导出筛选名单')}</div></div>
       <form class="lottery-filters" data-lottery-form="pool-search"><label class="lottery-field"><span>筛选</span><select name="poolFilter">${options.map(([key,label]) => `<option value="${escapeHTML(key)}" ${poolFilter === key ? 'selected' : ''}>${escapeHTML(label)}</option>`).join('')}</select></label><label class="lottery-field"><span>用户名</span><input type="search" name="query" value="${escapeHTML(poolQuery)}" placeholder="姓名、微信昵称、公司或手机号"></label><button class="lottery-btn" type="submit">搜索</button>${btn('reset-pool','重置')}<span class="lottery-filter-summary">筛选 ${rows.length} / ${screen.people.length} 人</span></form>
-      <div class="lottery-pool-batch"><span data-pool-selected-count>已选择 ${selectedPeople.size} 人</span>${[['set-checked','设为已签到'],['set-unchecked','设为未签到'],['block-people','禁止抽奖'],['allow-people','允许抽奖'],['assign-group','设置分组']].map(([action,label]) => `<button type="button" class="lottery-btn" data-lottery-action="${action}" data-pool-batch ${selectedPeople.size ? '' : 'disabled'}>${label}</button>`).join('')}</div>
+      <div class="lottery-batch-actions"><span data-pool-selected-count>已选择 ${selectedPeople.size} 人</span>${[['set-checked','设为已签到'],['set-unchecked','设为未签到'],['block-people','禁止抽奖'],['allow-people','允许抽奖'],['assign-group','设置分组']].map(([action,label]) => `<button type="button" class="lottery-btn" data-lottery-action="${action}" data-pool-batch ${selectedPeople.size ? '' : 'disabled'}>${label}</button>`).join('')}</div>
       <div class="lottery-table-wrap"><table class="lottery-table lottery-pool-table"><thead><tr><th><input type="checkbox" data-pool-select-all aria-label="选择当前页人员" ${visible.length && visible.every(person => selectedPeople.has(person.id)) ? 'checked' : ''}></th><th>操作</th><th>真实姓名 / 公司</th><th>微信昵称</th><th>来源</th><th>分组</th><th>签到 / 问卷</th><th>允许抽奖</th><th>手机号码</th><th>进入时间</th></tr></thead><tbody>${visible.map(person => `<tr><td><input type="checkbox" data-pool-select value="${escapeHTML(person.id)}" aria-label="选择${escapeHTML(person.name)}" ${selectedPeople.has(person.id) ? 'checked' : ''}></td><td>${btn('edit-person','编辑',`data-id="${escapeHTML(person.id)}"`)}</td><td><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.company || '—')}</small></td><td>${escapeHTML(person.nickname || '—')}</td><td>${escapeHTML(person.source || '内置示例')}</td><td>${escapeHTML(person.group || '未分组')}</td><td>${person.checked ? '已签到' : '未签到'}<small>${person.surveyed ? '已填写问卷' : '未填写问卷'}</small></td><td><span class="lottery-row-status ${person.allowed === false ? 'is-blocked' : ''}">${person.allowed === false ? '禁止' : '允许'}</span></td><td>${escapeHTML(maskPhone(person.phone))}</td><td>${person.joinedAt ? escapeHTML(timeLabel(person.joinedAt)) : '—'}</td></tr>`).join('') || '<tr><td colspan="10" class="lottery-pool-empty">暂无匹配人员，可调整筛选、添加用户或同步名单。</td></tr>'}</tbody></table></div>${pagination(poolPage, rows.length, 'pool')}`;
   }
   function personEditor(id) {
@@ -272,12 +273,33 @@
     }
     form.dataset.committed = 'true'; selectedPeople.clear(); form.closest('dialog').close(); saveAndRender(message); return true;
   }
+  function winnerRows(screen) {
+    return searchPeople(screen.winners.filter(winner => !winnerPrize || winner.prizeId === winnerPrize), winnerQuery).slice().reverse();
+  }
+  function updateWinnerSelection() {
+    const toolbar = root.querySelector('[data-winner-selection]');
+    if (!toolbar) return;
+    toolbar.querySelector('[data-winner-count]').textContent = `已选 ${selectedWinners.size} 条`;
+    toolbar.querySelector('[data-lottery-action="delete-selected-winners"]').disabled = !selectedWinners.size;
+    toolbar.querySelector('[data-lottery-action="clear-selected-winners"]').disabled = !selectedWinners.size;
+    const boxes = [...root.querySelectorAll('[data-winner-select]')];
+    boxes.forEach(box => { box.checked = selectedWinners.has(box.value); });
+    const pageBox = root.querySelector('[data-winner-select-page]');
+    pageBox.checked = boxes.every(box => box.checked);
+    pageBox.indeterminate = !pageBox.checked && boxes.some(box => box.checked);
+  }
   function renderWinners(screen) {
-    const filtered = searchPeople(screen.winners.filter(winner => !winnerPrize || winner.prizeId === winnerPrize), winnerQuery).slice().reverse();
+    const filtered = winnerRows(screen);
     winnerPage = Math.min(winnerPage, Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
+    const visible = filtered.slice((winnerPage - 1) * PAGE_SIZE, winnerPage * PAGE_SIZE);
     return `<div class="lottery-section-head"><div><h3>中奖记录</h3><p class="lottery-muted">抽奖结果自动保存，可按奖项筛选并导出当前结果。</p></div><button type="button" class="lottery-btn" data-lottery-action="export-winners" ${filtered.length ? '' : 'disabled'}>导出记录${filtered.length ? `（${filtered.length}）` : ''}</button></div>
       <form class="lottery-filters" data-lottery-form="winner-search"><label class="lottery-field"><span>奖项</span><select name="prize" aria-label="按奖项筛选"><option value="">全部奖项</option>${screen.prizes.map(prize => `<option value="${escapeHTML(prize.id)}" ${winnerPrize === prize.id ? 'selected' : ''}>${escapeHTML(prize.level)} · ${escapeHTML(prize.name)}</option>`).join('')}</select></label><label class="lottery-field"><span>关键词</span><input type="search" name="query" value="${escapeHTML(winnerQuery)}" maxlength="120" placeholder="搜索姓名、公司或手机号" aria-label="搜索中奖记录"></label><button class="lottery-btn is-primary" type="submit">搜索</button><button class="lottery-btn is-quiet" type="button" data-lottery-action="reset-winners">重置</button><span class="lottery-filter-summary">${winnerPrize || winnerQuery ? `筛选 ${filtered.length} / ${screen.winners.length} 条` : `共 ${screen.winners.length} 条记录`}</span></form>
-      ${filtered.length ? `<div class="lottery-table-wrap"><table class="lottery-table"><thead><tr><th scope="col">获奖人</th><th scope="col">奖项 / 奖品</th><th scope="col">公司</th><th scope="col">手机号</th><th scope="col">抽奖时间</th><th scope="col">操作</th></tr></thead><tbody>${filtered.slice((winnerPage - 1) * PAGE_SIZE, winnerPage * PAGE_SIZE).map(winner => `<tr><td><span class="lottery-person-avatar" aria-hidden="true">${escapeHTML(winner.name.slice(0, 1))}</span><strong>${escapeHTML(winner.name)}</strong></td><td><span class="lottery-prize-badge">${escapeHTML(winner.level)}</span> ${escapeHTML(winner.prizeName)}</td><td>${escapeHTML(winner.company || '—')}</td><td class="lottery-numeric">${escapeHTML(maskPhone(winner.phone))}</td><td class="lottery-numeric">${escapeHTML(timeLabel(winner.drawnAt))}</td><td><button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-winner" data-id="${escapeHTML(winner.id)}" aria-label="删除${escapeHTML(winner.name)}的中奖记录">删除</button></td></tr>`).join('')}</tbody></table></div>${pagination(winnerPage, filtered.length, 'winner')}` : `<div class="lottery-empty"><div class="lottery-empty-icon">${clockIcon}</div><h3>${screen.winners.length ? '没有匹配的中奖记录' : '幸运时刻，等待开启'}</h3><p>${screen.winners.length ? '调整奖项或关键词，查看其他中奖记录。' : '完成奖项和名单设置后，在抽奖大屏开始抽奖，结果将自动出现在这里。'}</p><div class="lottery-empty-actions">${screen.winners.length ? btn('reset-winners', '重置筛选') : `<button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${!screen.prizes.length || !eligiblePeople(screen).length || !remainingSlots(screen) ? 'disabled' : ''}>开始抽奖</button><button type="button" class="lottery-btn" data-lottery-tab="prizes">前往奖项设置</button>`}</div></div>`}`;
+      ${filtered.length ? `<div class="lottery-batch-actions" data-winner-selection>
+        <span aria-live="polite" data-winner-count></span>
+        ${btn('select-filtered-winners', `全选当前结果（${filtered.length} 条）`)}
+        ${btn('clear-selected-winners', '清除选择')}
+        <button type="button" class="lottery-btn is-danger" data-lottery-action="delete-selected-winners">批量删除</button>
+      </div><div class="lottery-table-wrap"><table class="lottery-table"><thead><tr><th scope="col"><input type="checkbox" data-winner-select-page aria-label="全选本页中奖记录"></th><th scope="col">获奖人</th><th scope="col">奖项 / 奖品</th><th scope="col">公司</th><th scope="col">手机号</th><th scope="col">抽奖时间</th><th scope="col">操作</th></tr></thead><tbody>${visible.map(winner => `<tr><td><input type="checkbox" data-winner-select value="${escapeHTML(winner.id)}" aria-label="选择${escapeHTML(winner.name)}的中奖记录"></td><td><span class="lottery-person-avatar" aria-hidden="true">${escapeHTML(winner.name.slice(0, 1))}</span><strong>${escapeHTML(winner.name)}</strong></td><td><span class="lottery-prize-badge">${escapeHTML(winner.level)}</span> ${escapeHTML(winner.prizeName)}</td><td>${escapeHTML(winner.company || '—')}</td><td class="lottery-numeric">${escapeHTML(maskPhone(winner.phone))}</td><td class="lottery-numeric">${escapeHTML(timeLabel(winner.drawnAt))}</td><td><button type="button" class="lottery-btn is-quiet" data-lottery-action="delete-winner" data-id="${escapeHTML(winner.id)}" aria-label="删除${escapeHTML(winner.name)}的中奖记录">删除</button></td></tr>`).join('')}</tbody></table></div>${pagination(winnerPage, filtered.length, 'winner')}` : `<div class="lottery-empty"><div class="lottery-empty-icon">${clockIcon}</div><h3>${screen.winners.length ? '没有匹配的中奖记录' : '幸运时刻，等待开启'}</h3><p>${screen.winners.length ? '调整奖项或关键词，查看其他中奖记录。' : '完成奖项和名单设置后，在抽奖大屏开始抽奖，结果将自动出现在这里。'}</p><div class="lottery-empty-actions">${screen.winners.length ? btn('reset-winners', '重置筛选') : `<button type="button" class="lottery-btn is-primary" data-lottery-action="open-draw" ${!screen.prizes.length || !eligiblePeople(screen).length || !remainingSlots(screen) ? 'disabled' : ''}>开始抽奖</button><button type="button" class="lottery-btn" data-lottery-tab="prizes">前往奖项设置</button>`}</div></div>`}`;
   }
   function render() {
     const screen = currentScreen();
@@ -285,8 +307,9 @@
     const createButton = document.getElementById('activityLotteryCreate');
     if (createButton) createButton.hidden = view !== 'list';
     viewRoot.innerHTML = view === 'list' ? renderList() : renderDetail(screen);
+    updateWinnerSelection();
   }
-  function resetFilters() { poolFilter = ''; selectedPeople.clear(); poolQuery = ''; winnerQuery = ''; winnerPrize = ''; poolPage = 1; winnerPage = 1; }
+  function resetFilters() { selectedWinners.clear(); poolFilter = ''; selectedPeople.clear(); poolQuery = ''; winnerQuery = ''; winnerPrize = ''; poolPage = 1; winnerPage = 1; }
   function switchTab(next) { if (!['prizes', 'pool', 'winners'].includes(next)) return; tab = next; render(); root.querySelector(`#lottery-tab-${next}`)?.focus(); }
 
   function restoreFocus(opener, fallback) {
@@ -350,16 +373,32 @@
   }
   function confirmDelete(kind, id) {
     const screen = kind === 'screen' ? state.screens.find(item => item.id === id) : currentScreen();
-    const items = kind === 'winner' ? screen?.winners : screen?.prizes;
-    const target = kind === 'screen' ? screen : items?.find(item => item.id === id);
+    const target = kind === 'screen' ? screen : screen?.prizes.find(item => item.id === id);
     if (!target) return;
     if (kind === 'prize' && wonFor(screen, id)) { notify('已有中奖记录的奖项不可删除，以保留完整抽奖记录。', true); return; }
     const options = {
       screen: {label: '这个大屏', name: target.name, impact: '该大屏下的奖项、参与名单和中奖记录将从此浏览器删除，此操作无法撤销。', fallback: 'new-screen'},
-      prize: {label: '这个奖项', name: target.name, impact: '删除后，该奖项的中奖名额也会一并移除。', fallback: 'add-prize'},
-      winner: {label: '这条中奖记录', name: `${target.name} · ${target.level} · ${target.prizeName}`, impact: '删除后，该奖项将恢复 1 个名额，并重新判断获奖人的抽奖资格。此操作无法撤销。', fallback: 'delete-winner'}
+      prize: {label: '这个奖项', name: target.name, impact: '删除后，该奖项的中奖名额也会一并移除。', fallback: 'add-prize'}
     }[kind];
     openDialog(`删除${options.label}？`, `<div class="lottery-form"><input type="hidden" name="kind" value="${kind}"><input type="hidden" name="id" value="${escapeHTML(id)}"><p>确认删除「${escapeHTML(options.name)}」？</p><p class="lottery-muted">${options.impact}</p></div>`, `${cancelButton}<button type="submit" class="lottery-btn is-danger">确认删除</button>`, {form: 'delete', fallback: `[data-lottery-action="${options.fallback}"]`});
+  }
+
+  function confirmDeleteWinners(ids, batch) {
+    const screen = currentScreen();
+    if (!screen) return;
+    const records = screen.winners.filter(winner => ids.has(winner.id));
+    if (!records.length) return;
+    const first = records[0];
+    const summary = batch ? `确认删除已选的 ${records.length} 条中奖记录？` : `确认删除「${first.name} · ${first.level} · ${first.prizeName}」？`;
+    const dialog = openDialog(batch ? '批量删除中奖记录' : '删除这条中奖记录？',
+      `<div class="lottery-form"><p>${escapeHTML(summary)}</p><p class="lottery-muted">删除后将归还 ${records.length} 个中奖名额，并按剩余记录重新判断获奖人的抽奖资格。此操作无法撤销。</p></div>`,
+      `${cancelButton}<button type="submit" class="lottery-btn is-danger">确认删除</button>`,
+      {form: 'delete-winners', fallback: '[data-lottery-action="delete-winner"]'});
+    if (!dialog) return;
+    const form = dialog.querySelector('form');
+    form.dataset.screenId = screen.id;
+    form.dataset.winnerIds = JSON.stringify(records.map(winner => winner.id));
+    form.querySelector('[data-lottery-action="close-dialog"][type="button"].lottery-btn').focus();
   }
 
   function csvCell(value) {
@@ -623,14 +662,22 @@
     else if (action === 'add-prize') prizeEditor();
     else if (action === 'edit-prize') prizeEditor(id);
     else if (action === 'delete-prize') confirmDelete('prize', id);
-    else if (action === 'delete-winner') confirmDelete('winner', id);
+    else if (action === 'delete-winner') confirmDeleteWinners(new Set([id]), false);
+    else if (action === 'delete-selected-winners') confirmDeleteWinners(selectedWinners, true);
+    else if (action === 'select-filtered-winners' || action === 'clear-selected-winners') {
+      selectedWinners.clear();
+      const screen = currentScreen();
+      if (action === 'select-filtered-winners' && screen) winnerRows(screen).forEach(winner => selectedWinners.add(winner.id));
+      updateWinnerSelection();
+      if (action === 'clear-selected-winners') root.querySelector('[data-lottery-action="select-filtered-winners"]')?.focus();
+    }
     else if (action === 'reset-pool') { poolFilter = ''; selectedPeople.clear(); poolQuery = ''; poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); }
-    else if (action === 'reset-winners') { winnerQuery = ''; winnerPrize = ''; winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); }
+    else if (action === 'reset-winners') { selectedWinners.clear(); winnerQuery = ''; winnerPrize = ''; winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); }
     else if (action === 'pool-page' || action === 'winner-page') { const page = Number(button.dataset.page); if (action === 'pool-page') poolPage = Math.max(1, page); else winnerPage = Math.max(1, page); render(); root.querySelector('.lottery-pagination')?.focus({preventScroll: true}); root.querySelector('.lottery-table-wrap')?.scrollIntoView({block: 'nearest'}); }
     else if (action === 'import-people' || action === 'sync-people') syncPeopleDialog();
     else if (action === 'export-winners') {
       const screen = currentScreen(); if (!screen) return;
-      const rows = searchPeople(screen.winners.filter(winner => !winnerPrize || winner.prizeId === winnerPrize), winnerQuery).slice().reverse();
+      const rows = winnerRows(screen);
       if (!rows.length) return;
       downloadCSV('抽奖中奖记录.csv', [['姓名', '奖项等级', '奖品名称', '公司', '手机号', '抽奖时间'], ...rows.map(winner => [winner.name, winner.level, winner.prizeName, winner.company, maskPhone(winner.phone), timeLabel(winner.drawnAt)])]); notify(`已导出当前筛选的 ${rows.length} 条中奖记录，手机号使用掩码显示。`);
     }
@@ -647,6 +694,15 @@
     if (setup && event.target.name === 'setupQuantity') updateLaunchForm(setup);
   });
   root.addEventListener('change', event => {
+    if (event.target.matches('[data-winner-select], [data-winner-select-page]')) {
+      const boxes = event.target.matches('[data-winner-select-page]') ? root.querySelectorAll('[data-winner-select]') : [event.target];
+      for (const box of boxes) {
+        if (event.target.checked) selectedWinners.add(box.value);
+        else selectedWinners.delete(box.value);
+      }
+      updateWinnerSelection();
+      return;
+    }
     if (event.target.matches('[data-pool-select]')) { event.target.checked ? selectedPeople.add(event.target.value) : selectedPeople.delete(event.target.value); renderSelection(); return; }
     if (event.target.matches('[data-pool-select-all]')) { root.querySelectorAll('[data-pool-select]').forEach(input => { input.checked = event.target.checked; input.checked ? selectedPeople.add(input.value) : selectedPeople.delete(input.value); }); renderSelection(); return; }
     const setup = event.target.closest('dialog.lottery-launch-dialog');
@@ -680,7 +736,7 @@
       form.dataset.committed = 'true'; afterDialogClose(form.closest('dialog'), () => drawDialog(configuration)); return;
     }
     if (kind === 'pool-search') { poolQuery = String(data.get('query') || '').trim(); poolFilter = String(data.get('poolFilter') || ''); selectedPeople.clear(); poolPage = 1; render(); root.querySelector('[data-lottery-form="pool-search"] input')?.focus(); return; }
-    if (kind === 'winner-search') { winnerQuery = String(data.get('query') || '').trim(); winnerPrize = String(data.get('prize') || ''); winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); return; }
+    if (kind === 'winner-search') { selectedWinners.clear(); winnerQuery = String(data.get('query') || '').trim(); winnerPrize = String(data.get('prize') || ''); winnerPage = 1; render(); root.querySelector('[data-lottery-form="winner-search"] input')?.focus(); return; }
     if (kind === 'screen-editor') {
       const id = String(data.get('id') || ''), name = String(data.get('name') || '').trim();
       if (!textValid(name, 80)) { formError(form, '请填写 1–80 个字符的大屏名称。'); return; }
@@ -699,23 +755,26 @@
       if (existing) { form.dataset.committed = 'true'; Object.assign(existing, {name, level, total, ...rules}); }
       else { if (screen.prizes.length >= 100) { formError(form, '每个大屏最多设置 100 个奖项。'); return; } form.dataset.committed = 'true'; screen.prizes.push({id: uid('prize'), name, level, total, ...rules}); }
       tab = 'prizes'; form.closest('dialog').close(); saveAndRender(existing ? '奖项已更新；历史中奖记录保留抽奖时的奖品名称。' : '奖项已添加。');
-    } else if (kind === 'delete') {
-      const id = String(data.get('id') || '');
-      if (data.get('kind') === 'winner') {
-        if (!screen?.winners.some(winner => winner.id === id)) { formError(form, '这条中奖记录已不存在。'); return; }
-        const previous = screen.winners;
-        screen.winners = previous.filter(winner => winner.id !== id);
-        if (!persist('')) {
-          screen.winners = previous;
-          formError(form, '本地保存失败，中奖记录仍保留，请重试。');
-          return;
-        }
-        form.dataset.committed = 'true';
-        form.closest('dialog').close();
-        render();
-        notify('中奖记录已删除，已归还 1 个中奖名额。');
+    } else if (kind === 'delete-winners') {
+      if (!screen || screen.id !== form.dataset.screenId) { formError(form, '当前大屏已切换，请重新选择中奖记录。'); return; }
+      const ids = new Set(JSON.parse(form.dataset.winnerIds));
+      const previous = screen.winners;
+      const remaining = previous.filter(winner => !ids.has(winner.id));
+      const count = previous.length - remaining.length;
+      if (count !== ids.size) { formError(form, '所选中奖记录已变化，请关闭弹窗后重新选择。'); return; }
+      screen.winners = remaining;
+      if (!persist('')) {
+        screen.winners = previous;
+        formError(form, '本地保存失败，中奖记录仍保留，请重试。');
         return;
       }
+      ids.forEach(id => selectedWinners.delete(id));
+      form.dataset.committed = 'true';
+      form.closest('dialog').close();
+      render();
+      notify(`已删除 ${count} 条中奖记录，归还 ${count} 个中奖名额。`);
+    } else if (kind === 'delete') {
+      const id = String(data.get('id') || '');
       if (data.get('kind') === 'screen') { form.dataset.committed = 'true'; state.screens = state.screens.filter(item => item.id !== id); if (selectedScreenId === id) { selectedScreenId = state.screens[0]?.id || null; view = 'list'; resetFilters(); } }
       else if (screen) { if (wonFor(screen, id)) { formError(form, '该奖项已有中奖记录，无法删除。'); return; } form.dataset.committed = 'true'; screen.prizes = screen.prizes.filter(prize => prize.id !== id); }
       form.closest('dialog').close(); saveAndRender('已删除。');

@@ -329,8 +329,8 @@ body.mk-mega-layout .lottery-table th { background: #f7f8fa; color: #77808f; fon
 @media (prefers-reduced-motion: reduce) { .lottery-sphere.running, .lottery-stage.is-running .lottery-stage-orb { animation: none; } #activityLotteryRoot * { transition: none; } }
 
 /* Roster management and prize eligibility. */
-.lottery-pool-batch { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; margin-bottom: 16px; background: #f7f8fa; border: 1px solid var(--lottery-line); border-radius: 6px; }
-.lottery-pool-batch > span { margin-right: 8px; color: var(--lottery-muted); font-size: 12px; }
+.lottery-batch-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; margin-bottom: 16px; background: #f7f8fa; border: 1px solid var(--lottery-line); border-radius: 6px; }
+.lottery-batch-actions > span { margin-right: 8px; color: var(--lottery-muted); font-size: 12px; }
 .lottery-pool-table { min-width: 1180px; }
 #activityLotteryRoot input[type="checkbox"], .lottery-dialog input[type="checkbox"] { min-height: 0; width: 16px; height: 16px; padding: 0; accent-color: var(--lottery-red); }
 .lottery-person-flags { display: flex; flex-wrap: wrap; gap: 16px; }
