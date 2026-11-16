@@ -98,7 +98,7 @@
   const DRAW_MODES = [
     {id: 'wheel', label: '幸运转盘', caption: '旋转减速 · 精准定位', max: 1, glyph: '<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16m-13.7-5.7 11.4 11.4M6.3 17.7 17.7 6.3"/>'},
     {id: 'spotlight', label: '单人滚动', caption: '头像快切 · 聚焦揭晓', max: 1, glyph: '<rect x="5" y="3" width="14" height="18" rx="3"/><circle cx="12" cy="9" r="3"/><path d="M8 18v-1a4 4 0 0 1 8 0v1"/>'},
-    {id: 'matrix', label: '头像矩阵', caption: '全员头像 · 随机锁定', max: 50, glyph: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'},
+    {id: 'matrix', label: '头像矩阵', caption: '头像轮换 · 批量揭晓', max: 50, glyph: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'},
     {id: 'eggs', label: '砸金蛋', caption: '点击金蛋 · 锤击揭晓', max: 1, glyph: '<path d="M19 15c0 4-3 6-7 6s-7-2-7-6S8 3 12 3s7 8 7 12Z"/><path d="m12 8-2 4 4 2-2 4"/>'},
     {id: 'slots', label: '幸运老虎机', caption: '滚轮加速 · 依次停靠', max: 3, glyph: '<rect x="2" y="5" width="17" height="15" rx="2"/><path d="M7 8v9m6-9v9m6-5h3V6"/><circle cx="22" cy="4" r="1"/>'},
     {id: 'list', label: '名单滚动', caption: '简洁卡片 · 批量揭晓', max: 50, glyph: '<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>'},

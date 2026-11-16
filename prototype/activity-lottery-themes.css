@@ -190,7 +190,7 @@
   background: var(--lottery-theme-active);
   box-shadow: 0 0 0 2px var(--lottery-theme-line), 0 0 20px var(--lottery-theme-shadow);
 }
-.lottery-effects-dialog[data-theme] :is(.lottery-fx-person.is-winner,.lottery-fx-matrix-person.is-winner) {
+.lottery-effects-dialog[data-theme] .lottery-fx-person.is-winner {
   border-color: var(--lottery-theme-focus);
   background: var(--lottery-theme-winner);
   color: var(--lottery-theme-ink);
@@ -219,7 +219,7 @@
 }
 .lottery-effects-dialog[data-theme] .lottery-fx .lottery-fx-result-page-button:hover:not(:disabled) { border-color: var(--lottery-theme-focus); background: var(--lottery-theme-active); }
 .lottery-effects-dialog[data-theme] .lottery-fx :is(button,a,[tabindex]):focus-visible { outline-color: var(--lottery-theme-focus); }
-.lottery-effects-dialog[data-theme] .lottery-effect-host :is(.lottery-fx.has-round-results,.lottery-fx-history-list,.lottery-fx-matrix-grid,.lottery-fx-result) { scrollbar-color: var(--lottery-theme-accent) transparent; }
+.lottery-effects-dialog[data-theme] .lottery-effect-host :is(.lottery-fx.has-round-results,.lottery-fx-history-list,.lottery-fx-result) { scrollbar-color: var(--lottery-theme-accent) transparent; }
 
 .lottery-effects-dialog[data-theme] .lottery-fx-spotlight-card {
   background: linear-gradient(150deg, var(--lottery-theme-winner), var(--lottery-theme-surface));
