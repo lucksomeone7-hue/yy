@@ -197,8 +197,8 @@
   overflow: visible;
   text-align: left;
 }
-.lottery-effect-host .lottery-fx.has-round-results[data-phase="complete"]:is([data-result-layout="compact"],[data-result-layout="paged"]) > .lottery-fx-scene { display: none; }
-.lottery-effect-host .lottery-fx.has-round-results:is([data-result-layout="compact"],[data-result-layout="paged"]) > .lottery-fx-result {
+.lottery-effect-host .lottery-fx.has-round-results[data-phase="complete"]:is(.lottery-fx-matrix,[data-result-layout="compact"],[data-result-layout="paged"]) > .lottery-fx-scene { display: none; }
+.lottery-effect-host .lottery-fx.has-round-results:is(.lottery-fx-matrix,[data-result-layout="compact"],[data-result-layout="paged"]) > .lottery-fx-result {
   flex: 1 0 auto;
   justify-content: center;
   width: 100%;
@@ -206,6 +206,7 @@
   margin: 0 auto;
   padding: 16px 0;
 }
+.lottery-fx-matrix .lottery-fx-result > .lottery-fx-trigger { align-self: center; }
 .lottery-fx-result-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; max-width: 1120px; margin: 0 auto; }
 .lottery-fx-result-kicker { display: block; margin-bottom: 5px; color: var(--lottery-fx-gold); font-size: 11px; letter-spacing: .16em; }
 .lottery-fx-result-heading h4 { color: var(--lottery-fx-pale); font-size: clamp(17px,1.6vw,24px); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
@@ -383,24 +384,18 @@
 .lottery-fx-history-item > div > span { color: #d8aa94; font-size: 10px; }
 
 /* Matrix: every participant stays legible while the current tile is highlighted. */
-.lottery-fx-matrix-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 11px; width: 100%; max-width: 930px; margin: auto; }
-.lottery-fx-matrix-person { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-width: 0; min-height: 124px; padding: 13px 7px 11px; border: 1px solid #f7c78240; border-radius: 9px; background: linear-gradient(145deg, #ffffff0f, #6b092415); color: #f9d8bc; text-align: center; box-shadow: inset 0 1px 0 #ffe9bc07; transition: opacity .16s, background .16s, box-shadow .16s, translate .16s; }
-.lottery-fx-matrix-person .lottery-fx-avatar { width: 54px; height: 54px; border-color: #eac493; }
-.lottery-fx-matrix-person .lottery-fx-name { font-size: 13px; line-height: 1.45; }
-.lottery-fx-matrix-person .lottery-fx-company { display: none; }
-.lottery-fx-matrix-grid:has(> :nth-child(25)) { grid-template-columns: repeat(8,minmax(0,1fr)); gap: 8px; }
-.lottery-fx-matrix-grid:has(> :nth-child(25)) .lottery-fx-matrix-person { min-height: 94px; padding: 10px 5px; gap: 6px; }
-.lottery-fx-matrix-grid:has(> :nth-child(25)) .lottery-fx-avatar { width: 42px; height: 42px; }
-.lottery-fx-matrix-grid:has(> :nth-child(25)) .lottery-fx-name { font-size: 12px; }
-.lottery-fx-matrix-grid:has(> :nth-child(49)) { grid-template-columns: repeat(10,minmax(0,1fr)); gap: 7px; }
-.lottery-fx-matrix-grid:has(> :nth-child(49)) .lottery-fx-matrix-person { min-height: 78px; padding: 8px 4px; gap: 4px; }
-.lottery-fx-matrix-grid:has(> :nth-child(49)) .lottery-fx-avatar { width: 34px; height: 34px; }
-.lottery-fx-matrix-grid:has(> :nth-child(49)) .lottery-fx-name { font-size: 11px; }
+.lottery-fx-matrix .lottery-fx-scene { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.lottery-fx-matrix-meta { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 16px; width: 100%; max-width: 930px; padding-inline: 6px; color: var(--lottery-fx-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.lottery-fx-matrix-meta strong { color: var(--lottery-fx-pale); font-size: 19px; }
+.lottery-fx-matrix-range { font-size: 12px; }
+.lottery-fx-matrix-viewport { position: relative; flex: 1; width: 100%; max-width: 930px; min-height: 154px; overflow: hidden; }
+.lottery-fx-matrix-grid { --matrix-columns: 6; --matrix-row: 124px; --matrix-avatar: 54px; position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--matrix-columns),minmax(0,1fr)); grid-auto-rows: var(--matrix-row); align-content: safe center; gap: 11px; padding: 6px; }
+.lottery-fx-matrix-grid[data-density="compact"] { --matrix-columns: 8; --matrix-row: 94px; --matrix-avatar: 42px; gap: 8px; }
+.lottery-fx-matrix-grid[data-density="dense"] { --matrix-columns: 10; --matrix-row: 78px; --matrix-avatar: 36px; gap: 7px; }
+.lottery-fx-matrix-person { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 6px; border: 1px solid #f7c78240; border-radius: 9px; background: linear-gradient(145deg, #ffffff0f, #6b092415); color: #f9d8bc; text-align: center; box-shadow: inset 0 1px 0 #ffe9bc07; transition: background .16s, box-shadow .16s, translate .16s; }
+.lottery-fx-matrix-person .lottery-fx-avatar { flex: none; width: var(--matrix-avatar); height: var(--matrix-avatar); border-color: #eac493; }
+.lottery-fx-matrix-person .lottery-fx-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 1.45; }
 .lottery-fx-matrix-person.is-active { z-index: 1; translate: 0 -3px; border-color: #fff0a8; background: #f0c96d36; color: #fff4cf; box-shadow: inset 0 0 0 2px #f5d58d90, 0 0 24px #ffd77b5c; }
-.lottery-fx-matrix-person.is-dimmed { opacity: .38; }
-.lottery-fx-matrix-person.is-winner { z-index: 2; translate: 0 -3px; border-color: #fff1b8; background: linear-gradient(145deg, #fff0c0, #edc87d); color: #8e1430; box-shadow: 0 0 0 3px #ffe1a224, 0 5px 24px #ffdf9857; }
-.lottery-fx-matrix-person.is-winner .lottery-fx-avatar { border-color: #fff7dc; box-shadow: 0 0 0 2px #bc5b4d3b; }
-.lottery-fx-matrix:is([data-phase="revealing"],[data-phase="complete"]) .lottery-fx-matrix-person.is-winner { animation: lottery-fx-winner-pulse .55s ease-out 2; }
 
 /* Gold eggs are button targets; shell, crack and fragments are independent layers. */
 .lottery-fx-eggs .lottery-fx-scene { min-height: 338px; padding: 15px 2px 10px; }
@@ -499,7 +494,6 @@
 @keyframes lottery-fx-reveal { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes lottery-fx-lights { from { opacity: .55; filter: drop-shadow(0 0 1px #ffe3a4); } to { opacity: 1; filter: drop-shadow(0 0 7px #ffe3a4); } }
 @keyframes lottery-fx-flip { 0% { transform: rotateX(-8deg) translateY(-2px); opacity: .72; } 55% { transform: rotateX(0) translateY(0); opacity: 1; } 100% { transform: rotateX(8deg) translateY(2px); opacity: .8; } }
-@keyframes lottery-fx-winner-pulse { 0%,100% { box-shadow: 0 0 0 3px #ffe1a224, 0 5px 24px #ffdf9857; } 50% { box-shadow: 0 0 0 6px #ffe1a23b, 0 5px 38px #ffdf98a1; } }
 @keyframes lottery-fx-egg-shake { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-5deg); } 45% { transform: rotate(4deg); } 70% { transform: rotate(-3deg); } }
 @keyframes lottery-fx-hammer-hit { 0% { transform: rotate(32deg) translate(5px,-12px); } 55% { transform: rotate(-32deg) translate(-10px,20px); } 70% { transform: rotate(-27deg) translate(-9px,18px); } 100% { transform: rotate(18deg); } }
 @keyframes lottery-fx-egg-fragment { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 65% { opacity: .9; } 100% { opacity: 0; transform: translate(var(--lottery-fx-fragment-x),var(--lottery-fx-fragment-y)) rotate(var(--lottery-fx-fragment-r)); } }
@@ -508,17 +502,14 @@
   .lottery-fx { min-height: 650px; padding: 30px 44px 22px; }
   .lottery-fx-wheel-wrap { width: 430px; }
   .lottery-fx.lottery-fx-wheel .lottery-fx-scene { min-height: 454px; }
-  .lottery-fx-matrix-grid { gap: 15px; }
-  .lottery-fx-matrix-grid:not(:has(> :nth-child(25))) .lottery-fx-matrix-person { min-height: 140px; }
-  .lottery-fx-matrix-grid:not(:has(> :nth-child(25))) .lottery-fx-matrix-person .lottery-fx-avatar { width: 62px; height: 62px; }
+  .lottery-fx-matrix-grid[data-density="standard"] { --matrix-row: 140px; --matrix-avatar: 62px; gap: 15px; }
   .lottery-fx-eggs-grid { gap: 24px; }
 }
 @container lottery-effect (max-width: 700px) {
   .lottery-fx { padding: 24px 20px 16px; min-height: 560px; }
   .lottery-fx-head h3 { font-size: 26px; }
-  .lottery-fx-matrix-grid { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 9px; }
-  .lottery-fx-matrix-person { min-height: 112px; }
-  .lottery-fx-matrix-person .lottery-fx-avatar { width: 48px; height: 48px; }
+  .lottery-fx-matrix-grid[data-density="standard"] { --matrix-columns: 5; --matrix-row: 112px; --matrix-avatar: 48px; gap: 9px; }
+  .lottery-fx-matrix-grid:is([data-density="compact"],[data-density="dense"]) { --matrix-columns: 7; }
   .lottery-fx-people { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .lottery-fx-spotlight .lottery-fx-scene { gap: 16px; grid-template-columns: minmax(0,1fr) minmax(190px,.8fr); }
   .lottery-fx-spotlight-card { min-height: 260px; padding: 22px 14px; }
@@ -551,11 +542,9 @@
   .lottery-fx-spotlight-card { width: 235px; min-height: 244px; }
   .lottery-fx-history-list { min-height: 76px; max-height: 180px; }
   .lottery-fx-history-item { padding: 7px 10px; }
-  .lottery-fx-matrix-grid { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
-  .lottery-fx-matrix-person { min-height: 101px; gap: 6px; padding: 10px 5px; }
-  .lottery-fx-matrix-person .lottery-fx-avatar { width: 44px; height: 44px; }
+  .lottery-fx-matrix-grid[data-density="standard"] { --matrix-columns: 4; --matrix-row: 101px; --matrix-avatar: 44px; gap: 8px; }
+  .lottery-fx-matrix-grid:is([data-density="compact"],[data-density="dense"]) { --matrix-columns: 5; }
   .lottery-fx-matrix-person .lottery-fx-name { font-size: 12px; }
-  .lottery-fx-matrix-grid:has(> :nth-child(25)), .lottery-fx-matrix-grid:has(> :nth-child(49)) { grid-template-columns: repeat(5,minmax(0,1fr)); }
   .lottery-fx-eggs-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px 10px; max-width: 360px; padding-top: 8px; }
   .lottery-fx-egg { min-height: 198px; padding-bottom: 18px; }
   .lottery-fx-egg-shell, .lottery-fx-egg-crack { width: 130px; height: 170px; }
@@ -581,7 +570,7 @@
   .lottery-fx-winner { min-width: 108px; padding: 7px 10px 7px 8px; }
 }
 @container lottery-effect (max-width: 360px) {
-  .lottery-fx-matrix-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .lottery-fx-matrix-grid[data-density] { --matrix-columns: 3; }
   .lottery-fx.lottery-fx-wheel .lottery-fx-scene { min-height: 275px; }
   .lottery-fx-wheel-wrap { width: min(250px,85%); }
   .lottery-fx .lottery-fx-trigger:not(.lottery-fx-wheel-hub):not(.lottery-fx-slots-lever) { min-width: 135px; padding: 9px 18px; }
@@ -591,7 +580,7 @@
 .lottery-fx.is-reduced-motion .lottery-fx-egg.is-shaking .lottery-fx-egg-shell { transform: none; }
 .lottery-fx.is-reduced-motion .lottery-fx-egg.is-open .lottery-fx-egg-fragments { display: none; }
 .lottery-fx.is-reduced-motion .lottery-fx-hammer.is-striking { transform: rotate(-20deg); }
-.lottery-fx.is-reduced-motion .lottery-fx-matrix-person.is-active, .lottery-fx.is-reduced-motion .lottery-fx-matrix-person.is-winner { translate: none; }
+.lottery-fx.is-reduced-motion .lottery-fx-matrix-person.is-active { translate: none; }
 .lottery-fx.is-reduced-motion .lottery-fx-trigger:hover:not(:disabled), .lottery-fx.is-reduced-motion .lottery-fx-trigger:active:not(:disabled) { translate: none; }
 @media (prefers-reduced-motion: reduce) {
   .lottery-fx *, .lottery-fx *::before, .lottery-fx *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
@@ -599,6 +588,6 @@
   .lottery-fx-egg.is-shaking .lottery-fx-egg-shell { transform: none; }
   .lottery-fx-egg.is-open .lottery-fx-egg-fragments { display: none; }
   .lottery-fx-hammer.is-striking { transform: rotate(-20deg); }
-  .lottery-fx-matrix-person.is-active, .lottery-fx-matrix-person.is-winner { translate: none; }
+  .lottery-fx-matrix-person.is-active { translate: none; }
   .lottery-fx-trigger:hover:not(:disabled), .lottery-fx-trigger:active:not(:disabled) { translate: none; }
 }

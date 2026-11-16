@@ -5,7 +5,7 @@
   const modes = Object.freeze([
     {id: 'wheel', label: '幸运转盘', caption: '转盘减速，指针揭晓幸运归属'},
     {id: 'spotlight', label: '幸运聚焦', caption: '头像快速切换，定格幸运嘉宾'},
-    {id: 'matrix', label: '头像矩阵', caption: '光点穿梭名单，点亮中奖头像'},
+    {id: 'matrix', label: '头像矩阵', caption: '头像分批轮换，停下揭晓中奖名单'},
     {id: 'eggs', label: '砸金蛋', caption: '选择金蛋，敲开本轮惊喜'},
     {id: 'slots', label: '幸运老虎机', caption: '多列滚动，依次停靠幸运人选'},
     {id: 'list', label: '2D 名单', caption: '名单滚动高亮，展示本轮结果'},
@@ -23,7 +23,9 @@
   const modulo = (value, base) => ((value % base) + base) % base;
   const easeOutCubic = progress => 1 - Math.pow(1 - progress, 3);
   const easeOutQuint = progress => 1 - Math.pow(1 - progress, 5);
-  const motion = Object.freeze({wheel: 2600, spotlightFlip: 320, matrix: 1100, eggs: 1150, slots: 1800, slotsStagger: 400, list: 1200, sphere: 1200, reduced: 100});
+  const MATRIX_REVEAL_DELAYS = [85, 125, 180, 250, 350];
+  const motion = Object.freeze({wheel: 2600, spotlightFlip: 320, matrix: MATRIX_REVEAL_DELAYS.reduce((sum, delay) => sum + delay, 0), eggs: 1150, slots: 1800, slotsStagger: 400, list: 1200, sphere: 1200, reduced: 100});
+  const MATRIX_BATCH_INTERVAL = 1800;
   let instanceCounter = 0;
 
   function create(options = {}) {
@@ -39,6 +41,9 @@
     let destroyed = false, phase = 'idle', generation = 0, loopFrame = null, loopPrevious = 0;
     let pendingReveal = null, requestPending = false, selectedEgg = -1, wheelAngle = 0, sphereAngle = 0;
     let visiblePeople = [], wheelGroups = [], slotLanes = [], refs = {};
+    let matrixCapacity = 0, matrixOffset = 0, matrixObserver;
+    const matrixMotionPreference = mode === 'matrix' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const matrixReducedMotion = () => config.reducedMotion || matrixMotionPreference?.matches;
     let roundWinners = Object.freeze([]), roundPrize = '', resultPage = 1;
     const RESULT_PAGE_SIZE = 10;
     const frameIDs = new Set(), waits = new Map();
@@ -131,6 +136,12 @@
     function winnersMarkup(winners) {
       return `<p class="lottery-fx-result-caption">恭喜获得 ${esc(prizeText())}</p><div class="lottery-fx-winners">${winners.map(person => `<div class="lottery-fx-winner">${avatar(person, 40)}<strong>${esc(person.name)}</strong></div>`).join('')}</div>`;
     }
+    function finishRound(winners, extra, refocus) {
+      renderRoundResults();
+      emit('complete', {winnerCount: winners.length, ...extra});
+      syncControls();
+      if (refocus && document.activeElement === document.body) refs.result.querySelector('[data-fx-action="toggle"]')?.focus({preventScroll: true});
+    }
     function clearRoundResults() {
       roundWinners = Object.freeze([]); roundPrize = ''; resultPage = 1;
       element.classList.remove('has-round-results');
@@ -144,9 +155,12 @@
       const from = paged ? (resultPage - 1) * RESULT_PAGE_SIZE : 0;
       const people = roundWinners.slice(from, paged ? from + RESULT_PAGE_SIZE : total);
       const layout = total <= 5 ? 'hero' : paged ? 'paged' : 'compact';
+      const nextRound = mode === 'matrix' && refs.result.querySelector('[data-fx-action="toggle"]');
       element.classList.add('has-round-results');
       element.dataset.resultLayout = layout; element.dataset.resultCount = String(total); element.dataset.resultPage = String(resultPage);
       refs.result.innerHTML = `<div class="lottery-fx-result-heading"><div><span class="lottery-fx-result-kicker">本轮中奖名单</span><h4>恭喜获得 ${esc(roundPrize)}</h4></div><p class="lottery-fx-result-total">共 <strong>${total}</strong> 位幸运嘉宾</p></div><ol class="lottery-fx-winners lottery-fx-winners--${layout}" aria-label="本轮中奖名单${paged ? `，第 ${resultPage} 页` : ''}" start="${from + 1}" style="--fx-result-columns:${Math.min(5, total)}">${people.map((person, index) => `<li class="lottery-fx-winner" data-winner-id="${esc(identity(person))}" data-winner-order="${from + index + 1}"><span class="lottery-fx-winner-index" aria-hidden="true">${String(from + index + 1).padStart(2, '0')}</span>${avatar(person, layout === 'hero' ? 88 : 52)}<div class="lottery-fx-winner-copy"><strong class="lottery-fx-name">${esc(person.name)}</strong><span class="lottery-fx-company">${esc(person.company || '现场嘉宾')}</span></div></li>`).join('')}</ol>${paged ? `<nav class="lottery-fx-result-pagination" aria-label="本轮中奖名单分页" tabindex="-1"><span class="lottery-fx-result-range">展示 ${from + 1}–${from + people.length} / ${total} 人</span><div><button type="button" class="lottery-fx-result-page-button" data-fx-result-page="${resultPage - 1}" data-fx-page-direction="previous" aria-label="上一页中奖名单" ${resultPage === 1 ? 'disabled' : ''}>上一页</button><span class="lottery-fx-result-page-label" aria-live="polite">第 ${resultPage} / ${pages} 页</span><button type="button" class="lottery-fx-result-page-button" data-fx-result-page="${resultPage + 1}" data-fx-page-direction="next" aria-label="下一页中奖名单" ${resultPage === pages ? 'disabled' : ''}>下一页</button></div></nav>` : ''}`;
+      if (nextRound) refs.result.append(nextRound);
+      else if (mode === 'matrix' && typeof options.onRequestStart === 'function') refs.result.insertAdjacentHTML('beforeend', triggerMarkup('开始下一轮'));
     }
     function showWinner(person, index, count) {
       refs.result.innerHTML = winnersMarkup([person]);
@@ -172,7 +186,7 @@
       element.querySelectorAll('[data-fx-action="toggle"]').forEach(button => {
         button.disabled = locked || !config.people.length;
         const runningLabel = mode === 'eggs' ? '请选择一枚金蛋' : '停止并揭晓';
-        button.textContent = locked ? '正在揭晓…' : phase === 'running' ? runningLabel : '开始抽奖';
+        button.textContent = locked ? '正在揭晓…' : phase === 'running' ? runningLabel : mode === 'matrix' && phase === 'complete' ? '开始下一轮' : '开始抽奖';
         button.setAttribute('aria-label', button.textContent);
         if (mode === 'eggs' && phase === 'running') button.disabled = true;
       });
@@ -182,11 +196,11 @@
     }
     function baseRender() {
       clearRoundResults();
-      setPreview();
+      if (mode !== 'matrix') setPreview();
       element.classList.toggle('is-reduced-motion', config.reducedMotion);
       refs.head.innerHTML = `<span class="lottery-fx-demo">演示模式</span><h3>${esc(modes.find(item => item.id === mode).label)}</h3><p>${esc(prizeText())}</p>`;
       refs.result.innerHTML = '<p class="lottery-fx-ready">准备就绪，等待幸运时刻</p>';
-      refs.footer.innerHTML = `<p>画面仅作展示；重复出现的展示项不代表重复中奖${config.people.length > 80 ? '。名单预览最多展示 80 人' : ''}。</p>`;
+      refs.footer.innerHTML = `<p>${mode === 'matrix' ? '头像轮换仅作展示，中奖以本轮公布的名单为准。' : `画面仅作展示；重复出现的展示项不代表重复中奖${config.people.length > 80 ? '。名单预览最多展示 80 人' : ''}。`}</p>`;
       if (mode === 'wheel') renderWheel();
       else if (mode === 'spotlight') renderSpotlight();
       else if (mode === 'matrix') renderMatrix();
@@ -221,10 +235,43 @@
       refs.scene.innerHTML = `<div class="lottery-fx-spotlight-stage"><div class="lottery-fx-spotlight-card">${personContent(person, 160)}</div>${triggerMarkup()}</div><aside class="lottery-fx-history-list" aria-label="最近中奖记录">${historyMarkup()}</aside>`;
       refs.spotlight = element.querySelector('.lottery-fx-spotlight-card'); refs.history = element.querySelector('.lottery-fx-history-list');
     }
-    function matrixMarkup() {
-      return `<div class="lottery-fx-matrix-grid">${visiblePeople.map(person => `<div class="lottery-fx-matrix-person" data-person-id="${esc(identity(person))}">${avatar(person, 54)}<strong class="lottery-fx-name">${esc(person.name)}</strong></div>`).join('')}</div>${triggerMarkup()}`;
+    function showMatrixBatch(animate = false) {
+      const people = config.people.slice(matrixOffset, matrixOffset + matrixCapacity);
+      refs.matrixGrid.innerHTML = people.map(person => `<div class="lottery-fx-matrix-person" data-person-id="${esc(identity(person))}">${avatar(person, 54)}<strong class="lottery-fx-name" title="${esc(person.name)}">${esc(person.name)}</strong></div>`).join('');
+      refs.matrix = [...refs.matrixGrid.children];
+      const hasMore = config.people.length > matrixCapacity;
+      refs.matrixRange.hidden = !hasMore;
+      refs.matrixRange.textContent = hasMore ? `展示 ${matrixOffset + 1}–${matrixOffset + people.length} / ${config.people.length} 人` : '';
+      if (animate) refs.matrixGrid.animate([{opacity: .45}, {opacity: 1}], {duration: 240, easing: 'ease-out'});
     }
-    function renderMatrix() { refs.scene.innerHTML = matrixMarkup(); refs.matrix = [...element.querySelectorAll('.lottery-fx-matrix-person')]; }
+    function fitMatrix() {
+      const height = refs.matrixGrid.clientHeight;
+      if (!height) return;
+      const style = getComputedStyle(refs.matrixGrid);
+      const columns = Number(style.getPropertyValue('--matrix-columns'));
+      const row = parseFloat(style.gridAutoRows), gap = parseFloat(style.rowGap);
+      const innerHeight = height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      const capacity = columns * Math.max(1, Math.floor((innerHeight + gap) / (row + gap)));
+      if (capacity === matrixCapacity) return;
+      matrixCapacity = capacity;
+      matrixOffset = Math.floor(matrixOffset / capacity) * capacity;
+      showMatrixBatch();
+    }
+    function renderMatrix() {
+      matrixObserver?.disconnect();
+      matrixCapacity = 0; matrixOffset = 0;
+      element.scrollTop = 0;
+      const total = config.people.length;
+      const density = total >= 49 ? 'dense' : total >= 25 ? 'compact' : 'standard';
+      refs.scene.innerHTML = `<div class="lottery-fx-matrix-meta"><span>本轮可抽 <strong>${total}</strong> 人 <span aria-hidden="true">·</span> 抽取 <strong>${Math.min(total, config.quantity)}</strong> 人</span><span class="lottery-fx-matrix-range" hidden></span></div><div class="lottery-fx-matrix-viewport"><div class="lottery-fx-matrix-grid" data-density="${density}"></div></div>${triggerMarkup()}`;
+      refs.matrixGrid = refs.scene.querySelector('.lottery-fx-matrix-grid');
+      refs.matrixRange = refs.scene.querySelector('.lottery-fx-matrix-range');
+      refs.matrix = [];
+      fitMatrix();
+      matrixObserver = new ResizeObserver(fitMatrix);
+      matrixObserver.observe(refs.matrixGrid);
+      matrixObserver.observe(host);
+    }
     function eggSVG(index) {
       const gradientID = `${instanceID}-gold-${index}`;
       return `<svg viewBox="0 0 120 150" width="120" height="150" aria-hidden="true"><defs><linearGradient id="${gradientID}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3a8"/><stop offset=".42" stop-color="#efbd45"/><stop offset="1" stop-color="#ad6513"/></linearGradient></defs><path d="M60 7C34 7 12 63 12 94c0 29 20 47 48 47s48-18 48-47C108 63 86 7 60 7Z" fill="url(#${gradientID})" stroke="#f8d77a" stroke-width="2"/><path d="M36 38c-9 14-16 36-16 51" fill="none" stroke="#fff7cb" stroke-width="5" stroke-linecap="round" opacity=".6"/><text x="60" y="103" text-anchor="middle" fill="#8e4c15" font-size="38" font-family="serif" font-weight="700">福</text></svg>`;
@@ -272,10 +319,23 @@
       refs.result.innerHTML = `<p class="lottery-fx-ready">${mode === 'eggs' ? '选择一枚金蛋，敲开本轮惊喜' : config.reducedMotion ? '抽奖已开始，点击停止揭晓结果' : '幸运正在靠近…'}</p>`;
       if (mode === 'wheel') loop((_time, delta) => { wheelAngle += delta * .15; refs.wheel.style.transform = `rotate(${wheelAngle}deg)`; });
       else if (mode === 'spotlight') { let previous = 0; loop(time => { if (time - previous > 80) { refs.spotlight.innerHTML = personContent(randomVisualPerson(), 160); previous = time; } }); }
-      else if (mode === 'matrix') { let previous = 0; loop(time => { if (time - previous > 70) { activate(refs.matrix, Math.min(3, config.quantity)); previous = time; } }); }
+      else if (mode === 'matrix' && !matrixReducedMotion()) {
+        let previous = 0, batchStarted;
+        loop(time => {
+          if (matrixReducedMotion()) return;
+          batchStarted ??= time;
+          if (matrixCapacity && config.people.length > matrixCapacity && time - batchStarted >= MATRIX_BATCH_INTERVAL) {
+            matrixOffset += matrixCapacity;
+            if (matrixOffset >= config.people.length) matrixOffset = 0;
+            showMatrixBatch(true);
+            batchStarted = time;
+          }
+          if (time - previous > 70) { activate(refs.matrix, Math.min(3, config.quantity)); previous = time; }
+        });
+      }
       else if (mode === 'slots') loop((_time, delta) => { slotLanes.forEach((lane, index) => { lane.offset = modulo(lane.offset + delta * (.68 + index * .08), lane.base.length * SLOT_HEIGHT); lane.track.style.transform = `translateY(${-lane.offset}px)`; }); });
       else if (mode === 'list' || mode === 'sphere') { let previous = 0; loop((time, delta) => { if (time - previous > 90) { activate(refs.personCards, Math.min(3, config.quantity)); previous = time; } if (mode === 'sphere') { sphereAngle += delta * .025; refs.people.style.transform = `rotateY(${sphereAngle}deg)`; } }); }
-      if (config.reducedMotion) {
+      if (config.reducedMotion || (mode === 'matrix' && matrixReducedMotion())) {
         if (mode === 'matrix') activate(refs.matrix);
         else if (mode === 'list' || mode === 'sphere') activate(refs.personCards);
       }
@@ -307,12 +367,11 @@
       }
     }
     async function revealMatrix(winners, token) {
-      const existingIDs = new Set(visiblePeople.map(identity)); setPreview(winners);
-      if (visiblePeople.some(person => !existingIDs.has(identity(person)))) renderMatrix();
-      if (!config.reducedMotion) {
-        for (const delay of [65, 85, 115, 155, 210, 270, 200]) { activate(refs.matrix, Math.min(3, winners.length)); if (!await wait(delay, token)) return; }
-      } else if (!await wait(motion.reduced, token)) return;
-      refs.matrix.forEach((card, index) => { const won = winners.some(person => personMatch(person, visiblePeople[index])); card.classList.remove('is-active'); card.classList.toggle('is-winner', won); card.classList.toggle('is-dimmed', !won); });
+      if (matrixReducedMotion()) { await wait(motion.reduced, token); return; }
+      for (const delay of MATRIX_REVEAL_DELAYS) {
+        activate(refs.matrix, Math.min(3, winners.length));
+        if (!await wait(delay, token)) return;
+      }
     }
     function selectEgg(index) {
       selectedEgg = Math.min(refs.eggs.length - 1, Math.max(0, index));
@@ -377,6 +436,7 @@
       // Paging never calls the draw callbacks, mutates the pool, or resamples.
       roundWinners = Object.freeze(winners.map(person => Object.freeze({...person}))); roundPrize = prizeText(); resultPage = 1;
       stopLoop(); requestPending = false; const token = ++generation;
+      const refocus = mode === 'matrix' && refs.scene.contains(document.activeElement);
       emit('revealing', {winnerCount: winners.length}); syncControls();
       let resolvePromise;
       const promise = new Promise(resolve => { resolvePromise = resolve; });
@@ -389,9 +449,9 @@
           else if (mode === 'eggs') await revealEggs(winners, token);
           else if (mode === 'slots') await revealSlots(winners, token);
           else await revealPeople(winners, token);
-          if (isCurrent(token)) { renderRoundResults(); emit('complete', {winnerCount: winners.length, winnerIds: winners.map(identity)}); syncControls(); }
+          if (isCurrent(token)) finishRound(winners, {winnerIds: winners.map(identity)}, refocus);
         } catch (error) {
-          if (isCurrent(token)) { renderRoundResults(); emit('complete', {winnerCount: winners.length, presentationFallback: true}); syncControls(); }
+          if (isCurrent(token)) finishRound(winners, {presentationFallback: true}, refocus);
           if (globalThis.console) console.error('Lottery presentation fallback:', error);
         } finally { if (pendingReveal === pending) pendingReveal = null; pending.resolve(); }
       })();
@@ -437,7 +497,11 @@
       const egg = event.target.closest('[data-fx-egg]');
       if (egg && phase === 'running' && !requestPending) { selectEgg(Number(egg.dataset.fxEgg)); request('stop'); return; }
       const trigger = event.target.closest('[data-fx-action="toggle"]');
-      if (trigger && !trigger.disabled) request(phase === 'running' ? 'stop' : 'start');
+      if (trigger && !trigger.disabled) {
+        const preserveFocus = mode === 'matrix' && phase !== 'running' && trigger === document.activeElement;
+        request(phase === 'running' ? 'stop' : 'start');
+        if (preserveFocus && phase === 'running') refs.scene.querySelector('[data-fx-action="toggle"]')?.focus({preventScroll: true});
+      }
     });
     element.addEventListener('keydown', event => {
       // Native buttons still handle Enter/Space. Prevent the parent controller's
@@ -447,6 +511,7 @@
     function destroy() {
       if (destroyed) return;
       destroyed = true; generation++; cancelTasks(); requestPending = false;
+      matrixObserver?.disconnect();
       if (pendingReveal) { pendingReveal.resolve(); pendingReveal = null; }
       emit('destroyed'); element.remove(); refs = {}; slotLanes = []; visiblePeople = [];
     }
