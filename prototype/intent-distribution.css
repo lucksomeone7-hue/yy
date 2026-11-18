@@ -1,7 +1,7 @@
 #layers .intent-head, #layers .intent-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
 #layers .intent-head { justify-content:space-between; }
-#layers .intent-controls label { font-size:13px; color:#555e6d; }
-#layers .intent-controls select { padding:6px 10px; background:white; border:1px solid #d8dde5; border-radius:5px; color:#333; }
+#layers .intent-controls { width: min(100%, 660px); }
+#layers .intent-controls > label:has(#intentRangeFilter) { flex: 1 1 224px !important; max-width: none; }
 #layers .intent-level-card strong { font-size:28px; }
 #layers .intent-level-card small { font-size:13px; }
 #layers .intent-level-card em { margin-top:5px; }

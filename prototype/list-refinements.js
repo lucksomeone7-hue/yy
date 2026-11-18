@@ -32,6 +32,14 @@
     }
     select.refreshInlineLabel();
   }
+  const intentFields = document.querySelectorAll("#layers .intent-controls > label");
+  intentFields.forEach(field => {
+    prepareInlineField(field);
+    field.classList.add("inline-filter-select");
+  });
+  document.getElementById("intentReset")?.addEventListener("click", () => {
+    intentFields.forEach(prepareInlineField);
+  });
   // 独立搜索之外最多三个常用条件，发布范围始终优先。
   function normalizeFilters(panel,basic,advanced,toggle){
     if(!basic||basic.dataset.filterRule==='top-three')return;

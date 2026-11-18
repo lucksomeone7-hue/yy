@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="./navigation-guide.css" />
     <link rel="stylesheet" href="./navigation-menu-motion.css" />
   <link rel="stylesheet" href="./list-refinements.css?v=2.3.1">
-<link rel="stylesheet" href="intent-distribution.css"></head>
+<link rel="stylesheet" href="intent-distribution.css?v=inline-1"></head>
   <body class="mk-mega-layout">
     <header class="mk-global-header">
       <button class="mk-all-trigger" id="mkAllOpen" aria-haspopup="dialog" aria-label="打开全部功能" title="全部功能">
@@ -545,7 +545,7 @@
 
       <section class="page" id="layers">
         <section class="work-area"><div class="section-head intent-head"><div><h3>意向分布</h3><span class="module-scope" id="intentSummary"></span></div>
-        <div class="intent-controls"><label>行业 <select id="intentIndustryFilter"><option value="">全部</option><option>制造业</option><option>医疗</option><option>软件服务</option><option>互联网</option><option>零售</option><option>专业服务</option><option>教育</option></select></label><label>地区 <select id="intentRegionFilter"><option value="">全部</option><option>华东</option><option>华南</option><option>华北</option></select></label><label>营销互动 <select id="intentRangeFilter"><option value="">不限</option><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="90">近 90 天有互动</option><option value="inactive">近 90 天无营销互动</option><option value="none">暂无互动记录</option></select></label><button class="ghost-button" id="intentReset">重置</button></div></div>
+        <div class="intent-controls normalized-filter-row"><label>行业 <select id="intentIndustryFilter"><option value="">全部</option><option>制造业</option><option>医疗</option><option>软件服务</option><option>互联网</option><option>零售</option><option>专业服务</option><option>教育</option></select></label><label>地区 <select id="intentRegionFilter"><option value="">全部</option><option>华东</option><option>华南</option><option>华北</option></select></label><label>营销互动 <select id="intentRangeFilter"><option value="">不限</option><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="90">近 90 天有互动</option><option value="inactive">近 90 天无营销互动</option><option value="none">暂无互动记录</option></select></label><button class="ghost-button" id="intentReset">重置</button></div></div>
         <details class="intent-definition"><summary>营销互动统计口径</summary><p>按联系人统计平台记录的主动互动，包括申请演示、访问产品页、下载资料和报名活动。邮件送达、营销消息发出及线下销售跟进不计入。上次有效互动距今满 90 天，归入「近 90 天无营销互动」。从未记录到有效互动，单列为「暂无互动记录」。</p></details><div class="intent-level-overview"><button class="intent-level-card high" data-intent-level="high"><span>高意向</span><strong></strong><small></small><em>80–100 分</em></button><button class="intent-level-card mid" data-intent-level="mid"><span>中意向</span><strong></strong><small></small><em>50–79 分</em></button><button class="intent-level-card low" data-intent-level="low"><span>低意向</span><strong></strong><small></small><em>20–49 分</em></button><button class="intent-level-card silent" data-intent-level="silent"><span>极低意向</span><strong></strong><small></small><em>0–19 分</em></button></div></section>
         <section class="work-area"><div class="section-head"><div><h3>联系人明细</h3><span class="module-scope" id="intentListScope"></span></div></div>
         <div class="table customer-table" id="intentCustomerTable"><div class="table-row table-head"><span>联系人</span><span>所属企业</span><span>行业</span><span>意向分</span><span>最近有效营销互动</span><span>互动时间</span><span>CRM 状态</span></div></div></section></section>
@@ -2073,6 +2073,6 @@
     <script src="./profile-evidence.js"></script>
     <script src="./navigation-guide.js"></script>
     <script src="./navigation-menu-motion.js"></script>
-  <script src="./list-refinements.js?v=2.3.1"></script>
+  <script src="./list-refinements.js?v=intent-inline-1"></script>
 </body>
 </html>
