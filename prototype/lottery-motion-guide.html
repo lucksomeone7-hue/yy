@@ -125,7 +125,7 @@
         <div class="eyebrow">LOTTERY / INTERACTION SPECIFICATION</div>
         <h1>互动抽奖<br>动效与研发说明</h1>
         <p>从创建大屏、奖项和名单准备，到选择形式、主题与本轮人数，再进入舞台。这里集中说明可点击流程、动效节奏、大批量结果和研发接口，便于设计、前端、后端与测试对齐。</p>
-        <div class="hero-meta"><span class="tag is-accent">7 种形式 · 6 套主题</span><span class="tag">最多每轮 50 人 · 结果分页</span><span class="tag">本地演示数据</span><span class="tag">减少动态效果</span></div>
+        <div class="hero-meta"><span class="tag is-accent">8 种形式 · 6 套主题</span><span class="tag">最多每轮 50 人 · 结果分页</span><span class="tag">本地演示数据</span><span class="tag">减少动态效果</span></div>
       </div>
 
       <section class="section" id="workflow" aria-labelledby="workflow-title">
@@ -136,7 +136,7 @@
           <article class="state" role="listitem"><span>02 / 名单</span><strong>准备参与人员</strong><p>按 CSV 模板导入姓名、公司、手机号；已中奖人员自动排除后续抽取。</p></article>
           <article class="state" role="listitem"><span>03 / 启动设置</span><strong>选择形式与主题</strong><p>确认奖项、本轮人数、形式、主题，预览摘要后进入舞台。</p></article>
         </div>
-        <div class="callout"><strong>进入舞台只预览，不抽取。</strong> 点击“开始”才循环，点击“停止”才确定本轮结果。舞台准备与已揭晓时可返回设置，并保留配置；循环和减速期间锁定设置。</div>
+        <div class="callout"><strong>进入舞台只预览，不抽取。</strong> 点击“开始”才循环，点击“停止”才确定本轮结果。揭晓后可点击“返回抽奖”回到舞台准备状态。循环和减速期间锁定设置。</div>
         <h3 class="subheading">总名额、每轮默认、本轮人数是三个字段</h3>
         <p class="lead"><code>prize.total</code> 为累计总名额，范围 1–10,000；<code>prize.batchSize</code> 为每轮默认人数，范围 <code>1–min(50, total)</code>；<code>quantity</code> 为本轮实际人数。旧记录可缺少 <code>batchSize</code>，按下表推导。</p>
         <div class="table-scroll">
@@ -166,12 +166,13 @@
               <tr><td><strong>头像矩阵</strong><small><code>matrix</code></small></td><td>50 人</td><td class="duration">990ms</td><td>离散等待 85 / 125 / 180 / 250 / 350ms</td><td>按舞台尺寸展示完整行。超出一屏时约每 1.8 秒自动换一批，高亮只在屏内跳转。停止换批后减速，切换至中奖名单。开启减少动态效果时只保留静态头像及结果。</td></tr>
               <tr><td><strong>砸金蛋</strong><small><code>eggs</code></small></td><td>1 人</td><td class="duration">1150ms</td><td>锤击 260 → 摇动 240 →<br>裂纹 250 → 开蛋 400ms</td><td>开始后选择 4 枚中的任意金蛋，或点击停止。蛋的选择只触发表现；未选时默认第 3 枚。</td></tr>
               <tr><td><strong>幸运老虎机</strong><small><code>slots</code></small></td><td>3 人</td><td class="duration">1800 / 2200 /<br>2600ms</td><td><code>easeOutQuint</code><small>1 − (1 − t)⁵</small></td><td>拉杆或统一按钮开始 / 停止。列数等于本轮人数，1–3 列并行减速，从左至右停靠。</td></tr>
-              <tr><td><strong>名单滚动</strong><small><code>list</code></small></td><td>50 人</td><td class="duration">1200ms</td><td><code>easeOutCubic</code><small>驱动 12 次高亮步进</small></td><td>开始 / 停止按钮。约每 90ms 切换临时高亮，最终统一强调全部本轮获奖人。</td></tr>
-              <tr><td><strong>3D 球形</strong><small><code>sphere</code></small></td><td>50 人</td><td class="duration">1200ms</td><td><code>easeOutCubic</code><small>Y 轴旋转减速归正</small></td><td>开始 / 停止按钮。约 25°/s 旋转，少量结果向前聚合；超过 5 人切换本轮名单主画面。</td></tr>
+              <tr><td><strong>3D 球形</strong><small><code>sphere</code></small></td><td>50 人</td><td class="duration">1420ms</td><td><code>easeOutCubic</code><small>Y 轴旋转减速归正</small></td><td>开始 / 停止按钮。约 25°/s 旋转，少量头像向前聚合，之后切换本轮中奖名单。</td></tr>
+              <tr><td><strong>3D 环轨</strong><small><code>orbit</code></small></td><td>50 人</td><td class="duration">1050ms</td><td><code>easeOutCubic</code></td><td>头像沿浅景深椭圆转动，减速淡出后切换本轮中奖名单。</td></tr>
+              <tr><td><strong>3D 滑廊</strong><small><code>glide</code></small></td><td>50 人</td><td class="duration">1050ms</td><td><code>easeOutCubic</code></td><td>头像沿三层轨道滑行，减速淡出后切换本轮中奖名单。</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="note">转盘超过 12 人分为 12 组，中奖对象仍是个人。头像矩阵可分批展示整个可抽池；名单滚动和 3D 球形最多预览 80 人，老虎机循环轨道使用前 16 位预览人。实际抽取覆盖整个可抽池，动效仅展示已确认的结果。</p>
+        <p class="note">转盘超过 12 人分为 12 组，中奖对象仍是个人。头像矩阵可分批展示整个可抽池；3D 球形、环轨和滑廊分别最多预览 80、12 和 18 人，老虎机循环轨道使用前 16 位预览人。实际抽取覆盖整个可抽池，动效仅展示已确认的结果。</p>
         <p class="note">减少动态效果：取消持续旋转、滚动和装饰动画，各形式仅等待 100ms 后定格；老虎机各列并行完成。常规中奖卡淡入为 500ms；金蛋碎片尾效约持续至停止后 1500ms，业务于 1150ms 已完成揭晓。</p>
       </section>
 
@@ -182,7 +183,7 @@
           <article class="state" role="listitem"><span>01 / IDLE</span><strong>准备就绪</strong><p>选择样式、主题、奖项与人数。此时没有本轮结果。</p></article>
           <article class="state" role="listitem"><span>02 / RUNNING</span><strong>视觉循环</strong><p>开始只播放动效，锁定本轮配置，等待停止。</p></article>
           <article class="state commit" role="listitem"><span>03 / SETTLING</span><strong>提交 · 减速揭晓</strong><p>停止先确定并保存结果一次，再把结果传给动效。</p></article>
-          <article class="state" role="listitem"><span>04 / REVEALED</span><strong>本轮已揭晓</strong><p>显示固定中奖名单，更新名额，可开启下一轮。</p></article>
+          <article class="state" role="listitem"><span>04 / REVEALED</span><strong>本轮已揭晓</strong><p>全宽显示本轮中奖名单，收起抽奖控制台。返回抽奖后可开启下一轮。</p></article>
         </div>
         <div class="callout"><strong>有效的停止动作，就是本轮结果的提交边界。</strong> 动画完成、翻牌、光点高亮和 <code>transitionend</code> 均不能再次写入记录。</div>
         <div class="semantics">
@@ -200,8 +201,8 @@
             <caption>分页为纯展示操作，不能触发开始、停止、抽取或写入记录。</caption>
             <thead><tr><th scope="col">本轮人数</th><th scope="col">结果布局</th><th scope="col">展示与操作</th></tr></thead>
             <tbody>
-              <tr><td>1–5 人</td><td><code>hero</code> 大头像卡</td><td>保留抽奖停靠画面，完整展示本轮人员，无分页。</td></tr>
-              <tr><td>6–10 人</td><td><code>compact</code> 紧凑主结果</td><td>隐藏停靠场景，主画面突出中奖名单，无分页。</td></tr>
+              <tr><td>1–5 人</td><td><code>hero</code> 大头像卡</td><td>完整展示本轮人员，无分页。</td></tr>
+              <tr><td>6–10 人</td><td><code>compact</code> 紧凑主结果</td><td>紧凑排列中奖人卡片，无分页。</td></tr>
               <tr><td>11–50 人</td><td><code>paged</code> 每页 10 人</td><td>显示上一页、下一页、展示范围和本轮总人数；50 人固定 5 页。</td></tr>
             </tbody>
           </table>
@@ -280,7 +281,7 @@ engine.destroy();</code></pre>
 
       <section class="section" id="acceptance" aria-labelledby="acceptance-title">
         <div class="section-heading"><span class="section-number">07</span><h2 id="acceptance-title">操作与验收要点</h2></div>
-        <p class="lead"><kbd>Space</kbd> 在舞台普通区域开始 / 停止；控件聚焦时保留原生行为。<kbd>F</kbd> 切换全屏，<kbd>Esc</kbd> 退出 / 返回；浏览器全屏下先遵循浏览器的退出逻辑。控制区可收起，结果仍持续展示。</p>
+        <p class="lead"><kbd>Space</kbd> 在舞台普通区域开始 / 停止；控件聚焦时保留原生行为。<kbd>F</kbd> 切换全屏，<kbd>Esc</kbd> 退出 / 返回；浏览器全屏下先遵循浏览器的退出逻辑。结果页可翻页或点击“返回抽奖”。</p>
         <ul class="checklist">
           <li>七种形式均可开始、停止、揭晓；画面与记录的获奖人完全一致。</li>
           <li>本轮人数不超过模式上限、剩余名额与可抽人数；同人跨奖项不重复。</li>

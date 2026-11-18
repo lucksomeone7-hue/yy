@@ -101,11 +101,11 @@
     {id: 'matrix', label: '头像矩阵', caption: '头像轮换 · 批量揭晓', max: 50, glyph: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'},
     {id: 'eggs', label: '砸金蛋', caption: '点击金蛋 · 锤击揭晓', max: 1, glyph: '<path d="M19 15c0 4-3 6-7 6s-7-2-7-6S8 3 12 3s7 8 7 12Z"/><path d="m12 8-2 4 4 2-2 4"/>'},
     {id: 'slots', label: '幸运老虎机', caption: '滚轮加速 · 依次停靠', max: 3, glyph: '<rect x="2" y="5" width="17" height="15" rx="2"/><path d="M7 8v9m6-9v9m6-5h3V6"/><circle cx="22" cy="4" r="1"/>'},
-    {id: 'list', label: '名单滚动', caption: '简洁卡片 · 批量揭晓', max: 50, glyph: '<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>'},
-    {id: 'sphere', label: '3D 环轨', caption: '浅景深 · 环绕缓转', max: 50, glyph: '<ellipse cx="12" cy="12" rx="10" ry="5"/><circle cx="12" cy="7" r="2"/><path d="M9 12h6"/>'},
+    {id: 'sphere', label: '3D 球形', caption: '空间旋转 · 星光聚合', max: 50, glyph: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18m-16-5h14M5 17h14"/>'},
+    {id: 'orbit', label: '3D 环轨', caption: '浅景深 · 环绕缓转', max: 50, glyph: '<ellipse cx="12" cy="12" rx="10" ry="5"/><circle cx="12" cy="7" r="2"/><path d="M9 12h6"/>'},
     {id: 'glide', label: '3D 滑廊', caption: '分层滑行 · 平缓停驻', max: 50, glyph: '<path d="M3 5h18M3 12h18M3 19h18"/><circle cx="8" cy="5" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="11" cy="19" r="2"/>'}
   ];
-  const drawMode = id => DRAW_MODES.find(mode => mode.id === id) || DRAW_MODES[0];
+  const drawMode = id => DRAW_MODES.find(mode => mode.id === (id === 'list' ? 'matrix' : id)) || DRAW_MODES[0];
   const stageThemes = () => window.MKLotteryThemes?.items || [{id: 'festival', label: '红金盛典'}, {id: 'midnight', label: '深蓝星光'}];
   const stageTheme = id => stageThemes().find(theme => theme.id === id) || stageThemes()[0];
   function presentationFor(screen) {
@@ -465,7 +465,7 @@
     const mode = drawMode(saved.mode), theme = stageTheme(saved.theme).id;
     const max = Math.min(mode.max, prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length);
     const count = Math.min(roundQuantity(prize), max);
-    const dialog = openDialog('选择抽奖形式与舞台', `<div class="lottery-launch-body"><div class="lottery-launch-fields"><section><h3>01 / 本轮奖项与人数</h3><div class="lottery-prize-fields"><label>选择奖项<select name="setupPrize">${drawOptions(screen, prize.id)}</select></label><label>本轮抽取人数<input type="number" name="setupQuantity" min="1" max="${max}" step="1" required value="${count}"></label></div><p class="lottery-launch-availability lottery-muted"></p></section><section><h3>02 / 选择抽奖形式</h3><input type="hidden" name="setupMode" value="${mode.id}">${stylePicker(mode.id)}<p class="lottery-muted">转盘 / 单人 / 金蛋：1 人；老虎机：最多 3 人；矩阵 / 名单 / 3D 环轨 / 3D 滑廊：最多 50 人。批量抽奖建议选择头像矩阵或名单滚动。</p></section><section><h3>03 / 选择舞台主题</h3><input type="hidden" name="setupTheme" value="${theme}">${themePicker(theme)}<p class="lottery-muted">6 套系统预置，其中 4 套为图片背景；主题适用于全部抽奖形式。当前不提供自定义图片上传。</p></section><label class="lottery-launch-motion"><input type="checkbox" name="setupReducedMotion" ${saved.reducedMotion ? 'checked' : ''}>减少动态效果（跳过快速旋转与滚动）</label></div><aside class="lottery-launch-summary" aria-live="polite"></aside></div>`, `${cancelButton}${submitButton('进入抽奖舞台')}`, {className: 'lottery-launch-dialog', form: 'draw-setup', description: '奖项与名单已准备好；在这里确认展示和本轮配置，进入后再开始抽奖。', fallback: '[data-lottery-action="open-draw"]'});
+    const dialog = openDialog('选择抽奖形式与舞台', `<div class="lottery-launch-body"><div class="lottery-launch-fields"><section><h3>01 / 本轮奖项与人数</h3><div class="lottery-prize-fields"><label>选择奖项<select name="setupPrize">${drawOptions(screen, prize.id)}</select></label><label>本轮抽取人数<input type="number" name="setupQuantity" min="1" max="${max}" step="1" required value="${count}"></label></div><p class="lottery-launch-availability lottery-muted"></p></section><section><h3>02 / 选择抽奖形式</h3><input type="hidden" name="setupMode" value="${mode.id}">${stylePicker(mode.id)}<p class="lottery-muted">转盘 / 单人 / 金蛋：1 人；老虎机：最多 3 人；头像矩阵与三种 3D 形式：最多 50 人。</p></section><section><h3>03 / 选择舞台主题</h3><input type="hidden" name="setupTheme" value="${theme}">${themePicker(theme)}<p class="lottery-muted">6 套系统预置，其中 4 套为图片背景；主题适用于全部抽奖形式。当前不提供自定义图片上传。</p></section><label class="lottery-launch-motion"><input type="checkbox" name="setupReducedMotion" ${saved.reducedMotion ? 'checked' : ''}>减少动态效果（跳过快速旋转与滚动）</label></div><aside class="lottery-launch-summary" aria-live="polite"></aside></div>`, `${cancelButton}${submitButton('进入抽奖舞台')}`, {className: 'lottery-launch-dialog', form: 'draw-setup', description: '奖项与名单已准备好；在这里确认展示和本轮配置，进入后再开始抽奖。', fallback: '[data-lottery-action="open-draw"]'});
     if (dialog) updateLaunchForm(dialog);
   }
   function phaseLabel(phase) { return ({idle: '准备就绪', running: '抽奖进行中', settling: '正在揭晓', revealed: '本轮已揭晓'})[phase] || '准备就绪'; }
@@ -474,6 +474,10 @@
     dialog.dataset.phase = phase;
     dialog.querySelector('.lottery-presentation').dataset.phase = phase;
     dialog.querySelector('.lottery-live-status').textContent = phaseLabel(phase);
+    const showingResults = phase === 'revealed';
+    dialog.querySelector('[data-lottery-action="return-draw"]').hidden = !showingResults;
+    dialog.querySelector('[data-lottery-action="return-setup"]').hidden = showingResults;
+    dialog.querySelector('[data-lottery-action="toggle-controls"]').hidden = showingResults;
     dialog.dispatchEvent(new CustomEvent('lottery:round-state', {bubbles: true, detail: {phase, mode: session.mode, roundId: session.roundId || null}}));
   }
   function drawAvailability(screen, prize, mode) {
@@ -488,7 +492,7 @@
     if (!screen || session.closed) return;
     session.engine?.destroy();
     const prize = screen.prizes.find(item => item.id === dialog.querySelector('[name="drawPrize"]').value);
-    session.engine = window.MKLotteryEffects.create({host: dialog.querySelector('.lottery-effect-host'), mode: session.mode, people: eligiblePeople(screen, prize).map(person => ({...person})), history: screen.winners.map(winner => ({...winner})), prize, quantity: Number(dialog.querySelector('[name="quantity"]').value) || 1, reducedMotion: session.reducedMotion, onRequestStart: () => toggleDraw(dialog), onRequestStop: () => toggleDraw(dialog)});
+    session.engine = window.MKLotteryEffects.create({host: dialog.querySelector('.lottery-effect-host'), mode: session.mode, people: eligiblePeople(screen, prize).map(person => ({...person})), history: screen.winners.map(winner => ({...winner})), prize, quantity: Number(dialog.querySelector('[name="quantity"]').value) || 1, reducedMotion: session.reducedMotion, resultActionInHeader: true, onRequestStart: () => toggleDraw(dialog), onRequestStop: () => toggleDraw(dialog)});
     updateDrawControls(dialog);
   }
   function updateDrawControls(dialog) {
@@ -509,11 +513,10 @@
     dialog.querySelectorAll('[data-lottery-mode], [name="theme"], [name="reducedMotion"], [data-lottery-action="fill-demo"]').forEach(button => { button.disabled = locked; });
     const start = dialog.querySelector('.lottery-start');
     start.disabled = session.phase === 'settling' || !max;
-    start.textContent = session.phase === 'running' ? (session.mode === 'eggs' ? '砸开金蛋 · 揭晓结果' : '停止抽奖 · 揭晓结果') : session.phase === 'settling' ? '减速揭晓中…' : !max ? (prize ? '当前奖项无符合规则的人员' : '全部奖项已抽完') : session.phase === 'revealed' ? '开始下一轮' : '开始抽奖';
+    start.textContent = session.phase === 'running' ? (session.mode === 'eggs' ? '砸开金蛋 · 揭晓结果' : '停止抽奖 · 揭晓结果') : session.phase === 'settling' ? '减速揭晓中…' : !max ? (prize ? '当前奖项无符合规则的人员' : '全部奖项已抽完') : '开始抽奖';
     dialog.querySelector('.lottery-draw-availability').textContent = drawAvailability(screen, prize, session.mode);
     dialog.querySelector('.lottery-current-style').textContent = drawMode(session.mode).label;
-    const displayedPrize = session.phase === 'revealed' && session.resultPrize ? session.resultPrize : prize;
-    dialog.querySelector('.lottery-round-prize').textContent = displayedPrize ? `${displayedPrize.level} · ${displayedPrize.name}` : '本轮抽奖已结束';
+    dialog.querySelector('.lottery-round-prize').textContent = prize ? `${prize.level} · ${prize.name}` : '本轮抽奖已结束';
     if (!max && !locked) dialog.querySelectorAll('[data-fx-action="toggle"]').forEach(button => { button.disabled = true; button.textContent = '本轮已结束'; button.setAttribute('aria-label', '没有可抽取的人员或奖项'); });
     dialog.querySelector('.lottery-presentation-footer-count').textContent = `可抽 ${eligiblePeople(screen, prize).length} 人 · 已中奖 ${screen.winners.length} 人次`;
     dialog.querySelector('.lottery-motion-note').textContent = session.reducedMotion ? '减少动态效果已开启：保留结果与状态，跳过快速旋转和滚动。' : session.phase === 'running' && session.mode === 'eggs' ? '请选择舞台上的任意金蛋，或点击“砸开金蛋”揭晓。' : '空格开始 / 停止 · F 全屏 · Esc 退出 / 返回';
@@ -550,13 +553,13 @@
     dialog.dataset.phase = 'idle';
     const header = dialog.querySelector('.lottery-dialog-head'), close = header.querySelector('.lottery-close');
     const headerActions = document.createElement('div'); headerActions.className = 'lottery-display-actions';
-    headerActions.innerHTML = '<button type="button" data-lottery-action="return-setup">返回设置</button><button type="button" data-lottery-action="toggle-controls" aria-expanded="true">收起控制台</button><button type="button" data-lottery-action="fullscreen">进入全屏</button>';
+    headerActions.innerHTML = '<button type="button" data-lottery-action="return-draw" hidden>返回抽奖</button><button type="button" data-lottery-action="return-setup">返回设置</button><button type="button" data-lottery-action="toggle-controls" aria-expanded="true">收起控制台</button><button type="button" data-lottery-action="fullscreen">进入全屏</button>';
     headerActions.append(close); header.append(headerActions);
     session.fullscreenListener = () => { if (dialog.open) dialog.querySelector('[data-lottery-action="fullscreen"]').textContent = document.fullscreenElement && dialog.contains(document.fullscreenElement) ? '退出全屏' : '进入全屏'; };
     document.addEventListener('fullscreenchange', session.fullscreenListener);
     dialog.addEventListener('keydown', event => {
       if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.target.matches('input,select,textarea,[contenteditable="true"]')) return;
-      if (event.code === 'Space' && !event.target.closest('button,a,summary,[role="button"]')) { event.preventDefault(); toggleDraw(dialog); }
+      if (event.code === 'Space' && session.phase !== 'revealed' && !event.target.closest('button,a,summary,[role="button"]')) { event.preventDefault(); toggleDraw(dialog); }
       else if (event.key.toLowerCase() === 'f') { event.preventDefault(); toggleFullscreen(dialog); }
     });
     updateDrawControls(dialog);
@@ -565,12 +568,12 @@
   }
   async function toggleDraw(dialog) {
     const session = drawSession;
-    if (!dialog?.open || !session || session.closed || busy || session.phase === 'settling') return;
+    if (!dialog?.open || !session || session.closed || busy || !['idle', 'running'].includes(session.phase)) return;
     const screen = state.screens.find(item => item.id === session.screenId); if (!screen) return;
     const form = dialog.querySelector('form');
     let committed = false;
     try {
-      if (session.phase === 'idle' || session.phase === 'revealed') {
+      if (session.phase === 'idle') {
         const prize = screen.prizes.find(item => item.id === form.elements.drawPrize.value);
         const quantity = Number(form.elements.quantity.value);
         const max = prize ? Math.min(prize.total - wonFor(screen, prize.id), eligiblePeople(screen, prize).length, drawMode(session.mode).max) : 0;
@@ -587,7 +590,6 @@
       setDrawPhase(dialog, session, 'settling');
       updateDrawControls(dialog);
       const prize = screen.prizes.find(item => item.id === session.selectedPrize), pool = eligiblePeople(screen, prize);
-      session.resultPrize = {level: prize.level, name: prize.name};
       const count = Math.min(session.quantity, prize.total - wonFor(screen, prize.id), pool.length);
       if (!count) throw new Error('本轮没有可抽取的人员或剩余名额。');
       const winners = [];
@@ -601,6 +603,7 @@
       await session.engine.reveal(winners);
       if (drawSession !== session || session.closed || !dialog.open) return;
       setDrawPhase(dialog, session, 'revealed'); updateDrawControls(dialog);
+      dialog.querySelector('.lottery-fx-result-heading h4')?.focus({preventScroll: true});
     } catch (error) {
       if (drawSession !== session || session.closed || !dialog.open) return;
       setDrawPhase(dialog, session, committed ? 'revealed' : 'idle');
@@ -639,6 +642,17 @@
     const action = button.dataset.lotteryAction, id = button.dataset.id;
     if (action === 'close-dialog') { button.closest('dialog')?.close(); return; }
     if (action === 'fullscreen') { toggleFullscreen(button.closest('dialog')); return; }
+    if (action === 'return-draw') {
+      const dialog = button.closest('dialog'), session = drawSession;
+      if (!session || session.phase !== 'revealed') return;
+      setDrawPhase(dialog, session, 'idle');
+      mountDrawEffect(dialog, session);
+      const start = dialog.classList.contains('is-controls-hidden')
+        ? dialog.querySelector('[data-fx-action="toggle"]')
+        : dialog.querySelector('.lottery-start');
+      (start?.disabled ? dialog.querySelector('[data-lottery-action="return-setup"]') : start)?.focus({preventScroll: true});
+      return;
+    }
     if (action === 'toggle-controls') {
       const dialog = button.closest('dialog'), collapsed = dialog.classList.toggle('is-controls-hidden');
       button.textContent = collapsed ? '展开控制台' : '收起控制台'; button.setAttribute('aria-expanded', String(!collapsed)); return;
