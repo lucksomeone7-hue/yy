@@ -118,3 +118,14 @@
   .lottery-stage-kicker { letter-spacing: 1px; }
 }
 @media(prefers-reduced-motion:reduce) { .lottery-live-status::before { animation: none !important; } }
+
+/* The result view uses the full stage until the host returns to the draw. */
+.lottery-effects-dialog[data-phase="revealed"] .lottery-draw-layout { grid-template-columns: minmax(0,1fr); }
+.lottery-effects-dialog[data-phase="revealed"] :is(.lottery-draw-controls,.lottery-presentation-header,.lottery-presentation-footer) { display: none; }
+.lottery-effects-dialog[data-phase="revealed"] .lottery-presentation { flex: 1; min-height: 100%; }
+.lottery-effects-dialog .lottery-display-actions > [data-lottery-action="return-draw"] {
+  padding-inline: 14px;
+  border-color: #ccac72;
+  background: #ad8a441c;
+  color: #f4d496;
+}
