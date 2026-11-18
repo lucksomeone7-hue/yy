@@ -792,89 +792,88 @@ document.querySelectorAll("[data-conversion-tab]").forEach((button) => {
 
 const intentLayerData = {
   high: {
-    title: "高意向客户",
-    scope: "80-100 分 · 近期出现明确产品兴趣或转化行为",
-    actions: ["未进入 CRM：同步为线索", "已有销售跟进：提醒销售关注最新行为", "多人同企业活跃：查看企业洞察"],
     rows: [
-      ["张三", "XX 制造集团", "制造业", 94, "下载制造业白皮书", "待企业同步", "同步 CRM", "account-crm", "XX 制造集团"],
-      ["陈洁", "海川医疗", "医疗", 83, "访问价格页", "已有线索", "提醒销售"],
-      ["李明", "华东装备", "制造业", 81, "近 7 天访问方案页 4 次", "跟进中", "更新线索动态"],
+      ["张三", "XX 制造集团", "制造业", 94, "下载制造业白皮书", "待企业同步", "华东", 2],
+      ["陈洁", "海川医疗", "医疗", 83, "访问价格页", "已有线索", "华南", 1],
+      ["李明", "华东装备", "制造业", 81, "申请产品演示", "跟进中", "华北", 95],
     ],
   },
   mid: {
-    title: "中意向客户",
-    scope: "50-79 分 · 已形成持续关注，尚未出现明确转化信号",
-    actions: ["阅读客户案例：发送同行业案例", "报名未签到：发送活动回放", "连续活跃：加入重点培育分组"],
     rows: [
-      ["王宇", "远航自动化", "制造业", 67, "连续阅读制造业客户案例", "未同步", "发送行业案例"],
-      ["林浩", "中诚科技", "软件服务", 58, "活动报名未签到", "未同步", "发送活动回放"],
-      ["刘敏", "泰禾工业", "制造业", 53, "近 14 天访问产品页 2 次", "培育中", "加入重点培育"],
+      ["王宇", "远航自动化", "制造业", 67, "连续阅读制造业客户案例", "未同步", "华东", 7],
+      ["林浩", "中诚科技", "软件服务", 58, "活动报名未签到", "未同步", "华南", 14],
+      ["刘敏", "泰禾工业", "制造业", 53, "近 14 天访问产品页 2 次", "培育中", "华北", 14],
     ],
   },
   low: {
-    title: "低意向客户",
-    scope: "20-49 分 · 行为较浅，适合低频、非销售式内容触达",
-    actions: ["阅读行业内容：加入常规内容培育", "关注主题明确：推荐相关内容", "不建议直接同步 CRM"],
     rows: [
-      ["赵敏", "中诚科技", "软件服务", 42, "阅读数字营销行业文章", "未同步", "内容培育"],
-      ["李峰", "启航科技", "互联网", 31, "访问官网产品介绍", "未同步", "推荐产品内容"],
-      ["吴倩", "恒远商贸", "零售", 24, "阅读新闻资讯", "未同步", "加入常规培育"],
+      ["赵敏", "中诚科技", "软件服务", 42, "阅读数字营销行业文章", "未同步", "华东", 21],
+      ["李峰", "启航科技", "互联网", 31, "访问官网产品介绍", "未同步", "华南", 25],
+      ["吴倩", "恒远商贸", "零售", 24, "阅读新闻资讯", "未同步", "华北", 30],
     ],
   },
   silent: {
-    title: "沉默客户",
-    scope: "0-19 分 · 长期无有效活跃，意向分已随时间衰减",
-    actions: ["历史有价值客户：进入召回分组", "长期无响应：暂缓经营", "无效或拒绝触达：排除推荐"],
     rows: [
-      ["周宁", "华北机电", "制造业", 14, "65 天无有效活跃", "历史线索", "加入召回分组"],
-      ["孙敏", "创源咨询", "专业服务", 8, "120 天无有效活跃", "未同步", "暂缓经营"],
-      ["郑伟", "明德教育", "教育", 3, "180 天无有效活跃", "已退订", "排除触达"],
+      ["周宁", "华北机电", "制造业", 14, "下载产品手册", "历史线索", "华东", 65],
+      ["孙敏", "创源咨询", "专业服务", 8, "参加线上研讨会", "未同步", "华南", 90],
+      ["郑伟", "明德教育", "教育", 3, "暂无互动记录", "已退订", "华北", null],
     ],
   },
 };
 
 function renderIntentLayer(level) {
-  const config = intentLayerData[level];
-  const industry = document.getElementById("intentIndustryFilter")?.value || "全部行业";
-  const region = document.getElementById("intentRegionFilter")?.value || "";
-  const range = Number(document.getElementById("intentRangeFilter")?.value || 0);
-  const regionByIndex = ["华东", "华南", "华北"];
-  const ageByLevel = { high: [2, 1, 7], mid: [7, 14, 14], low: [21, 25, 30], silent: [65, 120, 180] };
-  const rows = config.rows.filter((row, index) => (industry === "全部行业" || row[2] === industry)
-    && (!region || regionByIndex[index] === region)
-    && (!range || ageByLevel[level][index] <= range));
-  const table = document.getElementById("intentCustomerTable");
-  const heading = table.querySelector(".table-head").outerHTML;
-  document.querySelectorAll("[data-intent-level]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.intentLevel === level);
+  const industry = document.querySelector("#intentIndustryFilter").value;
+  const region = document.querySelector("#intentRegionFilter").value;
+  const range = document.querySelector("#intentRangeFilter").value;
+  function matchesInteraction(age) {
+    if (!range) return true;
+    if (range === "none") return age === null;
+    if (age === null) return false;
+    if (range === "inactive") return age >= 90;
+    return age < Number(range);
+  }
+  const groups = {};
+  let total = 0;
+  for (const [key, data] of Object.entries(intentLayerData)) {
+    groups[key] = data.rows.map(row => ({row, region: row[6], age: row[7]}))
+      .filter(item => (!industry || item.row[2] === industry) && (!region || item.region === region) && matchesInteraction(item.age));
+    total += groups[key].length;
+  }
+  document.querySelector("#intentSummary").textContent = `共 ${total} 位联系人 · 演示数据 · 更新于今日 08:00`;
+  document.querySelectorAll("[data-intent-level]").forEach(card => {
+    const key = card.dataset.intentLevel;
+    const count = groups[key].length;
+    card.classList.toggle("active", key === level);
+    card.setAttribute("aria-pressed", key === level);
+    card.querySelector("strong").textContent = count + " 人";
+    card.querySelector("small").textContent = "占比 " + (total ? +(100 * count / total).toFixed(1) : 0) + "%";
   });
-  document.getElementById("intentLevelSelect").value = level;
-  document.getElementById("intentListTitle").textContent = config.title;
-  document.getElementById("intentListScope").textContent = config.scope;
-  const guide = document.getElementById("intentActionGuide");
-  guide.className = `intent-action-guide ${level}`;
-  guide.innerHTML = `<strong>下一步建议</strong>${config.actions.map((action) => `<span>${action}</span>`).join("")}`;
-  table.innerHTML = heading + rows.map((row) => {
-    const actionKind = row[7] || (row[6].includes("CRM") ? "crm" : row[6].includes("销售") || row[6].includes("线索") ? "sales" : row[6].includes("排除") ? "ads" : "nurture");
-    const actionTarget = row[8] || `${row[0]} / ${row[1]}`;
-    return `
-    <div class="table-row intent-customer-row">
-      <span><button class="inline-link" data-intent-profile>${row[0]}</button></span>
-      <span>${row[1]}</span><span>${row[2]}</span>
-      <span><b class="score ${level}">${row[3]}</b></span>
-      <span>${row[4]}</span><span>${row[5]}</span>
-      <span><button class="mini-button next-action-button" data-action-kind="${actionKind}" data-action-target="${actionTarget}" data-action-score="${row[3]}" data-action-reason="${row[4]}；CRM 状态：${row[5]}">处理建议</button></span>
-    </div>`;
-  }).join("") + (rows.length ? "" : '<div class="content-list-empty"><b>没有找到匹配客户</b><span>请调整行业或意向等级后重试</span></div>');
+  const rows = groups[level];
+  const label = document.querySelector(`[data-intent-level="${level}"] span`).textContent;
+  document.querySelector("#intentListScope").textContent = `${label} · 共 ${rows.length} 人`;
+  const table = document.querySelector("#intentCustomerTable");
+  table.innerHTML = table.querySelector(".table-head").outerHTML + rows.map(({row, age}) =>
+    `<div class="table-row intent-customer-row"><span><button class="inline-link" data-intent-profile>${row[0]}</button></span><span>${row[1]}</span><span>${row[2]}</span><span><b class="score ${level}">${row[3]}</b></span><span>${row[4]}</span><span>${age === null ? "—" : age + " 天前"}</span><span>${row[5]}</span></div>`
+  ).join("") + (rows.length ? "" : '<div class="content-list-empty">该分层暂无符合条件的联系人</div>');
 }
-
-document.querySelectorAll("[data-intent-level]").forEach((button) => {
-  button.addEventListener("click", () => renderIntentLayer(button.dataset.intentLevel));
-});
-document.getElementById("intentApplyFilter")?.addEventListener("click", () => renderIntentLayer(document.getElementById("intentLevelSelect").value));
-document.getElementById("intentCustomerTable").addEventListener("click", (event) => {
-  if (event.target.closest("[data-intent-profile]")) showPage("profileTags");
-});
+if (document.querySelector("#intentSummary")) {
+  let level = "high";
+  document.querySelectorAll("[data-intent-level]").forEach(card => card.onclick = () => {
+    level = card.dataset.intentLevel;
+    renderIntentLayer(level);
+  });
+  const filters = document.querySelectorAll(".intent-controls select");
+  filters.forEach(field => field.onchange = () => renderIntentLayer(level));
+  document.querySelector("#intentReset").onclick = () => {
+    filters.forEach(field => field.selectedIndex = 0);
+    level = "high";
+    renderIntentLayer(level);
+  };
+  document.querySelector("#intentCustomerTable").onclick = event => {
+    if (event.target.closest("[data-intent-profile]")) showPage("profileTags");
+  };
+  renderIntentLayer(level);
+}
 
 const actionDrawer = document.getElementById("actionDrawer");
 const actionDrawerFooter = document.getElementById("actionDrawerFooter");
